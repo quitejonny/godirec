@@ -43,17 +43,13 @@ class RecordingFile:
                 input=True,
                 stream_callback=self.get_callback())
         self.stream.start_stream()
-        print "start"
         return self
 
     def stop_recording(self):
-        print "1"
         self.stream.stop_stream()
-        print "stop"
         return self
 
     def close(self):
-        print "closing"
         self.stream.close()
         self.p.terminate()
         self.wavefile.close()

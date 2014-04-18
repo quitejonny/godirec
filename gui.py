@@ -44,29 +44,31 @@ class RecGui(QtGui.QWidget):
 
 
 	def buttonRec(self):
-		self.btn_rec.setText("Recording")
-		self.btn_rec.setEnabled(False)
-		self.btn_play.setText("Pause")
-		self.btn_save.setEnabled(False)
-		#self.recfile2.start_recording()		
-		self.recfile = self.recfile.start_recording()
+		if self.btn_rec.text() != "Recording":
+			self.btn_rec.setText("Recording")
+			self.btn_rec.setEnabled(False)
+			self.btn_play.setText("Pause")
+			self.btn_save.setEnabled(False)
+			#self.recfile2.start_recording()		
+			self.recfile = self.recfile.start_recording()
 
 	def buttonStop(self):
 		self.btn_rec.setText("Rec")
 		self.btn_rec.setEnabled(True)
 		self.btn_play.setEnabled(True)
 		self.btn_save.setEnabled(True)
-		#self.recfile2.stop_recording()
-		#self.recfile.stop_recording()
-		self.recfile.close()
-
 	def buttonPlay(self):
-		self.btn_play.setText("Play")
-		self.btn_rec.setText("Rec")
-		self.btn_rec.setEnabled(False)
-		self.btn_save.setEnabled(False)
-		print "pause"
-		self.recfile.stream.stop_stream()
+		if self.btn_play.text() == "Pause":
+			self.btn_play.setText("Play")
+			self.btn_rec.setText("Rec")
+			self.btn_rec.setEnabled(False)
+			self.btn_save.setEnabled(False)
+			self.recfile.stop_recording()
+		else:
+			self.btn_play.setText("Pause")
+			self.btn_rec.setText("Recording")
+			self.btn_rec.setEnabled(False)
+			self.recfile.start_recording()
 
 def run_gui():
 	app = QtGui.QApplication(sys.argv)
