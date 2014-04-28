@@ -1,5 +1,7 @@
 import pyaudio
+import os
 import wave
+import shutil
 
 class Recorder(object):
     #A recorder class for recording audio to a WAV file.
@@ -12,6 +14,8 @@ class Recorder(object):
     def open(self, fname, mode='wb'):
         return RecordingFile(fname, mode, self.channels, self.rate,
                             self.frames_per_buffer)
+    def save(self, dst, src = "nonblocking.wav"):
+        shutil.copyfile(".temp/"+src, dst)
 
 class RecordingFile:
     def __init__(self, fname, mode, channels, rate, frames_per_buffer):
@@ -54,8 +58,10 @@ class RecordingFile:
         self.p.terminate()
         self.wavefile.close()
 
-    def _prepare_file(self, fname, mode='wb'):
-        wavefile = wave.open(fname, mode)
+    def _prepare_file(self, fname, mode='wb', directory = '.temp'):
+	if not os.path.exists(directory):
+		os.makedirs(directory)
+        wavefile = wave.open(directory+"/"+fname, mode)
         wavefile.setnchannels(self.channels)
         wavefile.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))
         wavefile.setframerate(self.rate)
