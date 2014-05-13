@@ -2,6 +2,7 @@ import pyaudio
 import os
 import wave
 import shutil
+from pydub import AudioSegment
 
 class Recorder(object):
     #A recorder class for recording audio to a WAV file.
@@ -10,12 +11,29 @@ class Recorder(object):
         self.channels = channels
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
+        self.track_count = 1 #fuer Titel benennung
  
-    def open(self, fname, mode='wb'):
+    def open(self, fname = None, mode='wb'):
+        if fname is None:
+            fname = ("track_%d.wav" % self.track_count)
         return RecordingFile(fname, mode, self.channels, self.rate,
                             self.frames_per_buffer)
-    def save(self, dst, src = "nonblocking.wav"):
-        shutil.copyfile(".temp/"+src, dst)
+
+    #Speichern einzelner Tracks als Mp3. Mit Tags oder ohne
+    def save(self, dst, src, tags = None):
+        song = AudioSegment.from_wav(src)
+        # Geht bestimmt schoener, oder?
+        if tags is not None:
+            song.export(dst, "mp3", tags)
+        else:
+            song.export(dst, format="mp3")
+
+        #shutil.copyfile(".temp/"+src, dst)
+
+    #def save_tags(self, src, tags):
+    #    print src
+    #    song = AudioSegment.from_mp3(src)
+    #    song.export(src, "mp3", tags)
 
 class RecordingFile:
     def __init__(self, fname, mode, channels, rate, frames_per_buffer):

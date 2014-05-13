@@ -13,7 +13,6 @@ class RecGui(QtGui.QWidget):
         self.init_ui()
         self.rec = Recorder(channels=2) 
         #with rec.open('nonblocking.wav', 'wb') as self.recfile2:
-        self.recfile = self.rec.open('nonblocking.wav', 'wb')
 
     def init_ui(self):
         self.setWindowTitle('GodiRec')
@@ -61,6 +60,7 @@ class RecGui(QtGui.QWidget):
             self.btn_play.setText("Pause")
             self.btn_save.setEnabled(False)
             #self.recfile2.start_recording()                
+            self.recfile = self.rec.open()
             self.recfile = self.recfile.start_recording()
 
     def buttonStop(self):
@@ -83,10 +83,15 @@ class RecGui(QtGui.QWidget):
             self.recfile.start_recording()
 
     def buttonSave(self):
-        self.rec.save('new.wav')
+        self.rec.save("new.wav")
 
     def buttonCut(self):
-        yield
+        self.recfile.stop_recording()
+        self.recfile.close()
+        self.rec.save("track_1.mp3", ".temp/track_1.wav")
+        self.recfile = self.rec.open()
+        self.recfile.start_recording()
+
 
 def run_gui():
     app = QtGui.QApplication(sys.argv)
