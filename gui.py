@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import sys
 import time
@@ -6,15 +7,16 @@ from godiRec import Recorder
 
 
 class RecGui(QtGui.QWidget):
+
     exitFlag = 0
 
     def __init__(self):
-        super(RecGui, self).__init__()
-        self.init_ui()
+        QtGui.QWidget.__init__(self)
+        self.initUi()
         self.rec = Recorder(channels=2) 
         #with rec.open('nonblocking.wav', 'wb') as self.recfile2:
 
-    def init_ui(self):
+    def initUi(self):
         self.setWindowTitle('GodiRec')
         hbox = QtGui.QHBoxLayout()
         self.setLayout(hbox)
@@ -23,11 +25,11 @@ class RecGui(QtGui.QWidget):
         spacer = QtGui.QSpacerItem(0, 0, QtGui.QSizePolicy.Expanding,
                                   QtGui.QSizePolicy.Minimum)
         hbox.addItem(spacer)
-        self.init_rec_ui()
+        self.initRecUi()
         self.show()
         self.resize(550, 250)
-    
-    def init_rec_ui(self):
+
+    def initRecUi(self):
         self.btn_rec = QtGui.QPushButton("Rec", self)
         self.btn_play = QtGui.QPushButton("Play", self)
         self.btn_stop = QtGui.QPushButton("Stop", self)
@@ -97,6 +99,7 @@ def run_gui():
     app = QtGui.QApplication(sys.argv)
     ex = RecGui()
     sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     run_gui()

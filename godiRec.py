@@ -3,21 +3,25 @@ import os
 import wave
 import shutil
 from pydub import AudioSegment
+import tempfile
+
 
 class Recorder(object):
-    #A recorder class for recording audio to a WAV file.
+
+    """A recorder class for recording audio to a WAV file."""
  
     def __init__(self, channels=2, rate=44100, frames_per_buffer=1024):
         self.channels = channels
         self.rate = rate
         self.frames_per_buffer = frames_per_buffer
         self.track_count = 1 #fuer Titel benennung
+        self.tmpdir = tempfile.mkdtemp()
  
     def open(self, fname = None, mode='wb'):
         if fname is None:
             fname = ("track_%d.wav" % self.track_count)
         return RecordingFile(fname, mode, self.channels, self.rate,
-                            self.frames_per_buffer)
+                             self.frames_per_buffer, self.tmpdir)
 
     #Speichern einzelner Tracks als Mp3. Mit Tags oder ohne
     def save(self, dst, src, tags = None):
@@ -27,23 +31,24 @@ class Recorder(object):
             song.export(dst, "mp3", tags)
         else:
             song.export(dst, format="mp3")
-
-        #shutil.copyfile(".temp/"+src, dst)
+        #shutil.copyfile(os.path.join(self.tmpdir, src), dst)
 
     #def save_tags(self, src, tags):
     #    print src
     #    song = AudioSegment.from_mp3(src)
     #    song.export(src, "mp3", tags)
 
+
 class RecordingFile:
-    def __init__(self, fname, mode, channels, rate, frames_per_buffer):
+
+    def __init__(self, fname, mode, channels, rate, frames_per_buffer, tmpdir):
         self.fname = fname
         self.frames_per_buffer = frames_per_buffer
         self.mode = mode
         self.channels = channels
         self.rate = rate
         self.p = pyaudio.PyAudio()
-        self.wavefile = self._prepare_file(self.fname, self.mode)
+        self.wavefile = self._prepare_file(self.fname, tmpdir, self.mode)
         self.stream = None
 
     #def __enter__(self):
@@ -76,10 +81,10 @@ class RecordingFile:
         self.p.terminate()
         self.wavefile.close()
 
-    def _prepare_file(self, fname, mode='wb', directory = '.temp'):
-	if not os.path.exists(directory):
-		os.makedirs(directory)
-        wavefile = wave.open(directory+"/"+fname, mode)
+    def _prepare_file(self, fname, tmpdir, mode='wb'):
+	if not os.path.exists(tmpdir):
+		os.makedirs(tmpdir)
+        wavefile = wave.open(os.path.join(tmpdir, fname), mode)
         wavefile.setnchannels(self.channels)
         wavefile.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))
         wavefile.setframerate(self.rate)
