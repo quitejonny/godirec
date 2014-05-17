@@ -20,6 +20,7 @@ class Recorder(object):
     def open(self, fname = None, mode='wb'):
         if fname is None:
             fname = ("track_%d.wav" % self.track_count)
+            self.track_count += 1
         return RecordingFile(fname, mode, self.channels, self.rate,
                              self.frames_per_buffer, self.tmpdir)
 
@@ -82,8 +83,8 @@ class RecordingFile:
         self.wavefile.close()
 
     def _prepare_file(self, fname, tmpdir, mode='wb'):
-	if not os.path.exists(tmpdir):
-		os.makedirs(tmpdir)
+        if not os.path.exists(tmpdir):
+            os.makedirs(tmpdir)
         wavefile = wave.open(os.path.join(tmpdir, fname), mode)
         wavefile.setnchannels(self.channels)
         wavefile.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))

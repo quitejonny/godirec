@@ -1,11 +1,25 @@
 import sys
+import os
 import re
 import glob
 import id3reader
+import datetime
 from mainwindow import *
+from dialog import Ui_Dialog
 from mutagen.easyid3 import EasyID3
 from PyQt4 import QtCore, QtGui
 from godiRec import Recorder
+
+#Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
+#und an das Programm zurückgeben.
+class PathDialog(QtGui.QDialog, Ui_Dialog):
+    def __init__(self):
+        QtGui.QDialog.__init__(self)
+        Ui_Dialog.__init__(self)
+        #self.ui = Ui_Dialog()
+        self.setupUi(self)
+        print "PathDialog init"
+
 
 class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
     def __init__(self):
@@ -19,8 +33,11 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         self.pushButton_cut.clicked.connect(self.btn_cut_clicked)
         self.pushButton_save.clicked.connect(self.btn_save_clicked)
         self.pushButton_change.clicked.connect(self.btn_change_clicked)
+        self.actionExit.triggered.connect(self.exit)
+        self.actionNeues_Projekt.triggered.connect(self.act_neues_projekt)
         self.update_listTracks()
         self.cur_track = None
+        self.cur_path = ""
         
     def btn_play_clicked(self):
         if self.pushButton_play.text() == "Pause":
@@ -40,6 +57,8 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         self.pushButton_rec.setEnabled(True)
         self.pushButton_play.setEnabled(True)
         self.pushButton_save.setEnabled(True)
+        self.recfile.stop_recording()
+        self.recfile.close()
         update_listTracks()
 
     def btn_rec_clicked(self):
@@ -48,7 +67,8 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
             self.pushButton_rec.setEnabled(False)
             self.pushButton_play.setText("Pause")
             self.pushButton_save.setEnabled(False)
-            #self.recfile2.start_recording()                
+            #TODO: Tracks automatisch erzeugen mit Track_[Nr].wav
+            # Nr hier bei aufsteigend.
             self.recfile = self.rec.open()
             self.recfile = self.recfile.start_recording()
 
@@ -56,6 +76,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
     def btn_cut_clicked(self):
         self.recfile.stop_recording()
         self.recfile.close()
+        #TODO: letzten track umwandeln
         self.rec.save("track_1.mp3", ".temp/track_1.wav")
         self.recfile = self.rec.open()
         self.recfile.start_recording()
@@ -81,22 +102,28 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
 
     def btn_save_clicked(self):
         #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
+        self.cur_path = QtGui.QFileDialog.getExistingDirectory(
+                self,"Ordner waehlen",".")
+        self.fileEdit.setText(self.cur_path)
         self.update_listTracks()
 
     #updatet die Listenansicht
     def update_listTracks(self):
-        files = glob.glob('*.mp3')
+        self.cur_path = str(self.fileEdit.text())
+        find = os.path.join(self.cur_path, "*.mp3")
+        files = glob.glob(find)
         list = self.listTracks
         model = QtGui.QStandardItemModel(list)
         for f in files:
-            model.appendRow(QtGui.QStandardItem(f))
+            model.appendRow(QtGui.QStandardItem(os.path.basename(f)))
         list.setModel(model)
         list.clicked.connect(self.on_listTracks_changed)
 
     #Click listener auf ItemListView
     #Es zeigt die Tags des angeklickten Files an
     def on_listTracks_changed(self, index):
-        self.cur_track = str(index.model().itemFromIndex(index).text())
+        self.cur_track = os.path.join(self.cur_path,
+                     str(index.model().itemFromIndex(index).text()))
         id3r = id3reader.Reader(self.cur_track)
         if id3r.getValue("title"):
             self.lineEdit_titel.setText(id3r.getValue("title"))
@@ -109,9 +136,34 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         if id3r.getValue("comment"):
             self.lineEdit_kommentar.setText(id3r.getValue("comment"))
 
+    def act_neues_projekt(self):
+        #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
+        #temp_path = QtGui.QFileDialog.getExistingDirectory(
+        #    self,"Neues Projekt erzeugen in:",".")
+        #today = datetime.date.today()
+        #projektName = "{:%Y_%m_%d}-Godi".format(today)
+        #print projektName
+        #print temp_path
+        #self.cur_path = os.path.join(temp_path, projektName)
+        #if not os.path.exists(self.cur_path):
+        #    os.makedirs(self.cur_path)
+        #self.fileEdit.setText(self.cur_path)
+        #self.update_listTracks()
+        #Dialog()
+        print "new Projekt"
+
+        pathDialog = PathDialog()
+        pathDialog.show()
+        
+    def exit(self):
+        self.close()
+        sys.exit(app.exec_())
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     window = GodiRec()
     window.show()
     sys.exit(app.exec_())
+
+

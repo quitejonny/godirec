@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/godi_rec.ui'
 #
-# Created: Tue May 13 23:32:46 2014
+# Created: Thu May 15 17:54:53 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,11 +26,11 @@ except AttributeError:
 class Ui_GodiRec(object):
     def setupUi(self, GodiRec):
         GodiRec.setObjectName(_fromUtf8("GodiRec"))
-        GodiRec.resize(338, 459)
+        GodiRec.resize(333, 460)
         self.centralwidget = QtGui.QWidget(GodiRec)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayoutWidget = QtGui.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 20, 311, 150))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 311, 150))
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setMargin(0)
@@ -55,12 +55,15 @@ class Ui_GodiRec(object):
         self.verticalLayout.addWidget(self.listTracks)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
+        self.fileEdit = QtGui.QLineEdit(self.verticalLayoutWidget)
+        self.fileEdit.setObjectName(_fromUtf8("fileEdit"))
+        self.horizontalLayout_2.addWidget(self.fileEdit)
         self.pushButton_save = QtGui.QPushButton(self.verticalLayoutWidget)
         self.pushButton_save.setObjectName(_fromUtf8("pushButton_save"))
         self.horizontalLayout_2.addWidget(self.pushButton_save)
         self.verticalLayout.addLayout(self.horizontalLayout_2)
         self.formLayoutWidget = QtGui.QWidget(self.centralwidget)
-        self.formLayoutWidget.setGeometry(QtCore.QRect(0, 180, 321, 260))
+        self.formLayoutWidget.setGeometry(QtCore.QRect(10, 170, 311, 231))
         self.formLayoutWidget.setObjectName(_fromUtf8("formLayoutWidget"))
         self.formLayout = QtGui.QFormLayout(self.formLayoutWidget)
         self.formLayout.setFieldGrowthPolicy(QtGui.QFormLayout.AllNonFixedFieldsGrow)
@@ -109,7 +112,7 @@ class Ui_GodiRec(object):
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.pushButton_change)
         GodiRec.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(GodiRec)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 338, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 333, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuGodiRec = QtGui.QMenu(self.menubar)
         self.menuGodiRec.setObjectName(_fromUtf8("menuGodiRec"))
@@ -119,6 +122,12 @@ class Ui_GodiRec(object):
         GodiRec.setStatusBar(self.statusbar)
         self.actionExit = QtGui.QAction(GodiRec)
         self.actionExit.setObjectName(_fromUtf8("actionExit"))
+        self.actionNeues_Projekt = QtGui.QAction(GodiRec)
+        self.actionNeues_Projekt.setObjectName(_fromUtf8("actionNeues_Projekt"))
+        self.actionAltes_Projekt = QtGui.QAction(GodiRec)
+        self.actionAltes_Projekt.setObjectName(_fromUtf8("actionAltes_Projekt"))
+        self.menuGodiRec.addAction(self.actionNeues_Projekt)
+        self.menuGodiRec.addAction(self.actionAltes_Projekt)
         self.menuGodiRec.addAction(self.actionExit)
         self.menubar.addAction(self.menuGodiRec.menuAction())
 
@@ -142,4 +151,6 @@ class Ui_GodiRec(object):
         self.pushButton_change.setText(_translate("GodiRec", "Change", None))
         self.menuGodiRec.setTitle(_translate("GodiRec", "File", None))
         self.actionExit.setText(_translate("GodiRec", "Exit", None))
+        self.actionNeues_Projekt.setText(_translate("GodiRec", "Neues Projekt", None))
+        self.actionAltes_Projekt.setText(_translate("GodiRec", "Altes Projekt", None))
 
