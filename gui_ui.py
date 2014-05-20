@@ -18,8 +18,34 @@ class PathDialog(QtGui.QDialog):
         QtGui.QDialog.__init__(self)
         ui_file = os.path.join("ui", "dialog.ui")
         uic.loadUi(ui_file, self)
+        self.cur_path1 = ""
         print("PathDialog init")
+        for i in ("Dir", "Create"):
+            getattr(self, "Button"+i).clicked.connect(
+                    getattr(self, "onButton{}Clicked".format(i)))
+        today = datetime.date.today()
+        projektName = "{:%Y_%m_%d}-Godi".format(today)
+        self.LineEditProjekt.setText(projektName)
 
+    def onButtonDirClicked(self):
+        temp_path = QtGui.QFileDialog.getExistingDirectory(
+            self,"Neues Projekt erzeugen in:",".")
+        self.LineEditPath.setText(temp_path)
+        #self.cur_path = os.path.join(temp_path, projektName)
+        #self.LineEditFile.setText(self.cur_path)
+        #self.updateListTracks()
+
+    def onButtonCreateClicked(self):
+        temp_path = str(self.LineEditPath.text())
+        projektName = str(self.LineEditProjekt.text())
+        self.cur_path1 = os.path.join(temp_path, projektName)
+        if not os.path.exists(self.cur_path1):
+            os.makedirs(self.cur_path1)
+        self.close()
+
+    def getValues(self):
+        return str(self.cur_path1)
+        
 
 class GodiRec(QtGui.QMainWindow):
 
@@ -31,17 +57,9 @@ class GodiRec(QtGui.QMainWindow):
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
-        # self.ButtonPlay.clicked.connect(self.onButtonPlayClicked)
-        # self.ButtonStop.clicked.connect(self.onButtonStopClicked)
-        # self.ButtonRec.clicked.connect(self.onButtonRecClicked)
-        # self.ButtonCut.clicked.connect(self.onButtonCutClicked)
-        # self.ButtonSave.clicked.connect(self.onButtonSaveClicked)
-        # self.ButtonChange.clicked.connect(self.onButtonChangeClicked)
         self.actionExit.triggered.connect(self.exit)
         self.actionNeues_Projekt.triggered.connect(self.act_neues_projekt)
-        self.updateListTracks()
         self.cur_track = None
-        self.timer = None
         self.cur_path = ""
         
     def onButtonPlayClicked(self):
@@ -62,9 +80,11 @@ class GodiRec(QtGui.QMainWindow):
         self.ButtonRec.setEnabled(True)
         self.ButtonPlay.setEnabled(True)
         self.ButtonSave.setEnabled(True)
-        self.timer.cancel()
         self.recfile.stop_recording()
         self.recfile.close()
+        fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
+        dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
+                                                   self.recfile.fname))
         self.updateListTracks()
 
     def onButtonRecClicked(self):
@@ -75,20 +95,19 @@ class GodiRec(QtGui.QMainWindow):
             self.ButtonSave.setEnabled(False)
             self.recfile = self.rec.open()
             self.recfile = self.recfile.start_recording()
-            self.timer = threading.Timer(1.0,self.update_time)
-            self.timer.start()
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
-        self.recfile.stop_recording()
-        self.recfile.close()
-        fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
-        dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
-                                                   self.recfile.fname))
-        self.rec.save(dpath, fpath)
-        self.recfile = self.rec.open()
-        self.recfile.start_recording()
-        self.updateListTracks()
+        if self.ButtonRec.text() = "Recording":
+            self.recfile.stop_recording()
+            self.recfile.close()
+            fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
+            dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
+                                                       self.recfile.fname))
+            self.rec.save(dpath, fpath)
+            self.recfile = self.rec.open()
+            self.recfile.start_recording()
+            self.updateListTracks()
 
     def onButtonChangeClicked(self):
         """ Schreibt Tags in MP3 datei"""
@@ -110,9 +129,9 @@ class GodiRec(QtGui.QMainWindow):
 
     def onButtonSaveClicked(self):
         #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
-        self.cur_path = QtGui.QFileDialog.getExistingDirectory(
-                self,"Ordner waehlen",".")
-        self.LineEditFile.setText(self.cur_path)
+        #self.cur_path = QtGui.QFileDialog.getExistingDirectory(
+        #        self,"Ordner waehlen",".")
+        #self.LineEditFile.setText(self.cur_path)
         self.updateListTracks()
 
     def update_time(self):
@@ -124,7 +143,7 @@ class GodiRec(QtGui.QMainWindow):
 
     def updateListTracks(self):
         """ updatet die Listenansicht"""
-        self.cur_path = str(self.LineEditFile.text())
+        print self.cur_path
         find = os.path.join(self.cur_path, "*.mp3")
         files = glob.glob(find)
         list = self.ListTracks
@@ -151,25 +170,14 @@ class GodiRec(QtGui.QMainWindow):
             self.dateEdit.setDate(id3r.getValue("date"))
 
     def act_neues_projekt(self):
-        #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
-        #temp_path = QtGui.QFileDialog.getExistingDirectory(
-        #    self,"Neues Projekt erzeugen in:",".")
-        #today = datetime.date.today()
-        #projektName = "{:%Y_%m_%d}-Godi".format(today)
-        #print projektName
-        #print temp_path
-        #self.cur_path = os.path.join(temp_path, projektName)
-        #if not os.path.exists(self.cur_path):
-        #    os.makedirs(self.cur_path)
-        #self.LineEditFile.setText(self.cur_path)
-        #self.updateListTracks()
-        #Dialog()
-        print("new Projekt")
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
         self.path_dialog = PathDialog()
         self.path_dialog.show()
-        
+        self.path_dialog.exec_()
+        self.cur_path = self.path_dialog.getValues()
+        self.updateListTracks()
+
     def exit(self):
         self.close()
         sys.exit(app.exec_())

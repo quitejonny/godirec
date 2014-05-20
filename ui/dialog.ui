@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>294</width>
-    <height>134</height>
+    <width>315</width>
+    <height>132</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>-1</x>
-     <y>-1</y>
+     <x>10</x>
+     <y>0</y>
      <width>291</width>
      <height>101</height>
     </rect>
@@ -26,10 +26,10 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QLineEdit" name="lineEdit"/>
+       <widget class="QLineEdit" name="LineEditPath"/>
       </item>
       <item>
-       <widget class="QPushButton" name="pushButton">
+       <widget class="QPushButton" name="ButtonDir">
         <property name="text">
          <string/>
         </property>
@@ -51,13 +51,13 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="lineEdit_2"/>
+       <widget class="QLineEdit" name="LineEditProjekt"/>
       </item>
      </layout>
     </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="pushButton_create">
+  <widget class="QPushButton" name="ButtonCreate">
    <property name="geometry">
     <rect>
      <x>80</x>
