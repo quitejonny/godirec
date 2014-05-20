@@ -1,0 +1,12 @@
+.gitignore
+
+*.pyc
+
+*.wav
+*.mp3
+
+*~
+*.swp
+.temp
+
+jiaaro-pydub-a7f56bb
