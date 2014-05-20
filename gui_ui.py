@@ -122,11 +122,9 @@ class GodiRec(QtGui.QMainWindow):
         # title, version, artist, tracknumber
         #TODO: add getdate
         audio = EasyID3(self.cur_track)
-        for i in ('Title', 'Album', 'Genre'):
+        for i in ('Title', 'Album', 'Genre', 'Artist'):
             print ""+getattr(self, 'LineEdit'+i).text()
             audio[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
-        artist = str(self.LineEditPerformer.text())
-        audio['artist'] = artist
         audio["date"] = str(self.dateEdit.date()) #funktioniert nicht
         #audio["comments"] = comments
         audio.save()
@@ -164,7 +162,7 @@ class GodiRec(QtGui.QMainWindow):
         self.cur_track = os.path.join(self.cur_path,
                      str(index.model().itemFromIndex(index).text()))
         id3r = id3reader.Reader(self.cur_track)
-        for i in ('Title', 'Performer', 'Album', 'Genre', 'Comment'):
+        for i in ('Title', 'Artist', 'Album', 'Genre', 'Comment'):
             if id3r.getValue(i.lower()):
                 getattr(self, 'LineEdit'+i).setText(id3r.getValue(i.lower()))
             else:

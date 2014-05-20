@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>333</width>
-    <height>473</height>
+    <width>434</width>
+    <height>460</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>311</width>
+      <width>362</width>
       <height>173</height>
      </rect>
     </property>
@@ -86,7 +86,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>190</y>
+      <y>170</y>
       <width>311</width>
       <height>231</height>
      </rect>
@@ -113,7 +113,7 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="LineEditPerformer"/>
+      <widget class="QLineEdit" name="LineEditArtist"/>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_album">
@@ -184,7 +184,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>333</width>
+     <width>434</width>
      <height>25</height>
     </rect>
    </property>
