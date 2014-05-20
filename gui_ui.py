@@ -6,8 +6,6 @@ import glob
 import id3reader
 import datetime
 import threading
-from mainwindow import *
-from dialog import Ui_Dialog
 from mutagen.easyid3 import EasyID3
 from PyQt4 import QtCore, QtGui, uic
 from godiRec import Recorder
