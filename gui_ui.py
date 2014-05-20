@@ -29,7 +29,7 @@ class GodiRec(QtGui.QMainWindow):
         uic.loadUi(ui_file, self)
         self.rec = Recorder(channels=2) 
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
-            getattr(self, i+"Button").clicked.connect(
+            getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
         # self.ButtonPlay.clicked.connect(self.onButtonPlayClicked)
         # self.ButtonStop.clicked.connect(self.onButtonStopClicked)
@@ -39,7 +39,7 @@ class GodiRec(QtGui.QMainWindow):
         # self.ButtonChange.clicked.connect(self.onButtonChangeClicked)
         self.actionExit.triggered.connect(self.exit)
         self.actionNeues_Projekt.triggered.connect(self.act_neues_projekt)
-        self.update_tracks_list()
+        self.updateListTracks()
         self.cur_track = None
         self.timer = None
         self.cur_path = ""
@@ -65,7 +65,7 @@ class GodiRec(QtGui.QMainWindow):
         self.timer.cancel()
         self.recfile.stop_recording()
         self.recfile.close()
-        self.update_tracks_list()
+        self.updateListTracks()
 
     def onButtonRecClicked(self):
         if self.ButtonRec.text() != "Recording":
@@ -88,9 +88,9 @@ class GodiRec(QtGui.QMainWindow):
         self.rec.save("track_1.mp3", ".temp/track_1.wav")
         self.recfile = self.rec.open()
         self.recfile.start_recording()
-        self.update_tracks_list()
+        self.updateListTracks()
 
-    def onButtonButtonClicked(self):
+    def onButtonChangeClicked(self):
         """ Schreibt Tags in MP3 datei"""
         #kommentar wird von ID3 nicht unterstuetzt
         #comments = str(self.LineEditComment.text())
@@ -107,8 +107,8 @@ class GodiRec(QtGui.QMainWindow):
         #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
         self.cur_path = QtGui.QFileDialog.getExistingDirectory(
                 self,"Ordner waehlen",".")
-        self.fileEdit.setText(self.cur_path)
-        self.update_tracks_list()
+        self.LineEditFile.setText(self.cur_path)
+        self.updateListTracks()
 
     def update_time(self):
         if self.recfile != None:
@@ -117,19 +117,19 @@ class GodiRec(QtGui.QMainWindow):
             self.label_time.setText(str(time["current_time"]))
             #TODO: ist immer 0, selber Zeit messen von start bis ende
 
-    def update_tracks_list(self):
+    def updateListTracks(self):
         """ updatet die Listenansicht"""
-        self.cur_path = str(self.fileEdit.text())
+        self.cur_path = str(self.LineEditFile.text())
         find = os.path.join(self.cur_path, "*.mp3")
         files = glob.glob(find)
-        list = self.tracks_list
+        list = self.ListTracks
         model = QtGui.QStandardItemModel(list)
         for f in files:
             model.appendRow(QtGui.QStandardItem(os.path.basename(f)))
         list.setModel(model)
-        list.clicked.connect(self.on_tracks_list_changed)
+        list.clicked.connect(self.onListTracksChanged)
 
-    def on_tracks_list_changed(self, index):
+    def onListTracksChanged(self, index):
         """ Click listener auf ItemListView
             Es zeigt die Tags des angeklickten Files an"""
         self.cur_track = os.path.join(self.cur_path,
@@ -154,8 +154,8 @@ class GodiRec(QtGui.QMainWindow):
         #self.cur_path = os.path.join(temp_path, projektName)
         #if not os.path.exists(self.cur_path):
         #    os.makedirs(self.cur_path)
-        #self.fileEdit.setText(self.cur_path)
-        #self.update_tracks_list()
+        #self.LineEditFile.setText(self.cur_path)
+        #self.updateListTracks()
         #Dialog()
         print("new Projekt")
         # path_dialog muss eine Variable von self sein. Andernfalls wird das

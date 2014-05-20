@@ -64,12 +64,12 @@
       </widget>
      </item>
      <item>
-      <widget class="QListView" name="listTracks"/>
+      <widget class="QListView" name="ListTracks"/>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLineEdit" name="file_entry"/>
+        <widget class="QLineEdit" name="LineEditFile"/>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonSave">
