@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>Daniel Supplieth</author>
  <class>GodiRec</class>
  <widget class="QMainWindow" name="GodiRec">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>333</width>
-    <height>473</height>
+    <width>331</width>
+    <height>470</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>GodiRec</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>cinema3.png</normaloff>cinema3.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="verticalLayoutWidget">
@@ -29,56 +34,115 @@
        <item>
         <widget class="QPushButton" name="ButtonPlay">
          <property name="text">
-          <string>Play</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>media23.png</normaloff>media23.png</iconset>
+         </property>
+         <property name="checkable">
+          <bool>false</bool>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonStop">
          <property name="text">
-          <string>Stop</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>media26.png</normaloff>media26.png</iconset>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonRec">
          <property name="text">
-          <string>Rec</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>record6.png</normaloff>record6.png</iconset>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonCut">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt einen neuen Track.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>Cut</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>cutting.png</normaloff>cutting.png</iconset>
          </property>
         </widget>
        </item>
       </layout>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_time">
-       <property name="text">
-        <string>-- / --</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QListView" name="ListTracks"/>
      </item>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLineEdit" name="LineEditFile"/>
+        <widget class="QLabel" name="LabelTime">
+         <property name="text">
+          <string>-- / --</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="LabelProjekt">
+         <property name="text">
+          <string>erzeuge Projekt</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonSave">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Aktuallisiert die Track liste&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <property name="text">
-          <string>Save</string>
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>1400625665_sync.png</normaloff>1400625665_sync.png</iconset>
          </property>
         </widget>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QListView" name="ListTracks"/>
      </item>
     </layout>
    </widget>
@@ -143,7 +207,11 @@
       </widget>
      </item>
      <item row="4" column="1">
-      <widget class="QLineEdit" name="LineEditComment"/>
+      <widget class="QLineEdit" name="LineEditComment">
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="label">
@@ -171,6 +239,9 @@
      </item>
      <item row="6" column="1">
       <widget class="QPushButton" name="ButtonChange">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;speichert aktuelle Taggs ab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
        <property name="text">
         <string>Change</string>
        </property>
@@ -184,7 +255,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>333</width>
+     <width>331</width>
      <height>25</height>
     </rect>
    </property>

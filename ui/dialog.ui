@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>erzeuge Projekt</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>folder-yellow.png</normaloff>folder-yellow.png</iconset>
   </property>
   <widget class="QWidget" name="verticalLayoutWidget">
    <property name="geometry">
