@@ -73,8 +73,6 @@ class GodiRec(QtGui.QMainWindow):
             self.ButtonRec.setEnabled(False)
             self.ButtonPlay.setText("Pause")
             self.ButtonSave.setEnabled(False)
-            #TODO: Tracks automatisch erzeugen mit Track_[Nr].wav
-            # Nr hierbei aufsteigend.
             self.recfile = self.rec.open()
             self.recfile = self.recfile.start_recording()
             self.timer = threading.Timer(1.0,self.update_time)
@@ -84,8 +82,10 @@ class GodiRec(QtGui.QMainWindow):
         """ Erzeugt neue Datei und nimmt weiter auf"""
         self.recfile.stop_recording()
         self.recfile.close()
-        #TODO: letzten track umwandeln
-        self.rec.save("track_1.mp3", ".temp/track_1.wav")
+        fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
+        dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
+                                                   self.recfile.fname))
+        self.rec.save(dpath, fpath)
         self.recfile = self.rec.open()
         self.recfile.start_recording()
         self.updateListTracks()
@@ -143,6 +143,8 @@ class GodiRec(QtGui.QMainWindow):
         for i in ('Title', 'Performer', 'Album', 'Genre', 'Comment'):
             if id3r.getValue(i.lower()):
                 getattr(self, 'LineEdit'+i).setText(id3r.getValue(i.lower()))
+            else:
+                getattr(self, 'LineEdit'+i).setText("")
         #date nicht unterstuetzt
         if id3r.getValue("date"):
             print id3r.getValue("date")
