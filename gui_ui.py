@@ -74,7 +74,7 @@ class GodiRec(QtGui.QMainWindow):
             self.ButtonPlay.setText("Pause")
             self.ButtonSave.setEnabled(False)
             #TODO: Tracks automatisch erzeugen mit Track_[Nr].wav
-            # Nr hier bei aufsteigend.
+            # Nr hierbei aufsteigend.
             self.recfile = self.rec.open()
             self.recfile = self.recfile.start_recording()
             self.timer = threading.Timer(1.0,self.update_time)
@@ -94,10 +94,15 @@ class GodiRec(QtGui.QMainWindow):
         """ Schreibt Tags in MP3 datei"""
         #kommentar wird von ID3 nicht unterstuetzt
         #comments = str(self.LineEditComment.text())
+        #valid_keys: album, composer, genre, date,lyricist,
+        # title, version, artist, tracknumber
         #TODO: add getdate
         audio = EasyID3(self.cur_track)
-        for i in ('Title', 'Performer', 'Album', 'Genre'):
-            audio[i] = getattr(self, 'LineEdit'+i).text()
+        for i in ('Title', 'Album', 'Genre'):
+            print ""+getattr(self, 'LineEdit'+i).text()
+            audio[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
+        artist = str(self.LineEditPerformer.text())
+        audio['artist'] = artist
         audio["date"] = str(self.dateEdit.date()) #funktioniert nicht
         #audio["comments"] = comments
         audio.save()
@@ -136,8 +141,8 @@ class GodiRec(QtGui.QMainWindow):
                      str(index.model().itemFromIndex(index).text()))
         id3r = id3reader.Reader(self.cur_track)
         for i in ('Title', 'Performer', 'Album', 'Genre', 'Comment'):
-            if id3r.getValue(i):
-                getattr(self, 'LineEdit'+i).setText(id3r.getValue(i))
+            if id3r.getValue(i.lower()):
+                getattr(self, 'LineEdit'+i).setText(id3r.getValue(i.lower()))
         #date nicht unterstuetzt
         if id3r.getValue("date"):
             print id3r.getValue("date")
