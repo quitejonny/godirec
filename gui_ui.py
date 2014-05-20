@@ -4,6 +4,7 @@ import re
 import glob
 import id3reader
 import datetime
+import threading
 from mainwindow import *
 from dialog import Ui_Dialog
 from mutagen.easyid3 import EasyID3
@@ -11,12 +12,11 @@ from PyQt4 import QtCore, QtGui
 from godiRec import Recorder
 
 #Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
-#und an das Programm zurückgeben.
+#und an das Programm zurueckgeben.
 class PathDialog(QtGui.QDialog, Ui_Dialog):
     def __init__(self):
         QtGui.QDialog.__init__(self)
         Ui_Dialog.__init__(self)
-        #self.ui = Ui_Dialog()
         self.setupUi(self)
         print "PathDialog init"
 
@@ -37,6 +37,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         self.actionNeues_Projekt.triggered.connect(self.act_neues_projekt)
         self.update_listTracks()
         self.cur_track = None
+        self.timer = None
         self.cur_path = ""
         
     def btn_play_clicked(self):
@@ -57,6 +58,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         self.pushButton_rec.setEnabled(True)
         self.pushButton_play.setEnabled(True)
         self.pushButton_save.setEnabled(True)
+        self.timer.cancel()
         self.recfile.stop_recording()
         self.recfile.close()
         update_listTracks()
@@ -71,6 +73,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
             # Nr hier bei aufsteigend.
             self.recfile = self.rec.open()
             self.recfile = self.recfile.start_recording()
+            self.timer = threading.Timer(1.0,self.update_time).start()
 
     #Erzeugt neue Datei und nimmt weiter auf
     def btn_cut_clicked(self):
@@ -88,6 +91,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         artist = str(self.lineEdit_artist.text())
         album = str(self.lineEdit_album.text())
         genre = str(self.lineEdit_genre.text())
+        year = str(self.dateEdit.date())
         #kommentar wird von ID3 nicht unterstuetzt
         #comments = str(self.lineEdit_kommentar.text())
         #TODO: add getdate
@@ -96,6 +100,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         audio["title"] = title
         audio["album"] = album
         audio["genre"] = genre
+        audio["date"] = year #funktioniert nicht
         #audio["comments"] = comments
         audio.save()
         print "Taggs gespeichert"
@@ -106,6 +111,13 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
                 self,"Ordner waehlen",".")
         self.fileEdit.setText(self.cur_path)
         self.update_listTracks()
+
+    def update_time(self):
+        if self.recfile != None:
+            time = self.recfile.time_i
+            print time
+            self.label_time.setText(str(time["current_time"]))
+            #TODO: ist immer 0, selber Zeit messen von start bis ende
 
     #updatet die Listenansicht
     def update_listTracks(self):
@@ -135,6 +147,10 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
             self.lineEdit_genre.setText(id3r.getValue("genre"))
         if id3r.getValue("comment"):
             self.lineEdit_kommentar.setText(id3r.getValue("comment"))
+            #date nicht unterstuetzt
+        if id3r.getValue("date"):
+            print id3r.getValue("date")
+            self.dateEdit.setDate(id3r.getValue("date"))
 
     def act_neues_projekt(self):
         #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar

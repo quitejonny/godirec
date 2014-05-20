@@ -61,6 +61,7 @@ class RecordingFile:
     def get_callback(self):
         def callback(in_data, frame_count, time_info, status):
             self.wavefile.writeframes(in_data)
+            self.time_i = time_info
             return in_data, pyaudio.paContinue
         return callback
 

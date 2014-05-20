@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/godi_rec.ui'
 #
-# Created: Thu May 15 17:54:53 2014
+# Created: Sat May 17 15:46:07 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,11 +26,11 @@ except AttributeError:
 class Ui_GodiRec(object):
     def setupUi(self, GodiRec):
         GodiRec.setObjectName(_fromUtf8("GodiRec"))
-        GodiRec.resize(333, 460)
+        GodiRec.resize(337, 460)
         self.centralwidget = QtGui.QWidget(GodiRec)
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         self.verticalLayoutWidget = QtGui.QWidget(self.centralwidget)
-        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 311, 150))
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(10, 10, 311, 151))
         self.verticalLayoutWidget.setObjectName(_fromUtf8("verticalLayoutWidget"))
         self.verticalLayout = QtGui.QVBoxLayout(self.verticalLayoutWidget)
         self.verticalLayout.setMargin(0)
@@ -50,6 +50,9 @@ class Ui_GodiRec(object):
         self.pushButton_cut.setObjectName(_fromUtf8("pushButton_cut"))
         self.horizontalLayout.addWidget(self.pushButton_cut)
         self.verticalLayout.addLayout(self.horizontalLayout)
+        self.label_time = QtGui.QLabel(self.verticalLayoutWidget)
+        self.label_time.setObjectName(_fromUtf8("label_time"))
+        self.verticalLayout.addWidget(self.label_time)
         self.listTracks = QtGui.QListView(self.verticalLayoutWidget)
         self.listTracks.setObjectName(_fromUtf8("listTracks"))
         self.verticalLayout.addWidget(self.listTracks)
@@ -112,7 +115,7 @@ class Ui_GodiRec(object):
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.pushButton_change)
         GodiRec.setCentralWidget(self.centralwidget)
         self.menubar = QtGui.QMenuBar(GodiRec)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 333, 25))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 337, 25))
         self.menubar.setObjectName(_fromUtf8("menubar"))
         self.menuGodiRec = QtGui.QMenu(self.menubar)
         self.menuGodiRec.setObjectName(_fromUtf8("menuGodiRec"))
@@ -140,6 +143,7 @@ class Ui_GodiRec(object):
         self.pushButton_stop.setText(_translate("GodiRec", "Stop", None))
         self.pushButton_rec.setText(_translate("GodiRec", "Rec", None))
         self.pushButton_cut.setText(_translate("GodiRec", "Cut", None))
+        self.label_time.setText(_translate("GodiRec", "-- / --", None))
         self.pushButton_save.setText(_translate("GodiRec", "Save", None))
         self.label_titel.setText(_translate("GodiRec", "Titel:", None))
         self.label_artist.setText(_translate("GodiRec", "Artist:", None))
