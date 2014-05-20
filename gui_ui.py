@@ -70,21 +70,26 @@ class GodiRec(QtGui.QMainWindow):
             self.ButtonSave.setEnabled(False)
             self.recfile.stop_recording()
         else:
-            self.ButtonPlay.setText("Pause")
-            self.ButtonRec.setText("Recording")
-            self.ButtonRec.setEnabled(False)
-            self.recfile.start_recording()
+            try:
+                self.recfile.start_recording()
+                self.ButtonPlay.setText("Pause")
+                self.ButtonRec.setText("Recording")
+                self.ButtonRec.setEnabled(False)
+            except AttributeError:
+                pass
 
     def onButtonStopClicked(self):
-        self.ButtonRec.setText("Rec")
-        self.ButtonRec.setEnabled(True)
-        self.ButtonPlay.setEnabled(True)
-        self.ButtonSave.setEnabled(True)
-        self.recfile.stop_recording()
-        self.recfile.close()
-        fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
-        dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
+        if self.ButtonRec.text() == "Recording":
+            self.ButtonRec.setText("Rec")
+            self.ButtonRec.setEnabled(True)
+            self.ButtonPlay.setEnabled(True)
+            self.ButtonSave.setEnabled(True)
+            self.recfile.stop_recording()
+            self.recfile.close()
+            fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
+            dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
                                                    self.recfile.fname))
+            self.rec.save(dpath, fpath)
         self.updateListTracks()
 
     def onButtonRecClicked(self):
@@ -98,12 +103,12 @@ class GodiRec(QtGui.QMainWindow):
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
-        if self.ButtonRec.text() = "Recording":
+        if self.ButtonRec.text() == "Recording":
             self.recfile.stop_recording()
             self.recfile.close()
             fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
             dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
-                                                       self.recfile.fname))
+                                                    self.recfile.fname))
             self.rec.save(dpath, fpath)
             self.recfile = self.rec.open()
             self.recfile.start_recording()
