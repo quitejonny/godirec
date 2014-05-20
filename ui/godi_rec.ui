@@ -6,185 +6,171 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>434</width>
-    <height>460</height>
+    <width>418</width>
+    <height>471</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>362</width>
-      <height>173</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QPushButton" name="ButtonPlay">
-         <property name="text">
-          <string>Play</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ButtonStop">
-         <property name="text">
-          <string>Stop</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ButtonRec">
-         <property name="text">
-          <string>Rec</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ButtonCut">
-         <property name="text">
-          <string>Cut</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_time">
-       <property name="text">
-        <string>-- / --</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QListView" name="ListTracks"/>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QLineEdit" name="LineEditFile"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ButtonSave">
-         <property name="text">
-          <string>Save</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="formLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>170</y>
-      <width>311</width>
-      <height>231</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="formLayout">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_titel">
-       <property name="text">
-        <string>Titel:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="LineEditTitle"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_artist">
-       <property name="text">
-        <string>Artist:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="LineEditArtist"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="label_album">
-       <property name="text">
-        <string>Album:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="LineEditAlbum"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label_genre">
-       <property name="text">
-        <string>Genre:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="LineEditGenre"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_kommentar">
-       <property name="text">
-        <string>Kommentar:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="LineEditComment"/>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Jahr:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="1">
-      <widget class="QDateEdit" name="dateEdit">
-       <property name="locale">
-        <locale language="German" country="Germany"/>
-       </property>
-       <property name="minimumDate">
-        <date>
-         <year>2014</year>
-         <month>1</month>
-         <day>1</day>
-        </date>
-       </property>
-       <property name="displayFormat">
-        <string>yyyy</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QPushButton" name="ButtonChange">
-       <property name="text">
-        <string>Change</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="ButtonPlay">
+          <property name="text">
+           <string>Play</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ButtonStop">
+          <property name="text">
+           <string>Stop</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ButtonRec">
+          <property name="text">
+           <string>Rec</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ButtonCut">
+          <property name="text">
+           <string>Cut</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_time">
+        <property name="text">
+         <string>-- / --</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QListView" name="ListTracks"/>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QLineEdit" name="LineEditFile"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ButtonSave">
+          <property name="text">
+           <string>Save</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QFormLayout" name="formLayout">
+      <property name="fieldGrowthPolicy">
+       <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+      </property>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_titel">
+        <property name="text">
+         <string>Titel:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="LineEditTitle"/>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_artist">
+        <property name="text">
+         <string>Artist:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QLineEdit" name="LineEditArtist"/>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_album">
+        <property name="text">
+         <string>Album:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QLineEdit" name="LineEditAlbum"/>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_genre">
+        <property name="text">
+         <string>Genre:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="LineEditGenre"/>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_kommentar">
+        <property name="text">
+         <string>Kommentar:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="LineEditComment"/>
+      </item>
+      <item row="5" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Jahr:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QDateEdit" name="dateEdit">
+        <property name="locale">
+         <locale language="German" country="Germany"/>
+        </property>
+        <property name="minimumDate">
+         <date>
+          <year>2014</year>
+          <month>1</month>
+          <day>1</day>
+         </date>
+        </property>
+        <property name="displayFormat">
+         <string>yyyy</string>
+        </property>
+       </widget>
+      </item>
+      <item row="6" column="1">
+       <widget class="QPushButton" name="ButtonChange">
+        <property name="text">
+         <string>Change</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>434</width>
+     <width>418</width>
      <height>25</height>
     </rect>
    </property>
@@ -192,26 +178,35 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionNeues_Projekt"/>
-    <addaction name="actionAltes_Projekt"/>
-    <addaction name="actionExit"/>
+    <addaction name="ActionNewProject"/>
+    <addaction name="ActionOpenProject"/>
+    <addaction name="ActionExit"/>
    </widget>
    <addaction name="menuGodiRec"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionExit">
+  <action name="ActionExit">
    <property name="text">
     <string>Exit</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
-  <action name="actionNeues_Projekt">
+  <action name="ActionNewProject">
    <property name="text">
     <string>Neues Projekt</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
-  <action name="actionAltes_Projekt">
+  <action name="ActionOpenProject">
    <property name="text">
     <string>Altes Projekt</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+O</string>
    </property>
   </action>
  </widget>

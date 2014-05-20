@@ -57,8 +57,8 @@ class GodiRec(QtGui.QMainWindow):
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
-        self.actionExit.triggered.connect(self.exit)
-        self.actionNeues_Projekt.triggered.connect(self.act_neues_projekt)
+        self.ActionExit.triggered.connect(self.exit)
+        self.ActionNewProject.triggered.connect(self.createNewProject)
         self.cur_track = None
         self.cur_path = ""
         
@@ -172,7 +172,7 @@ class GodiRec(QtGui.QMainWindow):
             print id3r.getValue("date")
             self.dateEdit.setDate(id3r.getValue("date"))
 
-    def act_neues_projekt(self):
+    def createNewProject(self):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
         self.path_dialog = PathDialog()
