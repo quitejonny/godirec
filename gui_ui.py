@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 import os
 import re
@@ -8,25 +9,28 @@ import threading
 from mainwindow import *
 from dialog import Ui_Dialog
 from mutagen.easyid3 import EasyID3
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, uic
 from godiRec import Recorder
 
 #Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
-#und an das Programm zurueckgeben.
-class PathDialog(QtGui.QDialog, Ui_Dialog):
+
+#und an das Programm zurückgeben.
+class PathDialog(QtGui.QDialog):
+
     def __init__(self):
         QtGui.QDialog.__init__(self)
-        Ui_Dialog.__init__(self)
-        self.setupUi(self)
-        print "PathDialog init"
+        ui_file = os.path.join("ui", "dialog.ui")
+        uic.loadUi(ui_file, self)
+        print("PathDialog init")
 
 
-class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
+class GodiRec(QtGui.QMainWindow):
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        Ui_GodiRec.__init__(self)
+        ui_file = os.path.join("ui", "godi_rec.ui")
+        uic.loadUi(ui_file, self)
         self.rec = Recorder(channels=2) 
-        self.setupUi(self)
         self.pushButton_play.clicked.connect(self.btn_play_clicked)
         self.pushButton_stop.clicked.connect(self.btn_stop_clicked)
         self.pushButton_rec.clicked.connect(self.btn_rec_clicked)
@@ -103,7 +107,7 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         audio["date"] = year #funktioniert nicht
         #audio["comments"] = comments
         audio.save()
-        print "Taggs gespeichert"
+        print("Taggs gespeichert")
 
     def btn_save_clicked(self):
         #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
@@ -166,10 +170,11 @@ class GodiRec(QtGui.QMainWindow, Ui_GodiRec):
         #self.fileEdit.setText(self.cur_path)
         #self.update_listTracks()
         #Dialog()
-        print "new Projekt"
-
-        pathDialog = PathDialog()
-        pathDialog.show()
+        print("new Projekt")
+        # path_dialog muss eine Variable von self sein. Andernfalls wird das
+        # Fenster nach Ausfuehrung direkt wieder zerstoert.
+        self.path_dialog = PathDialog()
+        self.path_dialog.show()
         
     def exit(self):
         self.close()
