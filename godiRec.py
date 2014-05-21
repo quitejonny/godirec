@@ -25,11 +25,11 @@ class Recorder(object):
                              self.frames_per_buffer, self.tmpdir)
 
     #Speichern einzelner Tracks als Mp3. Mit Tags oder ohne
-    def save(self, dst, src, tags = None):
+    def save(self, dst, src, album = None):
         song = AudioSegment.from_wav(src)
         # Geht bestimmt schoener, oder?
-        if tags is not None:
-            song.export(dst, "mp3", tags)
+        if album is not None:
+            song.export(dst, format="mp3", tags={'album':album})
         else:
             song.export(dst, format="mp3")
         #shutil.copyfile(os.path.join(self.tmpdir, src), dst)

@@ -105,7 +105,10 @@ class GodiRec(QtGui.QMainWindow):
             fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
             dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
                                                    self.recfile.fname))
-            self.rec.save(dpath, fpath)
+            album = re.sub("_", " ",str(self.LabelProjekt.text()))
+            th = threading.Thread(self.rec.save(dpath, fpath, album))
+            th.deamon = True
+            th.start()
         self.updateListTracks()
         self.timer.cancel()
 
@@ -132,7 +135,11 @@ class GodiRec(QtGui.QMainWindow):
             fpath = os.path.join(self.rec.tmpdir, temp)
             dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
                                                     temp))
-            self.rec.save(dpath, fpath)
+            album = re.sub("_", " ",str(self.LabelProjekt.text()))
+            #self.rec.save(dpath, fpath, album)
+            th = threading.Thread(self.rec.save(dpath, fpath, album))
+            th.deamon = True
+            th.start()
             self.updateListTracks()
 
     def onButtonChangeClicked(self):
@@ -166,7 +173,7 @@ class GodiRec(QtGui.QMainWindow):
             seconds = over.seconds
             minuten = (seconds % 3600) // 60
             #self.LabelTime.setText(over.strftime("%M:%S/--:--"))
-            self.LabelTime.setText(("{}:{}/--:--".format(minuten, seconds)))
+            self.LabelTime.setText(("{}:{}/--:--".format(minuten, seconds %60)))
         self.timer = threading.Timer(1.0, self.update_time)
         self.timer.start()
 
@@ -174,11 +181,13 @@ class GodiRec(QtGui.QMainWindow):
         """ updatet die Listenansicht"""
         print self.cur_path
         find = os.path.join(self.cur_path, "*.mp3")
-        files = glob.glob(find)
+        files = sorted(glob.glob(find))
         list = self.ListTracks
         model = QtGui.QStandardItemModel(list)
         for f in files:
-            model.appendRow(QtGui.QStandardItem(os.path.basename(f)))
+            item = QtGui.QStandardItem(os.path.basename(f))
+            item.setEditable(False)
+            model.appendRow(item)
         list.setModel(model)
         list.clicked.connect(self.onListTracksChanged)
 
