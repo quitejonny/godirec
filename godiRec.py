@@ -17,15 +17,15 @@ class Recorder(object):
         self.track_count = 1 #fuer Titel benennung
         self.tmpdir = tempfile.mkdtemp()
  
-    def open(self, fname = None, mode='wb'):
+    def open(self, fname=None, mode='wb'):
         if fname is None:
-            fname = ("track_%d.wav" % self.track_count)
+            fname = "track_{0:d}.wav".format(self.track_count)
             self.track_count += 1
         return RecordingFile(fname, mode, self.channels, self.rate,
                              self.frames_per_buffer, self.tmpdir)
 
-    #Speichern einzelner Tracks als Mp3. Mit Tags oder ohne
     def save(self, dst, src, tags = None):
+        """ Speichern einzelner Tracks als Mp3. Mit Tags oder ohne"""
         song = AudioSegment.from_wav(src)
         # Geht bestimmt schoener, oder?
         if tags is not None:
