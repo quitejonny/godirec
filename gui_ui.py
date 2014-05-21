@@ -58,8 +58,8 @@ class GodiRec(QtGui.QMainWindow):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
             getattr(self, "Button"+i).setEnabled(False)
-        self.actionExit.triggered.connect(self.exit)
-        self.actionNeues_Projekt.triggered.connect(self.act_neues_projekt)
+        self.ActionExit.triggered.connect(self.exit)
+        self.ActionNewProject.triggered.connect(self.createNewProject)
         self.iconPause = QtGui.QIcon()
         self.iconPause.addPixmap(QtGui.QPixmap("ui/pause10.png"))
         self.iconPlay = QtGui.QIcon()
@@ -153,7 +153,7 @@ class GodiRec(QtGui.QMainWindow):
         for i in ('Title', 'Album', 'Genre'):
             audio[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
             #TODO: test performer
-        audio["performer"] = str(getattr(self, LineEditArtist).text())
+        audio["artist"] = str(self.LineEditPerformer.text())
         audio["date"] = str(self.dateEdit.date()) #funktioniert nicht
         #audio["comments"] = comments
         audio.save()
@@ -197,7 +197,7 @@ class GodiRec(QtGui.QMainWindow):
         self.cur_track = os.path.join(self.cur_path,
                      str(index.model().itemFromIndex(index).text()))
         id3r = id3reader.Reader(self.cur_track)
-        for i in ('Title', 'Artist', 'Album', 'Genre', 'Comment'):
+        for i in ('Title', 'Album', 'Performer', 'Genre', 'Comment'):
             if id3r.getValue(i.lower()):
                 getattr(self, 'LineEdit'+i).setText(id3r.getValue(i.lower()))
             else:
