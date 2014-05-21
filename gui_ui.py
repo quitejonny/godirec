@@ -10,6 +10,26 @@ from mutagen.easyid3 import EasyID3
 from PyQt4 import QtCore, QtGui, uic
 from godiRec import Recorder
 
+
+class RecorderListModel(QtCore.QAbstractListModel): 
+
+    def __init__(self, data, parent=None): 
+        QtCore.QAbstractListModel.__init__(self, parent) 
+        self.data = data
+ 
+    def rowCount(self, parent=QtCore.QModelIndex()): 
+        return len(self.data) 
+ 
+    def data(self, index, role): 
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            return QtCore.QVariant(self.data[index.row()])
+        else: 
+            return QtCore.QVariant()
+
+    def itemFromIndex(self, index):
+        return self.data[index.row()]
+
+
 class PathDialog(QtGui.QDialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
         und an das Programm zurückgeben."""
@@ -61,7 +81,13 @@ class GodiRec(QtGui.QMainWindow):
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.cur_track = None
         self.cur_path = ""
-        
+        self.rec_data = ["one", "two", "three"]
+        lm = RecorderListModel(self.rec_data, self)
+        self.ListTracks.setModel(lm)
+        self.ListTracks.clicked.connect(self.onListTracksChanged)
+        self.rec_data.append("nine")
+        self.rec_data.remove("two")
+
     def onButtonPlayClicked(self):
         if self.ButtonPlay.text() == "Pause":
             self.ButtonPlay.setText("Play")
@@ -146,31 +172,33 @@ class GodiRec(QtGui.QMainWindow):
 
     def updateListTracks(self):
         """ updatet die Listenansicht"""
-        print self.cur_path
-        find = os.path.join(self.cur_path, "*.mp3")
-        files = glob.glob(find)
-        list = self.ListTracks
-        model = QtGui.QStandardItemModel(list)
-        for f in files:
-            model.appendRow(QtGui.QStandardItem(os.path.basename(f)))
-        list.setModel(model)
-        list.clicked.connect(self.onListTracksChanged)
+        # print self.cur_path
+        # find = os.path.join(self.cur_path, "*.mp3")
+        # files = glob.glob(find)
+        # list = self.ListTracks
+        # model = QtGui.QStandardItemModel(list)
+        # for f in files:
+        #     model.appendRow(QtGui.QStandardItem(os.path.basename(f)))
+        # list.setModel(model)
+        # list.clicked.connect(self.onListTracksChanged)
+        pass
 
     def onListTracksChanged(self, index):
         """ Click listener auf ItemListView
             Es zeigt die Tags des angeklickten Files an"""
-        self.cur_track = os.path.join(self.cur_path,
-                     str(index.model().itemFromIndex(index).text()))
-        id3r = id3reader.Reader(self.cur_track)
-        for i in ('Title', 'Artist', 'Album', 'Genre', 'Comment'):
-            if id3r.getValue(i.lower()):
-                getattr(self, 'LineEdit'+i).setText(id3r.getValue(i.lower()))
-            else:
-                getattr(self, 'LineEdit'+i).setText("")
-        #date nicht unterstuetzt
-        if id3r.getValue("date"):
-            print id3r.getValue("date")
-            self.dateEdit.setDate(id3r.getValue("date"))
+        # self.cur_track = os.path.join(self.cur_path,
+        #              str(index.model().itemFromIndex(index).text()))
+        # id3r = id3reader.Reader(self.cur_track)
+        # for i in ('Title', 'Artist', 'Album', 'Genre', 'Comment'):
+        #     if id3r.getValue(i.lower()):
+        #         getattr(self, 'LineEdit'+i).setText(id3r.getValue(i.lower()))
+        #     else:
+        #         getattr(self, 'LineEdit'+i).setText("")
+        # #date nicht unterstuetzt
+        # if id3r.getValue("date"):
+        #     print id3r.getValue("date")
+        #     self.dateEdit.setDate(id3r.getValue("date"))
+        print(str(index.model().itemFromIndex(index)))
 
     def createNewProject(self):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
