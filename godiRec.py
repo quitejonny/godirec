@@ -5,10 +5,10 @@ import wave
 import shutil
 from pydub import AudioSegment
 import tempfile
-from mutagen.easyid3 import EasyID3
+import threading
 
 
-class Tag(object):
+class Tags(object):
 
     __slots__ = ("title", "artist", "album", "genre", "year", "comment")
 
@@ -33,11 +33,56 @@ class Tag(object):
 
 class Manager(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, folder=tempfile.mkdtemp()):
+        self._folder = os.path.abspath(folder)
+        self._tracks = list()
+        self._track_count = 1
+
+    def create_new_track(self):
+        fname = "track_{0:d}.wav".format(self._track_count)
+        fname = os.path.join(self._folder, fname)
+        track = Track(fname)
+        self._ref_files.append(track)
+        self._track_count += 1
+        return track
+
+    def save_all(self, filetype='mp3'):
+        for track in self._tracks:
+            track.save(filetype)
+
+
+class Track(object):
+
+    def __init__(self, origin_file, tags=Tags()):
+        self._origin_file = origin_file
+        self._basename = os.path.splitext(os.path.basename(origin_file))[0]
+        self.tags = tags
+        self._files = list()
+
+    def save(self, filetype=None):
+        thread = threading.Thread(self._save(filetype))
+        thread.deamon = True
+        thread.start()
+
+    def get_origin_file(self):
+        return self._origin_file
+
+    def save_tags(self):
+        for f in self._files:
+            # save tags in every track file
+            pass
+
+    def _save(self, filetype):
+        if filetype != None:
+            # if file does not exist convert it to filetype an and save tags
+            # afterwards
+            track = AudioSegment.from_wav(self._origin_file)
+        self.save_tags()
 
 
 class Recorder(object):
+
+    """ A recorder class for recording audio."""
 
     def __init__(self, manager=Manager(), channels=2, rate=44100,
                  frames_per_buffer=1024):
@@ -45,12 +90,17 @@ class Recorder(object):
         self._channels = channels
         self._rate = rate
         self._frames_per_buffer = frames_per_buffer
-        self._p = pyaudio.PyAudio()
 
     def start(self):
-        self.stream = self.p.open(format=pyaudio.paInt16,
-                channels=self.channels,
-                rate=self.rate,
+        self._p = pyaudio.PyAudio()
+        track = self._manager.create_new_track()
+        self.wavefile = wave.open(track.get_origin_file(), 'wb')
+        self.wavefile.setnchannels(self._channels)
+        self.wavefile.setsampwidth(self._p.get_sample_size(pyaudio.paInt16))
+        self.wavefile.setframerate(self._rate)
+        self.stream = self._p.open(format=pyaudio.paInt16,
+                channels=self._channels,
+                rate=self._rate,
                 input=True,
                 stream_callback=self._get_callback())
         self.stream.start_stream()
@@ -67,11 +117,12 @@ class Recorder(object):
         self.start()
 
     def stop(self):
-        self.stream.stop_stream()
+        self._stream.stop_stream()
 
     def close(self):
-        self.stream.close()
-        self.wavefile.close()
+        self._stream.close()
+        self._p.terminate()
+        self._wavefile.close()
 
     def get_manager(self):
         return self._manager
@@ -83,117 +134,6 @@ class Recorder(object):
             return in_data, pyaudio.paContinue
         return callback
 
-    def _prepare_file(self, filename):
-        wavefile = wave.open(filename, 'wb')
-        wavefile.setnchannels(self._channels)
-        wavefile.setsampwidth(self._p.get_sample_size(pyaudio.paInt16))
-        wavefile.setframerate(self._rate)
-        return wavefile
-
     def __del__(self):
         self.close()
         self.p.terminate()
-
-
-class Recorder(object):
-
-    """ A recorder class for recording audio to a WAV file."""
- 
-    def __init__(self, channels=2, rate=44100, frames_per_buffer=1024):
-        self.channels = channels
-        self.rate = rate
-        self.frames_per_buffer = frames_per_buffer
-        self.track_count = 1 #fuer Titel benennung
-        self.tmpdir = tempfile.mkdtemp()
- 
-    def open(self, fname=None, mode='wb'):
-        if fname is None:
-            fname = "track_{0:d}.wav".format(self.track_count)
-            self.track_count += 1
-        return RecordingFile(fname, mode, self.channels, self.rate,
-                             self.frames_per_buffer, self.tmpdir)
-
-    def save(self, dst, src, tags = None):
-        """ Speichern einzelner Tracks als Mp3. Mit Tags oder ohne"""
-        song = AudioSegment.from_wav(src)
-        # Geht bestimmt schoener, oder?
-        if tags is not None:
-            song.export(dst, "mp3", tags)
-        else:
-            song.export(dst, format="mp3")
-        #shutil.copyfile(os.path.join(self.tmpdir, src), dst)
-
-    #def save_tags(self, src, tags):
-    #    print src
-    #    song = AudioSegment.from_mp3(src)
-    #    song.export(src, "mp3", tags)
-
-
-class RecordingFile:
-
-    def __init__(self, fname, mode, channels, rate, frames_per_buffer, tmpdir):
-        self.fname = fname
-        self.frames_per_buffer = frames_per_buffer
-        self.mode = mode
-        self.channels = channels
-        self.rate = rate
-        self.p = pyaudio.PyAudio()
-        self.wavefile = self._prepare_file(self.fname, tmpdir, self.mode)
-        self.stream = None
-
-    #def __enter__(self):
-     #   return self
- 
-    #def __exit__(self, exception, value, traceback):
-     #   self.close()
-    def onButtonCutClicked(self):
-        """ Erzeugt neue Datei und nimmt weiter auf"""
-        if not self.ButtonRec.isEnabled():
-            self.recfile.stop_recording()
-            self.recfile.close()
-            temp = self.recfile.fname
-            self.recfile = self.rec.open()
-            self.recfile.start_recording()
-            self.start_time = datetime.now()
-            fpath = os.path.join(self.rec.tmpdir, temp)
-            dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
-                                                    temp))
-            album = re.sub("_", " ",str(self.LabelProjekt.text()))
-            th = threading.Thread(self.rec.save(dpath, fpath, album))
-            th.deamon = True
-            th.start()
-            self.updateListTracks()
-
-    def get_callback(self):
-        def callback(in_data, frame_count, time_info, status):
-            self.wavefile.writeframes(in_data)
-            self.time_i = time_info
-            return in_data, pyaudio.paContinue
-        return callback
-
-    def start_recording(self):
-        self.stream = self.p.open(format=pyaudio.paInt16,
-                channels=self.channels,
-                rate=self.rate,
-                input=True,
-                stream_callback=self.get_callback())
-        self.stream.start_stream()
-        return self
-
-    def stop_recording(self):
-        self.stream.stop_stream()
-        return self
-
-    def close(self):
-        self.stream.close()
-        self.p.terminate()
-        self.wavefile.close()
-
-    def _prepare_file(self, fname, tmpdir, mode='wb'):
-        if not os.path.exists(tmpdir):
-            os.makedirs(tmpdir)
-        wavefile = wave.open(os.path.join(tmpdir, fname), mode)
-        wavefile.setnchannels(self.channels)
-        wavefile.setsampwidth(self.p.get_sample_size(pyaudio.paInt16))
-        wavefile.setframerate(self.rate)
-        return wavefile
