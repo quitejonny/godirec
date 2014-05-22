@@ -12,14 +12,16 @@ from mutagen.easyid3 import EasyID3
 from PyQt4 import QtCore, QtGui, uic
 from godiRec import Recorder
 
-class PathDialog(QtGui.QDialog):
+class PathDialog(QtGui.QDialog, Ui_Dialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
         und an das Programm zurückgeben."""
 
     def __init__(self, path = ""):
         QtGui.QDialog.__init__(self)
-        ui_file = os.path.join("ui", "dialog.ui")
-        uic.loadUi(ui_file, self)
+        Ui_Dialog.__init__(self)
+        self.setupUi(self)
+        #ui_file = os.path.join("ui", "dialog.ui")
+        #uic.loadUi(ui_file, self)
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
@@ -136,7 +138,6 @@ class GodiRec(QtGui.QMainWindow):
             dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
                                                     temp))
             album = re.sub("_", " ",str(self.LabelProjekt.text()))
-            #self.rec.save(dpath, fpath, album)
             th = threading.Thread(self.rec.save(dpath, fpath, album))
             th.deamon = True
             th.start()
@@ -152,7 +153,6 @@ class GodiRec(QtGui.QMainWindow):
         audio = EasyID3(self.cur_track)
         for i in ('Title', 'Album', 'Genre'):
             audio[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
-            #TODO: test performer
         audio["artist"] = str(self.LineEditPerformer.text())
         audio["date"] = str(self.dateEdit.date()) #funktioniert nicht
         #audio["comments"] = comments
@@ -160,10 +160,7 @@ class GodiRec(QtGui.QMainWindow):
         print("Taggs gespeichert")
 
     def onButtonSaveClicked(self):
-        #TODO: Speichere in Ordner (defult [Datum]-Godi), pfad waehlbar
-        #self.cur_path = QtGui.QFileDialog.getExistingDirectory(
-        #        self,"Ordner waehlen",".")
-        #self.LineEditFile.setText(self.cur_path)
+        #Zurzeit aktualisiert es die Trackliste
         self.updateListTracks()
 
     def update_time(self):
@@ -172,7 +169,6 @@ class GodiRec(QtGui.QMainWindow):
             print over
             seconds = over.seconds
             minuten = (seconds % 3600) // 60
-            #self.LabelTime.setText(over.strftime("%M:%S/--:--"))
             self.LabelTime.setText(("{}:{}/--:--".format(minuten, seconds %60)))
         self.timer = threading.Timer(1.0, self.update_time)
         self.timer.start()
