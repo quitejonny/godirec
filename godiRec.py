@@ -64,13 +64,22 @@ class Track(object):
     def __init__(self, origin_file, tags=Tags()):
         self._origin_file = origin_file
         self._basename = os.path.splitext(os.path.basename(origin_file))[0]
+        self._folder = os.path.dirname(origin_file)
         self.tags = tags
         self._files = list()
 
-    def save(self, filetype=None):
-        thread = threading.Thread(self._save(filetype))
-        thread.deamon = True
-        thread.start()
+    def save(self, filetype=None, folder=None):
+        """ will save the track with the specified filetype. If no filetype is
+            given, the function will write the metadata in the already
+            exported files"""
+        if filetype == None:
+            self.save_tags()
+        else:
+            if folder == None:
+                folder = self._folder
+            thread = threading.Thread(self._save(filetype, folder))
+            thread.deamon = True
+            thread.start()
 
     @property
     def origin_file(self):
@@ -84,11 +93,16 @@ class Track(object):
                 audio[tag] = self.tags[tag]
             audio.save()
 
-    def _save(self, filetype):
+    def _save(self, filetype, folder):
         if filetype != None:
             # if file does not exist convert it to filetype and save tags
             # afterwards
             track = AudioSegment.from_wav(self._origin_file)
+            filename = "{}.{}".format(self._basename, filetype)
+            path = os.path.abspath(os.path.join(folder, filename))
+            if path not in self._files:
+                song = AudioSegment.from_wav(src)
+                song.export(path, format=filetype)
         self.save_tags()
 
 
@@ -102,51 +116,61 @@ class Recorder(object):
         self._channels = channels
         self._rate = rate
         self._frames_per_buffer = frames_per_buffer
+        self._time_info = 0
+        self._is_recording = False
 
-    def start(self):
-        self._p = pyaudio.PyAudio()
-        track = self._manager.create_new_track()
-        self.wavefile = wave.open(track.origin_file, 'wb')
-        self.wavefile.setnchannels(self._channels)
-        self.wavefile.setsampwidth(self._p.get_sample_size(pyaudio.paInt16))
-        self.wavefile.setframerate(self._rate)
-        self.stream = self._p.open(format=pyaudio.paInt16,
-                channels=self._channels,
-                rate=self._rate,
-                input=True,
-                stream_callback=self._get_callback())
-        self.stream.start_stream()
+    def play(self):
+        if not self._is_recording:
+            self._p = pyaudio.PyAudio()
+            track = self._manager.create_new_track()
+            self._wavefile = wave.open(track.origin_file, 'wb')
+            self._wavefile.setnchannels(self._channels)
+            self._wavefile.setsampwidth(self._p.get_sample_size(
+                                        pyaudio.paInt16))
+            self._wavefile.setframerate(self._rate)
+            self._stream = self._p.open(format=pyaudio.paInt16,
+                    channels=self._channels,
+                    rate=self._rate,
+                    input=True,
+                    stream_callback=self._get_callback())
+        self._stream.start_stream()
+        self._is_recording = True
+
 
     def pause(self):
-        pass
-
-    def continue(self):
-        pass
+        if self._is_recording:
+            self._stream.stop_stream()
 
     def cut(self):
-        self.stop()
-        self.close()
-        self.start()
+        if self._is_recording:
+            self.stop()
+            self.play()
 
     def stop(self):
-        self._stream.stop_stream()
+        if self._is_recording:
+            self._stream.close()
+            self._p.terminate()
+            self._wavefile.close()
+            self._is_recording = False
 
-    def close(self):
-        self._stream.close()
-        self._p.terminate()
-        self._wavefile.close()
+    @property
+    def is_recording(self):
+        return self._is_recording
 
     @property
     def manager(self):
         return self._manager
 
+    @property
+    def track_time(self):
+        return self._time_info
+
     def _get_callback(self):
         def callback(in_data, frame_count, time_info, status):
-            self.wavefile.writeframes(in_data)
-            self.time_i = time_info
+            self._wavefile.writeframes(in_data)
+            self._time_info = time_info
             return in_data, pyaudio.paContinue
         return callback
 
     def __del__(self):
-        self.close()
-        self.p.terminate()
+        self.stop()
