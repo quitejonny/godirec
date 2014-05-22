@@ -13,21 +13,22 @@ from godiRec import Recorder
 
 class RecorderListModel(QtCore.QAbstractListModel): 
 
-    def __init__(self, data, parent=None): 
+    def __init__(self, rec_manager, parent=None): 
         QtCore.QAbstractListModel.__init__(self, parent) 
-        self.data = data
+        self.rec_manager = rec_manager
  
     def rowCount(self, parent=QtCore.QModelIndex()): 
-        return len(self.data) 
+        return len(self.rec_manager.tracklist) 
  
     def data(self, index, role): 
         if index.isValid() and role == QtCore.Qt.DisplayRole:
-            return QtCore.QVariant(self.data[index.row()])
+            track = self.rec_manager.get_track(index.row())
+            return QtCore.QVariant(track["title"])
         else: 
             return QtCore.QVariant()
 
     def itemFromIndex(self, index):
-        return self.data[index.row()]
+        return self.rec_manager.get_track(index.row())
 
 
 class PathDialog(QtGui.QDialog):
