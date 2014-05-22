@@ -1,14 +1,39 @@
+# -*- coding: utf-8 -*-
 import pyaudio
 import os
 import wave
 import shutil
 from pydub import AudioSegment
 import tempfile
+from mutagen.easyid3 import EasyID3
+
+
+class Tag(object):
+
+    __slots__ = ("title", "artist", "album", "genre", "year", "comment")
+
+    def __init__(self, title="", artist="", album="", genre="", year="",
+                 comment=""):
+        self.title = title
+        self.artist = artist
+        self.album = album
+        self.genre = genre
+        self.year = year
+        self.comment = comment
+
+    def get_tag_names(self):
+        return self.__slots__
+
+
+class RecordManager(object):
+
+    def __init(self):
+        pass
 
 
 class Recorder(object):
 
-    """A recorder class for recording audio to a WAV file."""
+    """ A recorder class for recording audio to a WAV file."""
  
     def __init__(self, channels=2, rate=44100, frames_per_buffer=1024):
         self.channels = channels
