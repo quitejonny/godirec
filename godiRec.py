@@ -21,14 +21,78 @@ class Tag(object):
         self.year = year
         self.comment = comment
 
-    def get_tag_names(self):
-        return self.__slots__
+    def keys(self):
+        return list(self.__slots__)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
 
 
-class RecordManager(object):
+class Manager(object):
 
-    def __init(self):
+    def __init__(self):
         pass
+
+
+class Recorder(object):
+
+    def __init__(self, manager=Manager(), channels=2, rate=44100,
+                 frames_per_buffer=1024):
+        self._manager = manager
+        self._channels = channels
+        self._rate = rate
+        self._frames_per_buffer = frames_per_buffer
+        self._p = pyaudio.PyAudio()
+
+    def start(self):
+        self.stream = self.p.open(format=pyaudio.paInt16,
+                channels=self.channels,
+                rate=self.rate,
+                input=True,
+                stream_callback=self._get_callback())
+        self.stream.start_stream()
+
+    def pause(self):
+        pass
+
+    def continue(self):
+        pass
+
+    def cut(self):
+        self.stop()
+        self.close()
+        self.start()
+
+    def stop(self):
+        self.stream.stop_stream()
+
+    def close(self):
+        self.stream.close()
+        self.wavefile.close()
+
+    def get_manager(self):
+        return self._manager
+
+    def _get_callback(self):
+        def callback(in_data, frame_count, time_info, status):
+            self.wavefile.writeframes(in_data)
+            self.time_i = time_info
+            return in_data, pyaudio.paContinue
+        return callback
+
+    def _prepare_file(self, filename):
+        wavefile = wave.open(filename, 'wb')
+        wavefile.setnchannels(self._channels)
+        wavefile.setsampwidth(self._p.get_sample_size(pyaudio.paInt16))
+        wavefile.setframerate(self._rate)
+        return wavefile
+
+    def __del__(self):
+        self.close()
+        self.p.terminate()
 
 
 class Recorder(object):
@@ -82,6 +146,23 @@ class RecordingFile:
  
     #def __exit__(self, exception, value, traceback):
      #   self.close()
+    def onButtonCutClicked(self):
+        """ Erzeugt neue Datei und nimmt weiter auf"""
+        if not self.ButtonRec.isEnabled():
+            self.recfile.stop_recording()
+            self.recfile.close()
+            temp = self.recfile.fname
+            self.recfile = self.rec.open()
+            self.recfile.start_recording()
+            self.start_time = datetime.now()
+            fpath = os.path.join(self.rec.tmpdir, temp)
+            dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
+                                                    temp))
+            album = re.sub("_", " ",str(self.LabelProjekt.text()))
+            th = threading.Thread(self.rec.save(dpath, fpath, album))
+            th.deamon = True
+            th.start()
+            self.updateListTracks()
 
     def get_callback(self):
         def callback(in_data, frame_count, time_info, status):
