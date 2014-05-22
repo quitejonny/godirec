@@ -6,6 +6,7 @@ import shutil
 from pydub import AudioSegment
 import tempfile
 import threading
+import mutagen
 
 
 class Tags(object):
@@ -39,14 +40,21 @@ class Manager(object):
         self._track_count = 1
 
     def create_new_track(self):
-        fname = "track_{0:d}.wav".format(self._track_count)
-        fname = os.path.join(self._folder, fname)
-        track = Track(fname)
+        filename = "track_{0:d}.wav".format(self._track_count)
+        filename = os.path.join(self._folder, fname)
+        track = Track(filename)
         self._ref_files.append(track)
         self._track_count += 1
         return track
 
-    def save_all(self, filetype='mp3'):
+    @property
+    def tracklist(self):
+        return self._tracks
+
+    def get_track(self, index):
+        return self._tracks[index]
+
+    def save_tracks(self, filetype='mp3'):
         for track in self._tracks:
             track.save(filetype)
 
@@ -64,17 +72,21 @@ class Track(object):
         thread.deamon = True
         thread.start()
 
-    def get_origin_file(self):
+    @property
+    def origin_file(self):
         return self._origin_file
 
     def save_tags(self):
         for f in self._files:
             # save tags in every track file
-            pass
+            audio = mutagen.File(f, easy=True)
+            for tag in self.tags.keys():
+                audio[tag] = self.tags[tag]
+            audio.save()
 
     def _save(self, filetype):
         if filetype != None:
-            # if file does not exist convert it to filetype an and save tags
+            # if file does not exist convert it to filetype and save tags
             # afterwards
             track = AudioSegment.from_wav(self._origin_file)
         self.save_tags()
@@ -94,7 +106,7 @@ class Recorder(object):
     def start(self):
         self._p = pyaudio.PyAudio()
         track = self._manager.create_new_track()
-        self.wavefile = wave.open(track.get_origin_file(), 'wb')
+        self.wavefile = wave.open(track.origin_file, 'wb')
         self.wavefile.setnchannels(self._channels)
         self.wavefile.setsampwidth(self._p.get_sample_size(pyaudio.paInt16))
         self.wavefile.setframerate(self._rate)
@@ -124,7 +136,8 @@ class Recorder(object):
         self._p.terminate()
         self._wavefile.close()
 
-    def get_manager(self):
+    @property
+    def manager(self):
         return self._manager
 
     def _get_callback(self):
