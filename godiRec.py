@@ -41,9 +41,9 @@ class Manager(object):
 
     def create_new_track(self):
         filename = "track_{0:d}.wav".format(self._track_count)
-        filename = os.path.join(self._folder, fname)
+        filename = os.path.join(self._folder, filename)
         track = Track(filename)
-        self._ref_files.append(track)
+        self._tracks.append(track)
         self._track_count += 1
         return track
 
@@ -118,8 +118,12 @@ class Recorder(object):
         self._frames_per_buffer = frames_per_buffer
         self._time_info = 0
         self._is_recording = False
+        self._is_pausing = False
 
     def play(self):
+        if self._is_recording and not self._is_pausing:
+            # Recorder is already playing, so no need for this function
+            return
         if not self._is_recording:
             self._p = pyaudio.PyAudio()
             track = self._manager.create_new_track()
@@ -128,18 +132,20 @@ class Recorder(object):
             self._wavefile.setsampwidth(self._p.get_sample_size(
                                         pyaudio.paInt16))
             self._wavefile.setframerate(self._rate)
-            self._stream = self._p.open(format=pyaudio.paInt16,
-                    channels=self._channels,
-                    rate=self._rate,
-                    input=True,
-                    stream_callback=self._get_callback())
+        self._stream = self._p.open(format=pyaudio.paInt16,
+                channels=self._channels,
+                rate=self._rate,
+                input=True,
+                stream_callback=self._get_callback())
         self._stream.start_stream()
         self._is_recording = True
+        self._is_pausing = False
 
 
     def pause(self):
         if self._is_recording:
-            self._stream.stop_stream()
+            self._stream.close()
+            self._is_pausing = True
 
     def cut(self):
         if self._is_recording:
@@ -156,6 +162,10 @@ class Recorder(object):
     @property
     def is_recording(self):
         return self._is_recording
+
+    @property
+    def is_pausing(self):
+        return self._is_pausing
 
     @property
     def manager(self):
