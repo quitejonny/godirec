@@ -178,7 +178,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.lm.update()
 
     def update_time(self):
-        if self.recfile != None:
+        if self.rec != None:
             over = (datetime.now() - self.start_time)
             print over
             seconds = over.seconds
