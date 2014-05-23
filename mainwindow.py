@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/godi_rec.ui'
 #
-# Created: Wed May 21 22:55:40 2014
+# Created: Fri May 23 14:35:51 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!

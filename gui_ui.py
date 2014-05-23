@@ -19,9 +19,12 @@ class RecorderListModel(QtCore.QAbstractListModel):
 
     def __init__(self, rec_manager, parent=None): 
         QtCore.QAbstractListModel.__init__(self, parent) 
+        self.set_rec_manager(rec_manager)
+
+    def set_rec_manager(self, rec_manager):
         self.rec_manager = rec_manager
         self.rec_manager.set_callback(self.update)
- 
+
     def rowCount(self, parent=QtCore.QModelIndex()): 
         return len(self.rec_manager.tracklist) 
  
@@ -81,7 +84,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         mainwindow.Ui_GodiRec.__init__(self)
         self.setupUi(self)
         self.rec_manager = godiRec.Manager('/home/johannes/Desktop/test/')
-        self.rec = godiRec.Recorder(self.rec_manager) 
+        self.rec = godiRec.Recorder(self.rec_manager)
         self.lm = RecorderListModel(self.rec_manager, self)
         self.ListTracks.setModel(self.lm)
         self.settings = shelve.open("setting.dat", writeback = True)
@@ -91,6 +94,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             getattr(self, "Button"+i).setEnabled(False)
         self.ActionExit.triggered.connect(self.exit)
         self.ActionNewProject.triggered.connect(self.createNewProject)
+        self.setIcons()
         self.iconPause = QtGui.QIcon()
         self.iconPause.addPixmap(QtGui.QPixmap("ui/pause10.png"))
         self.iconPlay = QtGui.QIcon()
@@ -107,6 +111,16 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.completerArtist = QtGui.QCompleter(self.wordlistArtist, self)
         self.LineEditTitle.setCompleter(self.completerTitel)
         self.LineEditPerformer.setCompleter(self.completerArtist)
+
+    def setIcons(self):
+        """ This function is used as workaround for not loading icons in
+            python generated ui code"""
+        icons = {"Play": "media23.png", "Stop": "media26.png",
+                 "Rec": "record6.png", "Cut": "cutting.png"}
+        for i, img in icons.iteritems():
+            icon = QtGui.QIcon()
+            icon.addPixmap(QtGui.QPixmap(os.path.join('ui', img)))
+            getattr(self, "Button"+i).setIcon(icon)
         
     def onButtonPlayClicked(self):
         if self.ButtonPlay.text() == "Pause":
@@ -229,6 +243,9 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.settings['path'] = os.path.dirname(self.cur_path)
         self.settings.sync()
         self.LabelProjekt.setText(os.path.basename(self.cur_path))
+        self.rec_manager = godiRec.Manager(self.cur_path)
+        self.rec = godiRec.Recorder(self.rec_manager)
+        self.lm.set_rec_manager(self.rec_manager)
         for i in ("Play", "Stop", "Rec", "Save", "Change"):
             getattr(self, "Button"+i).setEnabled(True)
         # self.updateListTracks()
