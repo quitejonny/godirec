@@ -10,18 +10,18 @@ import shelve
 from datetime import datetime
 from mutagen.easyid3 import EasyID3
 from PyQt4 import QtCore, QtGui, uic
+import dialog
+import mainwindow
 from godiRec import Recorder
 
-class PathDialog(QtGui.QDialog, Ui_Dialog):
+class PathDialog(QtGui.QDialog, dialog.Ui_Dialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
         und an das Programm zurückgeben."""
 
     def __init__(self, path = ""):
         QtGui.QDialog.__init__(self)
-        Ui_Dialog.__init__(self)
+        dialog.Ui_Dialog.__init__(self)
         self.setupUi(self)
-        #ui_file = os.path.join("ui", "dialog.ui")
-        #uic.loadUi(ui_file, self)
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
@@ -48,12 +48,12 @@ class PathDialog(QtGui.QDialog, Ui_Dialog):
         return str(self.cur_path1)
         
 
-class GodiRec(QtGui.QMainWindow):
+class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        ui_file = os.path.join("ui", "godi_rec.ui")
-        uic.loadUi(ui_file, self)
+        mainwindow.Ui_GodiRec.__init__(self)
+        self.setupUi(self)
         self.rec = Recorder(channels=2) 
         self.settings = shelve.open("setting.dat", writeback = True)
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
