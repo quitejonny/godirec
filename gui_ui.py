@@ -12,7 +12,33 @@ from mutagen.easyid3 import EasyID3
 from PyQt4 import QtCore, QtGui, uic
 import dialog
 import mainwindow
-from godiRec import Recorder
+import godiRec
+
+
+class RecorderListModel(QtCore.QAbstractListModel): 
+
+    def __init__(self, rec_manager, parent=None): 
+        QtCore.QAbstractListModel.__init__(self, parent) 
+        self.rec_manager = rec_manager
+        self.rec_manager.set_callback(self.update)
+ 
+    def rowCount(self, parent=QtCore.QModelIndex()): 
+        return len(self.rec_manager.tracklist) 
+ 
+    def data(self, index, role): 
+        if index.isValid() and role == QtCore.Qt.DisplayRole:
+            track = self.rec_manager.get_track(index.row())
+            return QtCore.QVariant(track.origin_file)
+            #return QtCore.QVariant(track["title"])
+        else: 
+            return QtCore.QVariant()
+
+    def itemFromIndex(self, index):
+        return self.rec_manager.get_track(index.row())
+
+    def update(self):
+        self.layoutChanged.emit()
+
 
 class PathDialog(QtGui.QDialog, dialog.Ui_Dialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
@@ -54,7 +80,10 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         QtGui.QMainWindow.__init__(self)
         mainwindow.Ui_GodiRec.__init__(self)
         self.setupUi(self)
-        self.rec = Recorder(channels=2) 
+        self.rec_manager = godiRec.Manager('/home/johannes/Desktop/test/')
+        self.rec = godiRec.Recorder(self.rec_manager) 
+        self.lm = RecorderListModel(self.rec_manager, self)
+        self.ListTracks.setModel(self.lm)
         self.settings = shelve.open("setting.dat", writeback = True)
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
             getattr(self, "Button"+i).clicked.connect(
@@ -85,10 +114,10 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             self.ButtonRec.setText("Rec")
             self.ButtonRec.setEnabled(False)
             self.ButtonSave.setEnabled(False)
-            self.recfile.stop_recording()
+            self.rec.pause()
         else:
             try:
-                self.recfile.start_recording()
+                self.rec.play()
                 self.ButtonPlay.setIcon(self.iconPause)
                 self.ButtonRec.setText("Recording")
                 self.ButtonRec.setEnabled(False)
@@ -102,16 +131,9 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             self.ButtonPlay.setEnabled(True)
             self.ButtonPlay.setIcon(self.iconPlay)
             self.ButtonSave.setEnabled(True)
-            self.recfile.stop_recording()
-            self.recfile.close()
-            fpath = os.path.join(self.rec.tmpdir, self.recfile.fname)
-            dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
-                                                   self.recfile.fname))
-            album = re.sub("_", " ",str(self.LabelProjekt.text()))
-            th = threading.Thread(self.rec.save(dpath, fpath, album))
-            th.deamon = True
-            th.start()
-        self.updateListTracks()
+            self.rec.stop()
+            # album = re.sub("_", " ",str(self.LabelProjekt.text()))
+            # th = threading.Thread(self.rec.save(dpath, fpath, album))
         self.timer.cancel()
 
     def onButtonRecClicked(self):
@@ -119,8 +141,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             self.ButtonRec.setEnabled(False)
             self.ButtonCut.setEnabled(True)
             self.ButtonPlay.setIcon(self.iconPause)
-            self.recfile = self.rec.open()
-            self.recfile = self.recfile.start_recording()
+            self.rec.play()
             self.timer = threading.Timer(1.0, self.update_time)
             self.timer.start()
             self.start_time = datetime.now()
@@ -128,20 +149,10 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
         if not self.ButtonRec.isEnabled():
-            self.recfile.stop_recording()
-            self.recfile.close()
-            temp = self.recfile.fname
-            self.recfile = self.rec.open()
-            self.recfile.start_recording()
+            self.rec.cut()
             self.start_time = datetime.now()
-            fpath = os.path.join(self.rec.tmpdir, temp)
-            dpath = os.path.join(self.cur_path, re.sub(".wav",".mp3",
-                                                    temp))
-            album = re.sub("_", " ",str(self.LabelProjekt.text()))
-            th = threading.Thread(self.rec.save(dpath, fpath, album))
-            th.deamon = True
-            th.start()
-            self.updateListTracks()
+            # album = re.sub("_", " ",str(self.LabelProjekt.text()))
+            # th = threading.Thread(self.rec.save(dpath, fpath, album))
 
     def onButtonChangeClicked(self):
         """ Schreibt Tags in MP3 datei"""
@@ -150,18 +161,21 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         #valid_keys: album, composer, genre, date,lyricist,
         # title, version, artist, tracknumber
         #TODO: add getdate
-        audio = EasyID3(self.cur_track)
-        for i in ('Title', 'Album', 'Genre'):
-            audio[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
-        audio["artist"] = str(self.LineEditPerformer.text())
-        audio["date"] = str(self.dateEdit.date()) #funktioniert nicht
+        tags = godiRec.Tags()
+        for i in ('Title', 'Album', 'Genre', 'Artist'):
+            print(""+getattr(self, 'LineEdit'+i).text())
+            tags[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
+        # audio = EasyID3(self.cur_track)
+        # for i in ('Title', 'Album', 'Genre'):
+        #     audio[i.lower()] = str(getattr(self, 'LineEdit'+i).text())
+        # audio["artist"] = str(self.LineEditPerformer.text())
+        # audio["date"] = str(self.dateEdit.date()) #funktioniert nicht
         #audio["comments"] = comments
         audio.save()
         print("Taggs gespeichert")
 
     def onButtonSaveClicked(self):
-        #Zurzeit aktualisiert es die Trackliste
-        self.updateListTracks()
+        self.lm.update()
 
     def update_time(self):
         if self.recfile != None:
@@ -175,17 +189,16 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
 
     def updateListTracks(self):
         """ updatet die Listenansicht"""
-        print self.cur_path
-        find = os.path.join(self.cur_path, "*.mp3")
-        files = sorted(glob.glob(find))
-        list = self.ListTracks
-        model = QtGui.QStandardItemModel(list)
-        for f in files:
-            item = QtGui.QStandardItem(os.path.basename(f))
-            item.setEditable(False)
-            model.appendRow(item)
-        list.setModel(model)
-        list.clicked.connect(self.onListTracksChanged)
+        # print self.cur_path
+        # find = os.path.join(self.cur_path, "*.mp3")
+        # files = glob.glob(find)
+        # list = self.ListTracks
+        # model = QtGui.QStandardItemModel(list)
+        # for f in files:
+        #     model.appendRow(QtGui.QStandardItem(os.path.basename(f)))
+        # list.setModel(model)
+        # list.clicked.connect(self.onListTracksChanged)
+        pass
 
     def onListTracksChanged(self, index):
         """ Click listener auf ItemListView
@@ -218,7 +231,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.LabelProjekt.setText(os.path.basename(self.cur_path))
         for i in ("Play", "Stop", "Rec", "Save", "Change"):
             getattr(self, "Button"+i).setEnabled(True)
-        self.updateListTracks()
+        # self.updateListTracks()
 
     def exit(self):
         self.close()
