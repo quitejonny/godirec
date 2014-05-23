@@ -38,6 +38,7 @@ class Manager(object):
         self._folder = os.path.abspath(folder)
         self._tracks = list()
         self._track_count = 1
+        self._callback = lambda: None
 
     def create_new_track(self):
         filename = "track_{0:d}.wav".format(self._track_count)
@@ -45,7 +46,11 @@ class Manager(object):
         track = Track(filename)
         self._tracks.append(track)
         self._track_count += 1
+        self._callback()
         return track
+
+    def set_callback(self, func):
+        self._callback = func
 
     @property
     def tracklist(self):
@@ -101,7 +106,7 @@ class Track(object):
             filename = "{}.{}".format(self._basename, filetype)
             path = os.path.abspath(os.path.join(folder, filename))
             if path not in self._files:
-                song = AudioSegment.from_wav(src)
+                song = AudioSegment.from_wav(self._origin_file)
                 song.export(path, format=filetype)
         self.save_tags()
 
@@ -119,6 +124,7 @@ class Recorder(object):
         self._time_info = 0
         self._is_recording = False
         self._is_pausing = False
+        self.format_list = ['mp3', 'flac']
 
     def play(self):
         if self._is_recording and not self._is_pausing:
@@ -126,8 +132,8 @@ class Recorder(object):
             return
         if not self._is_recording:
             self._p = pyaudio.PyAudio()
-            track = self._manager.create_new_track()
-            self._wavefile = wave.open(track.origin_file, 'wb')
+            self._current_track = self._manager.create_new_track()
+            self._wavefile = wave.open(self._current_track.origin_file, 'wb')
             self._wavefile.setnchannels(self._channels)
             self._wavefile.setsampwidth(self._p.get_sample_size(
                                         pyaudio.paInt16))
@@ -158,6 +164,19 @@ class Recorder(object):
             self._p.terminate()
             self._wavefile.close()
             self._is_recording = False
+            self.save_current_track()
+
+    def save_current_track(self, filetype=''):
+        if filetype == '':
+            format_list = self.format_list
+        else:
+            format_list = [filetype]
+        try:
+            track = self._current_track
+            for filetype in format_list:
+                track.save(filetype)
+        except AttributeError:
+            pass
 
     @property
     def is_recording(self):
