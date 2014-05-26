@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'ui/godi_rec.ui'
 #
-# Created: Fri May 23 14:35:51 2014
+# Created: Fri May 23 17:57:15 2014
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -109,9 +109,9 @@ class Ui_GodiRec(object):
         self.label_artist = QtGui.QLabel(self.formLayoutWidget)
         self.label_artist.setObjectName(_fromUtf8("label_artist"))
         self.formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self.label_artist)
-        self.LineEditPerformer = QtGui.QLineEdit(self.formLayoutWidget)
-        self.LineEditPerformer.setObjectName(_fromUtf8("LineEditPerformer"))
-        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.LineEditPerformer)
+        self.LineEditArtist = QtGui.QLineEdit(self.formLayoutWidget)
+        self.LineEditArtist.setObjectName(_fromUtf8("LineEditArtist"))
+        self.formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self.LineEditArtist)
         self.label_album = QtGui.QLabel(self.formLayoutWidget)
         self.label_album.setObjectName(_fromUtf8("label_album"))
         self.formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self.label_album)
@@ -134,11 +134,11 @@ class Ui_GodiRec(object):
         self.label = QtGui.QLabel(self.formLayoutWidget)
         self.label.setObjectName(_fromUtf8("label"))
         self.formLayout.setWidget(5, QtGui.QFormLayout.LabelRole, self.label)
-        self.dateEdit = QtGui.QDateEdit(self.formLayoutWidget)
-        self.dateEdit.setLocale(QtCore.QLocale(QtCore.QLocale.German, QtCore.QLocale.Germany))
-        self.dateEdit.setMinimumDate(QtCore.QDate(2014, 1, 1))
-        self.dateEdit.setObjectName(_fromUtf8("dateEdit"))
-        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.dateEdit)
+        self.LineEditDate = QtGui.QDateEdit(self.formLayoutWidget)
+        self.LineEditDate.setLocale(QtCore.QLocale(QtCore.QLocale.German, QtCore.QLocale.Germany))
+        self.LineEditDate.setMinimumDate(QtCore.QDate(2014, 1, 1))
+        self.LineEditDate.setObjectName(_fromUtf8("LineEditDate"))
+        self.formLayout.setWidget(5, QtGui.QFormLayout.FieldRole, self.LineEditDate)
         self.ButtonChange = QtGui.QPushButton(self.formLayoutWidget)
         self.ButtonChange.setObjectName(_fromUtf8("ButtonChange"))
         self.formLayout.setWidget(6, QtGui.QFormLayout.FieldRole, self.ButtonChange)
@@ -178,7 +178,7 @@ class Ui_GodiRec(object):
         self.label_genre.setText(_translate("GodiRec", "Genre:", None))
         self.label_kommentar.setText(_translate("GodiRec", "Kommentar:", None))
         self.label.setText(_translate("GodiRec", "Jahr:", None))
-        self.dateEdit.setDisplayFormat(_translate("GodiRec", "yyyy", None))
+        self.LineEditDate.setDisplayFormat(_translate("GodiRec", "yyyy", None))
         self.ButtonChange.setToolTip(_translate("GodiRec", "<html><head/><body><p>speichert aktuelle Taggs ab</p></body></html>", None))
         self.ButtonChange.setText(_translate("GodiRec", "Change", None))
         self.menuGodiRec.setTitle(_translate("GodiRec", "File", None))

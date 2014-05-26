@@ -11,15 +11,15 @@ import mutagen
 
 class Tags(object):
 
-    __slots__ = ("title", "artist", "album", "genre", "year", "comment")
+    __slots__ = ("title", "artist", "album", "genre", "date", "comment")
 
-    def __init__(self, title="", artist="", album="", genre="", year="",
+    def __init__(self, title="", artist="", album="", genre="", date="",
                  comment=""):
         self.title = title
         self.artist = artist
         self.album = album
         self.genre = genre
-        self.year = year
+        self.date = date
         self.comment = comment
 
     def keys(self):
@@ -81,10 +81,16 @@ class Track(object):
             self.save_tags()
         else:
             if folder == None:
+                # TODO: create subfolder if needed which is named after the
+                # given filetype
                 folder = self._folder
             thread = threading.Thread(self._save(filetype, folder))
             thread.deamon = True
             thread.start()
+
+    @property
+    def basename(self):
+        return self._basename
 
     @property
     def origin_file(self):
@@ -95,7 +101,10 @@ class Track(object):
             # save tags in every track file
             audio = mutagen.File(f, easy=True)
             for tag in self.tags.keys():
-                audio[tag] = self.tags[tag]
+                try:
+                    audio[tag] = self.tags[tag]
+                except KeyError:
+                    pass
             audio.save()
 
     def _save(self, filetype, folder):
@@ -108,6 +117,7 @@ class Track(object):
             if path not in self._files:
                 song = AudioSegment.from_wav(self._origin_file)
                 song.export(path, format=filetype)
+                self._files.append(path)
         self.save_tags()
 
 
