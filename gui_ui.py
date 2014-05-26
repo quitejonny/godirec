@@ -212,7 +212,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
     def tags(self):
         tags = godiRec.Tags()
         for tag in set(tags.keys()).difference(set(['date'])):
-            tags[tag] = str(getattr(self, 'LineEdit'+tag.title()).text())
+            tags[tag] = unicode(getattr(self, 'LineEdit'+tag.title()).text())
         tags['date'] = str(self.LineEditDate.date().toPyDate().year)
         return tags
 
