@@ -142,6 +142,7 @@ class Recorder(object):
         if self._is_recording and not self._is_pausing:
             # Recorder is already playing, so no need for this function
             return
+        self.timer.start()
         if not self._is_recording:
             self._p = pyaudio.PyAudio()
             self._current_track = self._manager.create_new_track()
@@ -156,7 +157,6 @@ class Recorder(object):
                 input=True,
                 stream_callback=self._get_callback())
         self._stream.start_stream()
-        self.timer.start()
         self._is_recording = True
         self._is_pausing = False
 
@@ -223,16 +223,23 @@ class Recorder(object):
 
 class Timer(object):
 
-    def __init__(self):
+    def __init__(self, callback=None):
         self._start_time = 0.0
         self._previous_track_time = 0.0
         self._previous_rec_time = 0.0
+        self._callback = callback
         self.is_running = False
+
+    def set_callback(self, callback_func):
+        self._callback = callback_func
 
     def start(self):
         if not self.is_running:
             self._start_time = time.time()
             self.is_running = True
+            if self._callback:
+                self.timer = threading.Timer(1.0, self._run_timer)
+                self.timer.start()
 
     def stop(self):
         if self.is_running:
@@ -240,6 +247,8 @@ class Timer(object):
             self._previous_track_time += time_delta
             self._previous_rec_time += time_delta
             self.is_running = False
+            if self._callback:
+                self.timer.cancel()
 
     def cut(self):
         if self.is_running:
@@ -264,4 +273,9 @@ class Timer(object):
             time_delta = 0.0
         seconds = self._previous_rec_time + time_delta
         return time.strftime("%M:%S", time.gmtime(seconds))
+
+    def _run_timer(self):
+        self._callback(self)
+        self.timer = threading.Timer(1.0, self._run_timer)
+        self.timer.start()
 

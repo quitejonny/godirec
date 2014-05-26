@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import threading
 import shelve
 from datetime import datetime
-from PyQt4 import QtCore, QtGui, uic
+from PyQt4 import QtCore, QtGui
 import dialog
 import mainwindow
 import godiRec
@@ -53,8 +52,7 @@ class PathDialog(QtGui.QDialog, dialog.Ui_Dialog):
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
-        today = datetime.today()
-        projektName = "{:%Y_%m_%d}-Godi".format(today)
+        projektName = "{:%Y_%m_%d}-Godi".format(datetime.today())
         self.LineEditProjekt.setText(projektName)
         self.LineEditPath.setText(path)
 
@@ -146,7 +144,6 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             self.ButtonPlay.setIcon(self.iconPlay)
             self.ButtonSave.setEnabled(True)
             self.rec.stop()
-        self.timer.cancel()
 
     def onButtonRecClicked(self):
         if self.ButtonRec.isEnabled():
@@ -157,8 +154,6 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             index = self.lm.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
-            self.timer = threading.Timer(1.0, self.updateTime)
-            self.timer.start()
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
@@ -175,13 +170,11 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
     def onButtonSaveClicked(self):
         self.lm.update()
 
-    def updateTime(self):
+    def updateTime(self, timer):
         if self.rec != None:
-            track_time = self.rec_timer.get_track_time()
-            rec_time = self.rec_timer.get_recording_time()
+            track_time = timer.get_track_time()
+            rec_time = timer.get_recording_time()
             self.LabelTime.setText(track_time+"/"+rec_time)
-            self.timer = threading.Timer(1.0, self.updateTime)
-            self.timer.start()
 
     def onListTracksIndexChanged(self):
         # save old Tags if tags have changed
@@ -225,7 +218,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.LabelProjekt.setText(os.path.basename(self.cur_path))
         self.rec_manager = godiRec.Manager(self.cur_path)
         self.rec = godiRec.Recorder(self.rec_manager)
-        self.rec_timer = self.rec.timer
+        self.rec.timer.set_callback(self.updateTime)
         self.lm.set_rec_manager(self.rec_manager)
         for i in ("Play", "Stop", "Rec", "Save", "Change"):
             getattr(self, "Button"+i).setEnabled(True)
