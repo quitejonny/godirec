@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import shelve
 from datetime import datetime
 from PyQt4 import QtCore, QtGui
 import dialog
@@ -84,7 +83,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.lm = RecorderListModel(self.rec_manager, self)
         self.ListTracks.setModel(self.lm)
         self.ListTracks.clicked.connect(self.onListTracksIndexChanged)
-        self.settings = shelve.open("setting.dat", writeback = True)
+        self.settings = QtCore.QSettings("EFG Aachen", "GodiRec")
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
@@ -206,15 +205,14 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
     def createNewProject(self):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
-        if self.settings.has_key('path'):
-            self.path_dialog = PathDialog(self.settings['path'])
+        if 'path' in self.settings.allKeys():
+            self.path_dialog = PathDialog(self.settings.value('path',type=str))
         else:
             self.path_dialog = PathDialog()
         self.path_dialog.show()
         self.path_dialog.exec_()
         self.cur_path = self.path_dialog.getValues()
-        self.settings['path'] = os.path.dirname(self.cur_path)
-        self.settings.sync()
+        self.settings.setValue('path', os.path.dirname(self.cur_path))
         self.LabelProjekt.setText(os.path.basename(self.cur_path))
         self.rec_manager = godiRec.Manager(self.cur_path)
         self.rec = godiRec.Recorder(self.rec_manager)

@@ -3,10 +3,10 @@ import pyaudio
 import os
 import wave
 import time
-import shutil
 from pydub import AudioSegment
 import tempfile
 import threading
+import multiprocessing
 import mutagen
 
 
@@ -88,6 +88,9 @@ class Track(object):
             thread = threading.Thread(self._save(filetype, folder))
             thread.deamon = True
             thread.start()
+            # thread = multiprocessing.Process(target=self._save,
+            #                                  args=(filetype, folder))
+            # thread.start()
 
     @property
     def basename(self):
