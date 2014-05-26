@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import datetime
 import threading
 import shelve
 from datetime import datetime
@@ -101,7 +100,6 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.iconPlay.addPixmap(QtGui.QPixmap("ui/media23.png"))
         self.current_track = godiRec.Track("")
         self.cur_path = ""
-        self.start_time = "00"
         self.wordlistTitel = [u"Lied",u"Begrüßung",u"Präludium",u"Infos",
                          u"Ankündigungen", u"Kinderlied", u"Segen",
                          u"Postludium", u"Predigt", u"Sonstiges"]
@@ -159,9 +157,8 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             index = self.lm.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
-            self.timer = threading.Timer(1.0, self.update_time)
+            self.timer = threading.Timer(1.0, self.updateTime)
             self.timer.start()
-            self.start_time = datetime.now()
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
@@ -170,7 +167,6 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             index = self.lm.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
-            self.start_time = datetime.now()
 
     def onButtonChangeClicked(self):
         """ Schreibt Tags in MP3 datei"""
@@ -179,15 +175,13 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
     def onButtonSaveClicked(self):
         self.lm.update()
 
-    def update_time(self):
+    def updateTime(self):
         if self.rec != None:
-            over = (datetime.now() - self.start_time)
-            print over
-            seconds = over.seconds
-            minuten = (seconds % 3600) // 60
-            self.LabelTime.setText(("{}:{}/--:--".format(minuten, seconds %60)))
-        self.timer = threading.Timer(1.0, self.update_time)
-        self.timer.start()
+            track_time = self.rec_timer.get_track_time()
+            rec_time = self.rec_timer.get_recording_time()
+            self.LabelTime.setText(track_time+"/"+rec_time)
+            self.timer = threading.Timer(1.0, self.updateTime)
+            self.timer.start()
 
     def onListTracksIndexChanged(self):
         # save old Tags if tags have changed
@@ -231,6 +225,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.LabelProjekt.setText(os.path.basename(self.cur_path))
         self.rec_manager = godiRec.Manager(self.cur_path)
         self.rec = godiRec.Recorder(self.rec_manager)
+        self.rec_timer = self.rec.timer
         self.lm.set_rec_manager(self.rec_manager)
         for i in ("Play", "Stop", "Rec", "Save", "Change"):
             getattr(self, "Button"+i).setEnabled(True)

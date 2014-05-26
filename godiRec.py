@@ -2,6 +2,7 @@
 import pyaudio
 import os
 import wave
+import time
 import shutil
 from pydub import AudioSegment
 import tempfile
@@ -134,6 +135,7 @@ class Recorder(object):
         self._time_info = 0
         self._is_recording = False
         self._is_pausing = False
+        self.timer = Timer()
         self.format_list = ['mp3', 'flac']
 
     def play(self):
@@ -154,6 +156,7 @@ class Recorder(object):
                 input=True,
                 stream_callback=self._get_callback())
         self._stream.start_stream()
+        self.timer.start()
         self._is_recording = True
         self._is_pausing = False
 
@@ -162,10 +165,12 @@ class Recorder(object):
         if self._is_recording:
             self._stream.close()
             self._is_pausing = True
+            self.timer.stop()
 
     def cut(self):
         if self._is_recording:
             self.stop()
+            self.timer.cut()
             self.play()
 
     def stop(self):
@@ -174,6 +179,7 @@ class Recorder(object):
             self._p.terminate()
             self._wavefile.close()
             self._is_recording = False
+            self.timer.stop()
             self.save_current_track()
 
     def save_current_track(self, filetype=''):
@@ -213,3 +219,49 @@ class Recorder(object):
 
     def __del__(self):
         self.stop()
+
+
+class Timer(object):
+
+    def __init__(self):
+        self._start_time = 0.0
+        self._previous_track_time = 0.0
+        self._previous_rec_time = 0.0
+        self.is_running = False
+
+    def start(self):
+        if not self.is_running:
+            self._start_time = time.time()
+            self.is_running = True
+
+    def stop(self):
+        if self.is_running:
+            time_delta = time.time() - self._start_time
+            self._previous_track_time += time_delta
+            self._previous_rec_time += time_delta
+            self.is_running = False
+
+    def cut(self):
+        if self.is_running:
+            self.stop()
+            self._previous_track_time = 0.0
+            self.start()
+        else:
+            self._previous_track_time = 0.0
+
+    def get_track_time(self):
+        if self.is_running:
+            time_delta = time.time() - self._start_time
+        else:
+            time_delta = 0.0
+        seconds = self._previous_track_time + time_delta
+        return time.strftime("%M:%S", time.gmtime(seconds))
+
+    def get_recording_time(self):
+        if self.is_running:
+            time_delta = time.time() - self._start_time
+        else:
+            time_delta = 0.0
+        seconds = self._previous_rec_time + time_delta
+        return time.strftime("%M:%S", time.gmtime(seconds))
+
