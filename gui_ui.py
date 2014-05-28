@@ -54,6 +54,9 @@ class PathDialog(QtGui.QDialog, dialog.Ui_Dialog):
         projektName = "{:%Y_%m_%d}-Godi".format(datetime.today())
         self.LineEditProjekt.setText(projektName)
         self.LineEditPath.setText(path)
+        self.iconDir = QtGui.QIcon()
+        self.iconDir.addPixmap(QtGui.QPixmap("ui/folder-yellow.png"))
+        self.ButtonDir.setIcon(self.iconDir)
 
     def onButtonDirClicked(self):
         temp_path = QtGui.QFileDialog.getExistingDirectory(
@@ -111,7 +114,8 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         """ This function is used as workaround for not loading icons in
             python generated ui code"""
         icons = {"Play": "media23.png", "Stop": "media26.png",
-                 "Rec": "record6.png", "Cut": "cutting.png"}
+                 "Rec": "record6.png", "Cut": "cutting.png","Save":
+                 "1400625665_sync.png"}
         for i, img in icons.iteritems():
             icon = QtGui.QIcon()
             icon.addPixmap(QtGui.QPixmap(os.path.join('ui', img)))
