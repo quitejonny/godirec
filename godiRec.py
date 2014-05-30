@@ -85,12 +85,10 @@ class Track(object):
                 # TODO: create subfolder if needed which is named after the
                 # given filetype
                 folder = self._folder
-            thread = threading.Thread(self._save(filetype, folder))
+            thread = threading.Thread(target=self._save,
+                                      args=(filetype, folder))
             thread.deamon = True
             thread.start()
-            # thread = multiprocessing.Process(target=self._save,
-            #                                  args=(filetype, folder))
-            # thread.start()
 
     @property
     def basename(self):
@@ -112,16 +110,20 @@ class Track(object):
             audio.save()
 
     def _save(self, filetype, folder):
-        if filetype != None:
-            # if file does not exist convert it to filetype and save tags
-            # afterwards
-            track = AudioSegment.from_wav(self._origin_file)
-            filename = "{}.{}".format(self._basename, filetype)
-            path = os.path.abspath(os.path.join(folder, filename))
-            if path not in self._files:
-                song = AudioSegment.from_wav(self._origin_file)
-                song.export(path, format=filetype)
-                self._files.append(path)
+        def run_process(origin_file, path, filetype):
+            track = AudioSegment.from_wav(origin_file)
+            song = AudioSegment.from_wav(origin_file)
+            song.export(path, format=filetype)
+        filename = "{}.{}".format(self._basename, filetype)
+        path = os.path.abspath(os.path.join(folder, filename))
+        if path not in self._files:
+            process = multiprocessing.Process(target=run_process,
+                                 args=(self.origin_file, path, filetype))
+            process.deamon = True
+            process.start()
+            process.join()
+            self._files.append(path)
+            print("finished")
         self.save_tags()
 
 
