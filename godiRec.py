@@ -87,7 +87,7 @@ class Track(object):
                 folder = self._folder
             thread = threading.Thread(target=self._save,
                                       args=(filetype, folder))
-            thread.deamon = True
+            thread.daemon = True
             thread.start()
 
     @property
@@ -119,7 +119,7 @@ class Track(object):
         if path not in self._files:
             process = multiprocessing.Process(target=run_process,
                                  args=(self.origin_file, path, filetype))
-            process.deamon = True
+            process.daemon = True
             process.start()
             process.join()
             self._files.append(path)

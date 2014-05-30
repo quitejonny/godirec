@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 import sys
 import os
 from datetime import datetime
@@ -24,9 +25,9 @@ class RecorderListModel(QtCore.QAbstractListModel):
     def data(self, index, role): 
         if index.isValid() and role == QtCore.Qt.DisplayRole:
             track = self.rec_manager.get_track(index.row())
-            return QtCore.QVariant(track.basename)
+            return track.basename
         else: 
-            return QtCore.QVariant()
+            return None
 
     def itemFromIndex(self, index):
         return self.rec_manager.get_track(index.row())
@@ -100,9 +101,9 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.iconPlay.addPixmap(QtGui.QPixmap("ui/media23.png"))
         self.current_track = godiRec.Track("")
         self.cur_path = ""
-        self.wordlistTitel = [u"Lied",u"Begrüßung",u"Präludium",u"Infos",
-                         u"Ankündigungen", u"Kinderlied", u"Segen",
-                         u"Postludium", u"Predigt", u"Sonstiges"]
+        self.wordlistTitel = ["Lied","Begrüßung","Präludium","Infos",
+                         "Ankündigungen", "Kinderlied", "Segen",
+                         "Postludium", "Predigt", "Sonstiges"]
         self.wordlistArtist = ["Andreas T. Reichert", "Samuel Falk", 
                                "Thomas Klein", "Sigfried Pries"]
         self.completerTitel = QtGui.QCompleter(self.wordlistTitel, self)
@@ -116,7 +117,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         icons = {"Play": "media23.png", "Stop": "media26.png",
                  "Rec": "record6.png", "Cut": "cutting.png","Save":
                  "1400625665_sync.png"}
-        for i, img in icons.iteritems():
+        for i, img in icons.items():
             icon = QtGui.QIcon()
             icon.addPixmap(QtGui.QPixmap(os.path.join('ui', img)))
             getattr(self, "Button"+i).setIcon(icon)
