@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 import sys
 import os
 from datetime import datetime
@@ -201,7 +200,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
     def tags(self):
         tags = godiRec.Tags()
         for tag in set(tags.keys()).difference(set(['date'])):
-            tags[tag] = unicode(getattr(self, 'LineEdit'+tag.title()).text())
+            tags[tag] = str(getattr(self, 'LineEdit'+tag.title()).text())
         tags['date'] = str(self.LineEditDate.date().toPyDate().year)
         return tags
 
