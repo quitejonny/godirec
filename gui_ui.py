@@ -11,7 +11,7 @@ import godiRec
 
 class RecorderListModel(QtCore.QAbstractListModel): 
 
-    def __init__(self, rec_manager, parent=None): 
+    def __init__(self, rec_manager=godiRec.Manager(""), parent=None): 
         QtCore.QAbstractListModel.__init__(self, parent) 
         self.set_rec_manager(rec_manager)
 
@@ -82,10 +82,8 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         QtGui.QMainWindow.__init__(self)
         mainwindow.Ui_GodiRec.__init__(self)
         self.setupUi(self)
-        self.rec_manager = godiRec.Manager('/home/johannes/Desktop/test/')
-        self.rec = godiRec.Recorder(self.rec_manager)
-        self.lm = RecorderListModel(self.rec_manager, self)
-        self.ListTracks.setModel(self.lm)
+        self.RecListModel = RecorderListModel(parent=self)
+        self.ListTracks.setModel(self.RecListModel)
         self.ListTracks.clicked.connect(self.onListTracksIndexChanged)
         self.settings = QtCore.QSettings("EFG Aachen", "GodiRec")
         for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
@@ -132,7 +130,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         else:
             try:
                 self.rec.play()
-                index = self.lm.getLastItemIndex()
+                index = self.RecListModel.getLastItemIndex()
                 self.ListTracks.setCurrentIndex(index)
                 self.ButtonPlay.setIcon(self.iconPause)
                 self.ButtonRec.setText("Recording")
@@ -155,7 +153,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             self.ButtonCut.setEnabled(True)
             self.ButtonPlay.setIcon(self.iconPause)
             self.rec.play()
-            index = self.lm.getLastItemIndex()
+            index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
 
@@ -163,7 +161,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         """ Erzeugt neue Datei und nimmt weiter auf"""
         if not self.ButtonRec.isEnabled():
             self.rec.cut()
-            index = self.lm.getLastItemIndex()
+            index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
 
@@ -172,7 +170,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.onListTracksIndexChanged()
 
     def onButtonSaveClicked(self):
-        self.lm.update()
+        self.RecListModel.update()
 
     def updateTime(self, timer):
         if self.rec != None:
@@ -188,7 +186,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
             self.current_track.save()
         # set new current track and load tracks
         index = self.ListTracks.selectedIndexes()[0]
-        self.current_track = self.lm.itemFromIndex(index)
+        self.current_track = self.RecListModel.itemFromIndex(index)
         self.setTags(self.current_track)
 
     def setTags(self, track):
@@ -222,7 +220,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.rec_manager = godiRec.Manager(self.cur_path)
         self.rec = godiRec.Recorder(self.rec_manager)
         self.rec.timer.set_callback(self.updateTime)
-        self.lm.set_rec_manager(self.rec_manager)
+        self.RecListModel.set_rec_manager(self.rec_manager)
         for i in ("Play", "Stop", "Rec", "Save", "Change"):
             getattr(self, "Button"+i).setEnabled(True)
 

@@ -123,7 +123,6 @@ class Track(object):
             process.start()
             process.join()
             self._files.append(path)
-            print("finished")
         self.save_tags()
 
 
