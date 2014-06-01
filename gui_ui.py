@@ -2,9 +2,7 @@
 import sys
 import os
 from datetime import datetime
-from PyQt4 import QtCore, QtGui
-import dialog
-import mainwindow
+from PyQt4 import QtCore, QtGui, uic
 import godiRec
 
 
@@ -39,14 +37,13 @@ class RecorderListModel(QtCore.QAbstractListModel):
         return self.index(len(self.rec_manager.tracklist)-1)
 
 
-class PathDialog(QtGui.QDialog, dialog.Ui_Dialog):
+class PathDialog(QtGui.QDialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
         und an das Programm zurückgeben."""
 
     def __init__(self, path = ""):
         QtGui.QDialog.__init__(self)
-        dialog.Ui_Dialog.__init__(self)
-        self.setupUi(self)
+        uic.loadUi(os.path.join('ui', 'dialog.ui'), self)
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
@@ -75,12 +72,11 @@ class PathDialog(QtGui.QDialog, dialog.Ui_Dialog):
         return str(self.cur_path1)
         
 
-class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
+class GodiRec(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        mainwindow.Ui_GodiRec.__init__(self)
-        self.setupUi(self)
+        uic.loadUi(os.path.join('ui', 'godi_rec.ui'), self)
         self.RecListModel = RecorderListModel(parent=self)
         self.ListTracks.setModel(self.RecListModel)
         self.ListTracks.clicked.connect(self.onListTracksIndexChanged)

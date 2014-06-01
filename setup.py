@@ -1,9 +1,26 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
+import sys
+import os
+from cx_Freeze import setup, Executable
+# from distutils.core import setup
 
-from distutils.core import setup
-import py2exe, sys, os
+# GUI applications require a different base on Windows (the default is for a
+# console application).
+if sys.platform == "win32":
+    base = "Win32GUI"
+else:
+    base = None
 
-sys.argv.append('py2exe')
+executables = [
+    Executable("gui_ui.py",
+               copyDependentFiles=True,
+               appendScriptToExe=True,
+               appendScriptToLibrary=False,
+               base=base,
+               )
+]
+
+buildOptions = dict(create_shared_zip=False)
 
 setup(
     name='GodiRec',
@@ -11,7 +28,7 @@ setup(
     description='Gottesdienst aufnahme Programm',
     author='Daniel Supplieth & Johannes Roos',
     author_email='daniel.supplieth@gmx.de',
-    options = {'py2exe': {'bundle_files': 1, 'compressed': True}},
-    windows = [{'script': "gui_ui.py"}],
-    zipfile = None,
+    #options = {'py2exe': {'bundle_files': 1, 'compressed': True}},
+    options=dict(build_exe=buildOptions),
+    executables=executables,
 )
