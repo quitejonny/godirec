@@ -141,6 +141,7 @@ class GodiRec(QtGui.QMainWindow):
             self.ButtonPlay.setIcon(self.iconPlay)
             self.ButtonSave.setEnabled(True)
             self.rec.stop()
+            self.onListTracksIndexChanged()
 
     def onButtonRecClicked(self):
         if self.ButtonRec.isEnabled():

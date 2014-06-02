@@ -74,11 +74,11 @@ class Track(object):
         self.tags = tags
         self._files = list()
 
-    def save(self, filetype=None, folder=None):
+    def save(self, filetypes=[], folder=None):
         """ will save the track with the specified filetype. If no filetype is
             given, the function will write the metadata in the already
             exported files"""
-        if filetype == None:
+        if not filetypes:
             self.save_tags()
         else:
             if folder == None:
@@ -86,7 +86,7 @@ class Track(object):
                 # given filetype
                 folder = self._folder
             thread = threading.Thread(target=self._save,
-                                      args=(filetype, folder))
+                                      args=(filetypes, folder))
             thread.daemon = True
             thread.start()
 
@@ -109,20 +109,21 @@ class Track(object):
                     pass
             audio.save()
 
-    def _save(self, filetype, folder):
+    def _save(self, filetypes, folder):
         def run_process(origin_file, path, filetype):
             track = AudioSegment.from_wav(origin_file)
             song = AudioSegment.from_wav(origin_file)
             song.export(path, format=filetype)
-        filename = "{}.{}".format(self._basename, filetype)
-        path = os.path.abspath(os.path.join(folder, filename))
-        if path not in self._files:
-            process = multiprocessing.Process(target=run_process,
-                                 args=(self.origin_file, path, filetype))
-            process.daemon = True
-            process.start()
-            process.join()
-            self._files.append(path)
+        for filetype in filetypes:
+            filename = "{}.{}".format(self._basename, filetype)
+            path = os.path.abspath(os.path.join(folder, filename))
+            if path not in self._files:
+                process = multiprocessing.Process(target=run_process,
+                                     args=(self.origin_file, path, filetype))
+                process.daemon = True
+                process.start()
+                process.join()
+                self._files.append(path)
         self.save_tags()
 
 
@@ -193,8 +194,7 @@ class Recorder(object):
             format_list = [filetype]
         try:
             track = self._current_track
-            for filetype in format_list:
-                track.save(filetype)
+            track.save(format_list)
         except AttributeError:
             pass
 
