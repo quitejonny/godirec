@@ -33,8 +33,8 @@ setup(
     author_email='daniel.supplieth@gmx.de',
     data_files=[('ui', [os.path.join('ui', n) for n in os.listdir('ui')])
     ],
-    options=dict(build_exe=buildOptions),
+    # options=dict(build_exe=buildOptions),
     # executables=executables,
-    # script=["godirec.py"],
+    script=["godirec.py"],
     packages=["godirec"],
 )
