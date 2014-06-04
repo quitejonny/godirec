@@ -5,6 +5,7 @@ import wave
 import time
 from pydub import AudioSegment
 import tempfile
+import concurrent.futures
 import threading
 import multiprocessing
 import mutagen
@@ -110,20 +111,19 @@ class Track(object):
             audio.save()
 
     def _save(self, filetypes, folder):
-        def run_process(origin_file, path, filetype):
-            track = AudioSegment.from_wav(origin_file)
-            song = AudioSegment.from_wav(origin_file)
-            song.export(path, format=filetype)
+        futures = set()
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            for filetype in filetypes:
+                filename = "{}.{}".format(self._basename, filetype)
+                path = os.path.abspath(os.path.join(folder, filename))
+                future = executor.submit(_run_convert_process,
+                                         self.origin_file, path, filetype)
+                futures.add(future)
+            concurrent.futures.wait(futures)
         for filetype in filetypes:
             filename = "{}.{}".format(self._basename, filetype)
             path = os.path.abspath(os.path.join(folder, filename))
-            if path not in self._files:
-                process = multiprocessing.Process(target=run_process,
-                                     args=(self.origin_file, path, filetype))
-                process.daemon = True
-                process.start()
-                process.join()
-                self._files.append(path)
+            self._files.append(path)
         self.save_tags()
 
 
@@ -283,3 +283,7 @@ class Timer(object):
         self.timer = threading.Timer(1.0, self._run_timer)
         self.timer.start()
 
+def _run_convert_process(origin_file, path, filetype):
+    track = AudioSegment.from_wav(origin_file)
+    song = AudioSegment.from_wav(origin_file)
+    song.export(path, format=filetype)

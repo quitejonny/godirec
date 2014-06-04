@@ -54,6 +54,7 @@ class PathDialog(QtGui.QDialog):
         self.iconDir = QtGui.QIcon()
         self.iconDir.addPixmap(QtGui.QPixmap("ui/folder-yellow.png"))
         self.ButtonDir.setIcon(self.iconDir)
+        self.ButtonCreate.setFocus()
 
     def onButtonDirClicked(self):
         temp_path = QtGui.QFileDialog.getExistingDirectory(
