@@ -3,12 +3,12 @@ import sys
 import os
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
-import godiRec
+import godirec
 
 
 class RecorderListModel(QtCore.QAbstractListModel): 
 
-    def __init__(self, rec_manager=godiRec.Manager(""), parent=None): 
+    def __init__(self, rec_manager=godirec.Manager(""), parent=None): 
         QtCore.QAbstractListModel.__init__(self, parent) 
         self.set_rec_manager(rec_manager)
 
@@ -94,7 +94,7 @@ class GodiRec(QtGui.QMainWindow):
         self.iconPlay = QtGui.QIcon()
         self.iconPlay.addPixmap(QtGui.QPixmap("ui/media23.png"))
         self.setWindowIcon(QtGui.QIcon('ui/cinema3.png'))
-        self.current_track = godiRec.Track("")
+        self.current_track = godirec.Track("")
         self.cur_path = ""
         self.wordlistTitel = ["Lied","Begrüßung","Präludium","Infos",
                          "Ankündigungen", "Kinderlied", "Segen",
@@ -197,7 +197,7 @@ class GodiRec(QtGui.QMainWindow):
         self.LineEditDate.setDate(QtCore.QDate(year, 1, 1))
 
     def tags(self):
-        tags = godiRec.Tags()
+        tags = godirec.Tags()
         for tag in set(tags.keys()).difference(set(['date'])):
             tags[tag] = str(getattr(self, 'LineEdit'+tag.title()).text())
         tags['date'] = str(self.LineEditDate.date().toPyDate().year)
@@ -215,8 +215,8 @@ class GodiRec(QtGui.QMainWindow):
         self.cur_path = self.path_dialog.getValues()
         self.settings.setValue('path', os.path.dirname(self.cur_path))
         self.LabelProjekt.setText(os.path.basename(self.cur_path))
-        self.rec_manager = godiRec.Manager(self.cur_path)
-        self.rec = godiRec.Recorder(self.rec_manager)
+        self.rec_manager = godirec.Manager(self.cur_path)
+        self.rec = godirec.Recorder(self.rec_manager)
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
         for i in ("Play", "Stop", "Rec", "Save", "Change"):
