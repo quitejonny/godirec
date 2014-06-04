@@ -97,6 +97,7 @@ class GodiRec(QtGui.QMainWindow, mainwindow.Ui_GodiRec):
         self.iconPause.addPixmap(QtGui.QPixmap("ui/pause10.png"))
         self.iconPlay = QtGui.QIcon()
         self.iconPlay.addPixmap(QtGui.QPixmap("ui/media23.png"))
+        self.setWindowIcon(QtGui.QIcon('ui/cinema3.png'))
         self.current_track = godiRec.Track("")
         self.cur_path = ""
         self.wordlistTitel = ["Lied","Begrüßung","Präludium","Infos",
