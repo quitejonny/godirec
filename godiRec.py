@@ -112,7 +112,7 @@ class Track(object):
 
     def _save(self, filetypes, folder):
         futures = set()
-        with concurrent.futures.ProcessPoolExecutor() as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             for filetype in filetypes:
                 filename = "{}.{}".format(self._basename, filetype)
                 path = os.path.abspath(os.path.join(folder, filename))
