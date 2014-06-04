@@ -60,9 +60,9 @@ class Manager(object):
     def get_track(self, index):
         return self._tracks[index]
 
-    def save_tracks(self, filetype='mp3'):
+    def save_tracks(self, filetypes=['mp3']):
         for track in self._tracks:
-            track.save(filetype)
+            track.save(filetypes)
 
 
 class Track(object):
@@ -85,10 +85,10 @@ class Track(object):
                 # TODO: create subfolder if needed which is named after the
                 # given filetype
                 folder = self._folder
-            thread = threading.Thread(target=self._save,
+            self.worker = threading.Thread(target=self._save,
                                       args=(filetypes, folder))
-            thread.daemon = True
-            thread.start()
+            self.worker.daemon = True
+            self.worker.start()
 
     @property
     def basename(self):

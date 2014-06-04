@@ -21,7 +21,9 @@ executables = [
                )
 ]
 
-buildOptions = dict(create_shared_zip=False)
+buildOptions = dict(create_shared_zip=False,
+        include_files=[os.path.join('ui', n) for n in os.listdir('ui')]
+        )
 
 setup(
     name='GodiRec',
@@ -29,7 +31,8 @@ setup(
     description='Gottesdienst aufnahme Programm',
     author='Daniel Supplieth & Johannes Roos',
     author_email='daniel.supplieth@gmx.de',
-    #options = {'py2exe': {'bundle_files': 1, 'compressed': True}},
+    data_files=[('ui', [os.path.join('ui', n) for n in os.listdir('ui')])
+    ],
     options=dict(build_exe=buildOptions),
     executables=executables,
 )
