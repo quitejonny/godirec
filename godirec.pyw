@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import multiprocessing
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 import godirec
@@ -228,7 +229,9 @@ class GodiRec(QtGui.QMainWindow):
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)
+    QtCore.QObject.connect(app,QtCore.SIGNAL("lastWindowClosed()"),app,QtCore.SLOT("quit()"))
     window = GodiRec()
     window.show()
     sys.exit(app.exec_())
