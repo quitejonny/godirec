@@ -83,7 +83,7 @@ class GodiRec(QtGui.QMainWindow):
         self.ListTracks.setModel(self.RecListModel)
         self.ListTracks.clicked.connect(self.onListTracksIndexChanged)
         self.settings = QtCore.QSettings("EFG Aachen", "GodiRec")
-        for i in ("Play", "Stop", "Rec", "Cut", "Save", "Change"):
+        for i in ("Stop", "Rec", "Cut"):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
             getattr(self, "Button"+i).setEnabled(False)
@@ -92,9 +92,9 @@ class GodiRec(QtGui.QMainWindow):
         self.setIcons()
         self.iconPause = QtGui.QIcon()
         self.iconPause.addPixmap(QtGui.QPixmap("ui/pause10.png"))
-        self.iconPlay = QtGui.QIcon()
-        self.iconPlay.addPixmap(QtGui.QPixmap("ui/media23.png"))
-        self.setWindowIcon(QtGui.QIcon('ui/cinema3.png'))
+        self.iconRec = QtGui.QIcon()
+        self.iconRec.addPixmap(QtGui.QPixmap("ui/record6.png"))
+        self.setWindowIcon(QtGui.QIcon('ui/microphone2.ico'))
         self.current_track = godirec.Track("")
         self.cur_path = ""
         self.wordlistTitel = ["Lied","Begrüßung","Präludium","Infos",
@@ -110,9 +110,7 @@ class GodiRec(QtGui.QMainWindow):
     def setIcons(self):
         """ This function is used as workaround for not loading icons in
             python generated ui code"""
-        icons = {"Play": "media23.png", "Stop": "media26.png",
-                 "Rec": "record6.png", "Cut": "cutting.png","Save":
-                 "1400625665_sync.png"}
+        icons = {"Stop": "media26.png", "Rec": "record6.png", "Cut": "cutting.png"}
         for i, img in icons.items():
             icon = QtGui.QIcon()
             icon.addPixmap(QtGui.QPixmap(os.path.join('ui', img)))
@@ -155,6 +153,10 @@ class GodiRec(QtGui.QMainWindow):
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
+        else:
+            self.ButtonRec.setIcon(self.iconRec)
+            self.ButtonSave.setEnabled(False)
+            self.rec.pause()
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
@@ -220,7 +222,7 @@ class GodiRec(QtGui.QMainWindow):
         self.rec = godirec.Recorder(self.rec_manager)
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
-        for i in ("Play", "Stop", "Rec", "Save", "Change"):
+        for i in ("Play", "Stop", "Rec"):
             getattr(self, "Button"+i).setEnabled(True)
 
     def exit(self):

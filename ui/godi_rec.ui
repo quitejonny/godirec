@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>331</width>
-    <height>470</height>
+    <height>402</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,20 +31,6 @@
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QPushButton" name="ButtonPlay">
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>media23.png</normaloff>media23.png</iconset>
-         </property>
-         <property name="checkable">
-          <bool>false</bool>
-         </property>
-        </widget>
-       </item>
        <item>
         <widget class="QPushButton" name="ButtonStop">
          <property name="text">
@@ -125,20 +111,6 @@
          </property>
         </spacer>
        </item>
-       <item>
-        <widget class="QPushButton" name="ButtonSave">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Aktuallisiert die Track liste&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>1400625665_sync.png</normaloff>1400625665_sync.png</iconset>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
@@ -152,7 +124,7 @@
       <x>10</x>
       <y>190</y>
       <width>311</width>
-      <height>231</height>
+      <height>161</height>
      </rect>
     </property>
     <layout class="QFormLayout" name="formLayout">
@@ -200,27 +172,13 @@
       <widget class="QLineEdit" name="LineEditGenre"/>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="label_kommentar">
-       <property name="text">
-        <string>Kommentar:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="LineEditComment">
-       <property name="readOnly">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
       <widget class="QLabel" name="label">
        <property name="text">
         <string>Jahr:</string>
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
+     <item row="4" column="1">
       <widget class="QDateEdit" name="LineEditDate">
        <property name="locale">
         <locale language="German" country="Germany"/>
@@ -234,16 +192,6 @@
        </property>
        <property name="displayFormat">
         <string>yyyy</string>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QPushButton" name="ButtonChange">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;speichert aktuelle Taggs ab&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Change</string>
        </property>
       </widget>
      </item>
@@ -264,7 +212,6 @@
      <string>File</string>
     </property>
     <addaction name="ActionNewProject"/>
-    <addaction name="ActionOpenProject"/>
     <addaction name="ActionExit"/>
    </widget>
    <addaction name="menuGodiRec"/>
