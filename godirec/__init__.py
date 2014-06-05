@@ -103,12 +103,22 @@ class Track(object):
         for f in self._files:
             # save tags in every track file
             audio = mutagen.File(f, easy=True)
+            #audio = mutagen.easyid3.EasyID3(f)
             for tag in self.tags.keys():
+                print("save Tag: "+self.tags[tag])
                 try:
+                    #values = audio[tag]
+                    #values.append(self.tags[tag])
+                    #audio[tag] = values
                     audio[tag] = self.tags[tag]
                 except KeyError:
                     pass
             audio.save()
+            audio = mutagen.File(f)
+            if isinstance(audio, mutagen.mp3.MP3):
+                print("make to v23")
+                audio.tags.update_to_v23()
+            audio.tags.save(v2_version=3)
 
     def _save(self, filetypes, folder):
         futures = set()
@@ -284,6 +294,6 @@ class Timer(object):
         self.timer.start()
 
 def _run_convert_process(origin_file, path, filetype):
-    track = AudioSegment.from_wav(origin_file)
+    #track = AudioSegment.from_wav(origin_file)
     song = AudioSegment.from_wav(origin_file)
     song.export(path, format=filetype)
