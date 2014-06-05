@@ -9,6 +9,7 @@ import concurrent.futures
 import threading
 import multiprocessing
 import mutagen
+from mutagen import id3
 
 
 class Tags(object):
@@ -101,24 +102,26 @@ class Track(object):
 
     def save_tags(self):
         for f in self._files:
-            # save tags in every track file
-            audio = mutagen.File(f, easy=True)
-            #audio = mutagen.easyid3.EasyID3(f)
-            for tag in self.tags.keys():
-                print("save Tag: "+self.tags[tag])
-                try:
-                    #values = audio[tag]
-                    #values.append(self.tags[tag])
-                    #audio[tag] = values
-                    audio[tag] = self.tags[tag]
-                except KeyError:
-                    pass
-            audio.save()
-            audio = mutagen.File(f)
-            if isinstance(audio, mutagen.mp3.MP3):
-                print("make to v23")
-                audio.tags.update_to_v23()
-            audio.tags.save(v2_version=3)
+            if f.endswith('.mp3'):
+                tags = mutagen.id3.ID3()
+                tags['TIT2'] = id3.TIT2(encoding=3, text=self.tags['title'])
+                # tags['TRCK'] = id3.TRCK(encoding=3, text=self.tags['track'])
+                tags['TPE1'] = id3.TPE1(encoding=3, text=self.tags['artist'])
+                tags['TALB'] = id3.TALB(encoding=3, text=self.tags['album'])
+                tags['TDRC'] = id3.TDRC(encoding=3, text=self.tags['date'])
+                tags['TCON'] = id3.TCON(encoding=3, text=self.tags['genre'])
+                tags.update_to_v23()
+                tags.save(f, v2_version=3)
+            else:
+                # save tags in every track file
+                audio = mutagen.File(f, easy=True)
+                for tag in self.tags.keys():
+                    print("save Tag: "+self.tags[tag])
+                    try:
+                        audio[tag] = self.tags[tag]
+                    except KeyError:
+                        pass
+                audio.save()
 
     def _save(self, filetypes, folder):
         futures = set()
