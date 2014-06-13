@@ -14,16 +14,14 @@ from mutagen import id3
 
 class Tags(object):
 
-    __slots__ = ("title", "artist", "album", "genre", "date", "comment")
+    __slots__ = ("title", "artist", "album", "genre", "date")
 
-    def __init__(self, title="", artist="", album="", genre="", date="",
-                 comment=""):
+    def __init__(self, title="", artist="", album="", genre="", date=""):
         self.title = title
         self.artist = artist
         self.album = album
         self.genre = genre
         self.date = date
-        self.comment = comment
 
     def keys(self):
         return list(self.__slots__)

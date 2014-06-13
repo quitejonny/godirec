@@ -89,6 +89,7 @@ class GodiRec(QtGui.QMainWindow):
             getattr(self, "Button"+i).setEnabled(False)
         self.ActionExit.triggered.connect(self.exit)
         self.ActionNewProject.triggered.connect(self.createNewProject)
+        self.status = 0 #Status 0=no projekt, 1=no stream running, 2=rec
         self.setIcons()
         self.iconPause = QtGui.QIcon()
         self.iconPause.addPixmap(QtGui.QPixmap("ui/pause10.png"))
@@ -110,57 +111,37 @@ class GodiRec(QtGui.QMainWindow):
     def setIcons(self):
         """ This function is used as workaround for not loading icons in
             python generated ui code"""
-        icons = {"Stop": "media26.png", "Rec": "record6.png", "Cut": "cutting.png"}
+        icons = {"Stop": "media26.png", "Rec": "record6.png", 
+                 "Cut": "cutting.png"}
         for i, img in icons.items():
             icon = QtGui.QIcon()
             icon.addPixmap(QtGui.QPixmap(os.path.join('ui', img)))
             getattr(self, "Button"+i).setIcon(icon)
         
-    def onButtonPlayClicked(self):
-        if self.ButtonPlay.text() == "Pause":
-            self.ButtonPlay.setIcon(self.iconPlay)
-            self.ButtonRec.setText("Rec")
-            self.ButtonRec.setEnabled(False)
-            self.ButtonSave.setEnabled(False)
-            self.rec.pause()
-        else:
-            try:
-                self.rec.play()
-                index = self.RecListModel.getLastItemIndex()
-                self.ListTracks.setCurrentIndex(index)
-                self.ButtonPlay.setIcon(self.iconPause)
-                self.ButtonRec.setText("Recording")
-                self.ButtonRec.setEnabled(False)
-            except AttributeError:
-                pass
-
     def onButtonStopClicked(self):
-        if not self.ButtonRec.isEnabled():
-            self.ButtonRec.setEnabled(True)
+        if self.status == 1 or self.status == 2:
+            self.ButtonRec.setIcon(self.iconRec)
             self.ButtonCut.setEnabled(False)
-            self.ButtonPlay.setEnabled(True)
-            self.ButtonPlay.setIcon(self.iconPlay)
-            self.ButtonSave.setEnabled(True)
             self.rec.stop()
             self.onListTracksIndexChanged()
 
     def onButtonRecClicked(self):
-        if self.ButtonRec.isEnabled():
-            self.ButtonRec.setEnabled(False)
+        if self.status == 1:
+            self.ButtonRec.setIcon(self.iconPause)
             self.ButtonCut.setEnabled(True)
-            self.ButtonPlay.setIcon(self.iconPause)
+            self.status = 2
             self.rec.play()
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
-        else:
+        elif self.status == 2:
+            self.status = 1
             self.ButtonRec.setIcon(self.iconRec)
-            self.ButtonSave.setEnabled(False)
             self.rec.pause()
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
-        if not self.ButtonRec.isEnabled():
+        if self.status == 1 or self.status == 2:
             self.rec.cut()
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
@@ -185,7 +166,6 @@ class GodiRec(QtGui.QMainWindow):
         if self.current_track.tags != tags:
             self.current_track.tags = tags
             self.current_track.save()
-        # set new current track and load tracks
         index = self.ListTracks.selectedIndexes()[0]
         self.current_track = self.RecListModel.itemFromIndex(index)
         self.setTags(self.current_track)
@@ -217,12 +197,13 @@ class GodiRec(QtGui.QMainWindow):
         self.path_dialog.exec_()
         self.cur_path = self.path_dialog.getValues()
         self.settings.setValue('path', os.path.dirname(self.cur_path))
-        self.LabelProjekt.setText(os.path.basename(self.cur_path))
+        self.setWindowTitle(os.path.basename(self.cur_path))
         self.rec_manager = godirec.Manager(self.cur_path)
         self.rec = godirec.Recorder(self.rec_manager)
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
-        for i in ("Play", "Stop", "Rec"):
+        self.status = 1
+        for i in ("Cut", "Stop", "Rec"):
             getattr(self, "Button"+i).setEnabled(True)
 
     def exit(self):

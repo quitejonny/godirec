@@ -12,11 +12,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>GodiRec</string>
+   <string>GodiRec - erzeuge neues Projekt</string>
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>cinema3.png</normaloff>cinema3.png</iconset>
+    <normaloff>microphone2.ico</normaloff>microphone2.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="verticalLayoutWidget">
@@ -72,13 +72,6 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
-        <widget class="QLabel" name="LabelTime">
-         <property name="text">
-          <string>-- / --</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
@@ -92,9 +85,9 @@
         </spacer>
        </item>
        <item>
-        <widget class="QLabel" name="LabelProjekt">
+        <widget class="QLabel" name="LabelTime">
          <property name="text">
-          <string>erzeuge Projekt</string>
+          <string>-- / --</string>
          </property>
         </widget>
        </item>
