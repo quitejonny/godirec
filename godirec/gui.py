@@ -7,7 +7,7 @@ import logging
 import logging.config
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
-import godirec
+from godirec import godirec
 import pkg_resources
 
 
@@ -247,7 +247,7 @@ class GodiRec(QtGui.QMainWindow):
         sys.exit(app.exec_())
 
 
-if __name__ == "__main__":
+def main():
     logger = logging.getLogger(__name__)
     log_conf_file = pkg_resources.resource_filename( 
                     __name__,"data/log/log_config.json")
@@ -261,5 +261,8 @@ if __name__ == "__main__":
     window = GodiRec()
     window.show()
     sys.exit(app.exec_())
+
+if __name__ == "__main__":
+    main()
 
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import sys
-from setuptools import setup
+from setuptools import setup, find_packages
 if sys.platform == 'win32':
     import py2exe, sys, os
     sys.argv.append('py2exe')
@@ -13,7 +13,7 @@ setup(
     author_email='daniel.supplieth@gmx.de',
     options = {'py2exe': {'bundle_files': 1, 'compressed': True, "includes":["sip"]}},
     # windows = [{'script': "godirec.pyw", "icon_resources": [(1, "ui\microphone2.ico")]}],
-    packages = ["godirec"],
+    packages = find_packages(),
     package_data = {"godirec": ["data/*"]},
     # zipfile = None,
     entry_points = {
