@@ -8,7 +8,7 @@ import logging.config
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 from godirec import godirec
-import pkg_resources
+from pkg_resources import resource_filename
 
 
 class RecorderListModel(QtCore.QAbstractListModel): 
@@ -68,7 +68,7 @@ class PathDialog(QtGui.QDialog):
 
     def __init__(self, path=""):
         QtGui.QDialog.__init__(self)
-        dialog_ui_file = pkg_resources.resource_filename(__name__, 'data/ui/dialog.ui')
+        dialog_ui_file = resource_filename(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
@@ -78,7 +78,7 @@ class PathDialog(QtGui.QDialog):
         self.LineEditProjekt.setText(projektName)
         self.LineEditPath.setText(path)
         self.iconDir = QtGui.QIcon()
-        folder_yellow = pkg_resources.resource_filename(__name__, 'data/ui/folder-yellow.png')
+        folder_yellow = resource_filename(__name__,'data/ui/folder-yellow.png')
         self.iconDir.addPixmap(QtGui.QPixmap(folder_yellow))
         self.ButtonDir.setIcon(self.iconDir)
         self.ButtonCreate.setFocus()
@@ -104,7 +104,7 @@ class GodiRec(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        godi_rec_ui = pkg_resources.resource_filename(__name__, 'data/ui/godi_rec.ui')
+        godi_rec_ui = resource_filename(__name__, 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
         self.RecListModel = RecorderListModel(parent=self)
         self.ListTracks.setModel(self.RecListModel)
@@ -120,12 +120,12 @@ class GodiRec(QtGui.QMainWindow):
         self.status = 0 #Status 0=no projekt, 1=no stream running, 2=rec
         self.setIcons()
         self.iconPause = QtGui.QIcon()
-        pause_png = pkg_resources.resource_filename(__name__, 'data/ui/pause10.png')
+        pause_png = resource_filename(__name__, 'data/ui/pause10.png')
         self.iconPause.addPixmap(QtGui.QPixmap(pause_png))
         self.iconRec = QtGui.QIcon()
-        record_png = pkg_resources.resource_filename(__name__, 'data/ui/record6.png')
+        record_png = resource_filename(__name__, 'data/ui/record6.png')
         self.iconRec.addPixmap(QtGui.QPixmap(record_png))
-        microphone_ico = pkg_resources.resource_filename(__name__, 'data/ui/microphone2.ico')
+        microphone_ico = resource_filename(__name__, 'data/ui/microphone2.ico')
         self.setWindowIcon(QtGui.QIcon(microphone_ico))
         self.current_track = godirec.Track("")
         self.cur_path = ""
@@ -147,7 +147,7 @@ class GodiRec(QtGui.QMainWindow):
                  "Cut": "cutting.png"}
         for i, img in icons.items():
             icon = QtGui.QIcon()
-            img_file = pkg_resources.resource_filename(__name__, 'data/ui/{}'.format(img))
+            img_file = resource_filename(__name__, 'data/ui/{}'.format(img))
             icon.addPixmap(QtGui.QPixmap(img_file))
             getattr(self, "Button"+i).setIcon(icon)
         
@@ -258,8 +258,7 @@ def main():
     sys.exit(app.exec_())
 
 logger = logging.getLogger(__name__)
-log_conf_file = pkg_resources.resource_filename( 
-                __name__,"data/log/log_config.json")
+log_conf_file = resource_filename(__name__, "data/log/log_config.json")
 with open(log_conf_file, 'r') as log_conf_data:
     log_config = json.load(log_conf_data)
 logging.config.dictConfig(log_config)
