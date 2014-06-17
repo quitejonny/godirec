@@ -42,11 +42,29 @@ class RecorderListModel(QtCore.QAbstractListModel):
         return self.index(len(self.rec_manager.tracklist)-1)
 
 
+class SettingsDialog(QtGui.QDialog):
+
+    def __init__(self, settings, parent):
+        QtGui.QDialog.__init__(self, parent=parent)
+        settings_ui_file = pkg_resources.resource_filename(__name__,
+                                            'data/ui/settings.ui')
+        uic.loadUi(settings_ui_file, self)
+        if 'tags' in settings.allKeys():
+            self.tags = settings.Value('tags', type=dict)
+        else:
+            self.tags = dict()
+            for tag in set(godirec.Tags().keys()).difference(set(['date'])):
+                self.tags[tag] = str(getattr(parent, 'Label'+tag.title()).text())
+        print(self.tags)
+        #self.tags = {Titel:[];}
+
+
+
 class PathDialog(QtGui.QDialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
         und an das Programm zurückgeben."""
 
-    def __init__(self, path = ""):
+    def __init__(self, path=""):
         QtGui.QDialog.__init__(self)
         dialog_ui_file = pkg_resources.resource_filename(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
@@ -96,6 +114,7 @@ class GodiRec(QtGui.QMainWindow):
             getattr(self, "Button"+i).setEnabled(False)
         self.ActionExit.triggered.connect(self.exit)
         self.ActionNewProject.triggered.connect(self.createNewProject)
+        self.ActionSettings.triggered.connect(self.openSettings)
         self.status = 0 #Status 0=no projekt, 1=no stream running, 2=rec
         self.setIcons()
         self.iconPause = QtGui.QIcon()
@@ -217,6 +236,11 @@ class GodiRec(QtGui.QMainWindow):
         self.status = 1
         for i in ("Stop", "Rec"):
             getattr(self, "Button"+i).setEnabled(True)
+
+    def openSettings(self):
+        self.settings_dialog = SettingsDialog(self.settings, self)
+        self.settings_dialog.show()
+        self.settings_dialog.exec_()
 
     def exit(self):
         self.close()
