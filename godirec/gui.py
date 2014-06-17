@@ -49,6 +49,7 @@ class SettingsDialog(QtGui.QDialog):
         settings_ui_file = pkg_resources.resource_filename(__name__,
                                             'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
+        self.model = QtGui.QStandardItemModel(self.listView)
         if 'tags' in settings.allKeys():
             self.tags = settings.Value('tags', type=dict)
         else:
@@ -58,7 +59,14 @@ class SettingsDialog(QtGui.QDialog):
                 self.tags[key] = list()
         for key in self.tags:
             self.comboBox.addItem(key)
-        #self.tags = {Titel:[];}
+        self.comboBox.activated[str].connect(self.comboBoxChanged)
+
+    def comboBoxChanged(self, key):
+        values = self.tags[key]
+        for value in values:
+            item = QtGui.QStandardItem(value)
+            self.model.appendRow(item)
+        self.listView.setModel(self.model)
 
 
 
