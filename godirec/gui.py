@@ -54,8 +54,10 @@ class SettingsDialog(QtGui.QDialog):
         else:
             self.tags = dict()
             for tag in set(godirec.Tags().keys()).difference(set(['date'])):
-                self.tags[tag] = str(getattr(parent, 'Label'+tag.title()).text())
-        print(self.tags)
+                key = str(getattr(parent, 'Label'+tag.title()).text())[:-1]
+                self.tags[key] = list()
+        for key in self.tags:
+            self.comboBox.addItem(key)
         #self.tags = {Titel:[];}
 
 
@@ -248,19 +250,20 @@ class GodiRec(QtGui.QMainWindow):
 
 
 def main():
-    logger = logging.getLogger(__name__)
-    log_conf_file = pkg_resources.resource_filename( 
-                    __name__,"data/log/log_config.json")
-    with open(log_conf_file, 'r') as log_conf_data:
-        log_config = json.load(log_conf_data)
-    logging.config.dictConfig(log_config)
-    logging.info("Logging loaded")
     multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)
     QtCore.QObject.connect(app,QtCore.SIGNAL("lastWindowClosed()"),app,QtCore.SLOT("quit()"))
     window = GodiRec()
     window.show()
     sys.exit(app.exec_())
+
+logger = logging.getLogger(__name__)
+log_conf_file = pkg_resources.resource_filename( 
+                __name__,"data/log/log_config.json")
+with open(log_conf_file, 'r') as log_conf_data:
+    log_config = json.load(log_conf_data)
+logging.config.dictConfig(log_config)
+logging.info("Logging loaded")
 
 if __name__ == "__main__":
     main()
