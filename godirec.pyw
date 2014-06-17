@@ -203,7 +203,7 @@ class GodiRec(QtGui.QMainWindow):
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
         self.status = 1
-        for i in ("Cut", "Stop", "Rec"):
+        for i in ("Stop", "Rec"):
             getattr(self, "Button"+i).setEnabled(True)
 
     def exit(self):
