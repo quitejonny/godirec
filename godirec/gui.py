@@ -46,8 +46,7 @@ class SettingsDialog(QtGui.QDialog):
 
     def __init__(self, settings, parent):
         QtGui.QDialog.__init__(self, parent=parent)
-        settings_ui_file = pkg_resources.resource_filename(__name__,
-                                            'data/ui/settings.ui')
+        settings_ui_file = resource_filename(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         self.model = QtGui.QStandardItemModel(self.listView)
         if 'tags' in settings.allKeys():
