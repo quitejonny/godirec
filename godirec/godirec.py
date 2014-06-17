@@ -152,7 +152,7 @@ class Recorder(object):
         self._is_recording = False
         self._is_pausing = False
         self.timer = Timer()
-        self.format_list = ['mp3', 'flac']
+        self.format_list = ['mp3', 'flac', 'ogg']
 
     def play(self):
         if self._is_recording and not self._is_pausing:
