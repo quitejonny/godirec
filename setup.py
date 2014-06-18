@@ -2,13 +2,14 @@
 import sys
 import os
 from setuptools import setup, find_packages
+from godirec import __version__
 if sys.platform == 'win32':
     import py2exe
     sys.argv.append('py2exe')
 
 setup(
     name = 'GodiRec',
-    version = "0.1",
+    version = __version__,
     description = 'Gottesdienst Aufnahme Programm',
     author = 'Daniel Supplieth & Johannes Roos',
     author_email = 'daniel.supplieth@gmx.de',
@@ -27,6 +28,11 @@ setup(
     include_package_data = True,
     # zipfile = None,
     entry_points = {
-        'gui_scripts': ['godirec=godirec.gui:main'],
+        'gui_scripts': ['godirec=godirec:run_gui'],
     },
+    install_requires = [
+        'pydub',
+        'setuptools',
+        'mutagen',
+    ],
 )

@@ -2,12 +2,10 @@
 import sys
 import os
 import multiprocessing
-import json
-import logging
-import logging.config
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 from godirec import godirec
+import logging
 from pkg_resources import resource_filename
 
 
@@ -145,7 +143,7 @@ class GodiRec(QtGui.QMainWindow):
         self.completerArtist = QtGui.QCompleter(self.wordlistArtist, self)
         self.LineEditTitle.setCompleter(self.completerTitel)
         self.LineEditArtist.setCompleter(self.completerArtist)
-        logger.info('GUI loaded')
+        logging.info('GUI loaded')
 
     def setIcons(self):
         """ This function is used as workaround for not loading icons in
@@ -256,22 +254,11 @@ class GodiRec(QtGui.QMainWindow):
         sys.exit(app.exec_())
 
 
-def main():
+def run_gui():
     multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)
-    QtCore.QObject.connect(app,QtCore.SIGNAL("lastWindowClosed()"),app,QtCore.SLOT("quit()"))
+    QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
+                           QtCore.SLOT("quit()"))
     window = GodiRec()
     window.show()
     sys.exit(app.exec_())
-
-logger = logging.getLogger(__name__)
-log_conf_file = resource_filename(__name__, "data/log/log_config.json")
-with open(log_conf_file, 'r') as log_conf_data:
-    log_config = json.load(log_conf_data)
-logging.config.dictConfig(log_config)
-logging.info("Logging loaded")
-
-if __name__ == "__main__":
-    main()
-
-

@@ -114,7 +114,6 @@ class Track(object):
                 # save tags in every track file
                 audio = mutagen.File(f, easy=True)
                 for tag in self.tags.keys():
-                    print("save Tag: "+self.tags[tag])
                     try:
                         audio[tag] = self.tags[tag]
                     except KeyError:
