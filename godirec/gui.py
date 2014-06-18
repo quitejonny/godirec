@@ -43,28 +43,64 @@ class RecorderListModel(QtCore.QAbstractListModel):
 class SettingsDialog(QtGui.QDialog):
 
     def __init__(self, settings, parent):
+        self.settings = settings
         QtGui.QDialog.__init__(self, parent=parent)
         settings_ui_file = resource_filename(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
-        self.model = QtGui.QStandardItemModel(self.listView)
-        if 'tags' in settings.allKeys():
-            self.tags = settings.Value('tags', type=dict)
+        #self.settings.clear()
+        if 'tags' in self.settings.allKeys():
+            print("in")
+            self.tags = self.settings.value('tags',
+                                type='QVariantMap')
         else:
             self.tags = dict()
             for tag in set(godirec.Tags().keys()).difference(set(['date'])):
                 key = str(getattr(parent, 'Label'+tag.title()).text())[:-1]
                 self.tags[key] = list()
+        print(self.tags)
         for key in self.tags:
             self.comboBox.addItem(key)
         self.comboBox.activated[str].connect(self.comboBoxChanged)
+        self.pushButtonAdd.clicked.connect(self.addTag)
+        self.pushButtonDelete.clicked.connect(self.deleteTag)
 
     def comboBoxChanged(self, key):
+        self.model = QtGui.QStandardItemModel(self.listView)
         values = self.tags[key]
+        values.sort()
         for value in values:
             item = QtGui.QStandardItem(value)
+            item.setCheckable(True)
             self.model.appendRow(item)
         self.listView.setModel(self.model)
+        if len(values) == 0:
+            self.pushButtonDelete.setEnabled(False)
+        else:
+            self.pushButtonDelete.setEnabled(True)
 
+    def addTag(self):
+        value = self.lineEditAdd.text()
+        if len(value):
+            key = str(self.comboBox.currentText())
+            self.tags[key].append(value)
+            self.comboBoxChanged(key)
+            self.pushButtonDelete.setEnabled(True)
+            self.lineEditAdd.setText("")
+            self.settings.setValue('tags', self.tags)
+            print("add Tags to settings:")
+            print(self.tags)
+
+    def deleteTag(self):
+        model = self.listView.model()
+        key = str(self.comboBox.currentText())
+        for row in range(model.rowCount()):
+            item = model.item(row)
+            if item.checkState() == QtCore.Qt.Checked:
+                self.tags[key].pop(row)
+        if model.rowCount() == 0:
+            self.pushButtonDelete.setEnabled(False)
+        self.settings.setValue('tags', self.tags)
+        self.comboBoxChanged(key)
 
 
 class PathDialog(QtGui.QDialog):
@@ -124,6 +160,7 @@ class GodiRec(QtGui.QMainWindow):
         self.ActionSettings.triggered.connect(self.openSettings)
         self.status = 0 #Status 0=no projekt, 1=no stream running, 2=rec
         self.setIcons()
+        self.updateWordList()
         self.iconPause = QtGui.QIcon()
         pause_png = resource_filename(__name__, 'data/ui/pause10.png')
         self.iconPause.addPixmap(QtGui.QPixmap(pause_png))
@@ -134,6 +171,9 @@ class GodiRec(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon(microphone_ico))
         self.current_track = godirec.Track("")
         self.cur_path = ""
+        logging.info('GUI loaded')
+
+    def updateWordList(self):
         self.wordlistTitel = ["Lied","Begrüßung","Präludium","Infos",
                          "Ankündigungen", "Kinderlied", "Segen",
                          "Postludium", "Predigt", "Sonstiges"]
@@ -143,7 +183,6 @@ class GodiRec(QtGui.QMainWindow):
         self.completerArtist = QtGui.QCompleter(self.wordlistArtist, self)
         self.LineEditTitle.setCompleter(self.completerTitel)
         self.LineEditArtist.setCompleter(self.completerArtist)
-        logging.info('GUI loaded')
 
     def setIcons(self):
         """ This function is used as workaround for not loading icons in
@@ -162,6 +201,7 @@ class GodiRec(QtGui.QMainWindow):
             self.ButtonCut.setEnabled(False)
             self.rec.stop()
             self.onListTracksIndexChanged()
+            self.status = 1
 
     def onButtonRecClicked(self):
         if self.status == 1:

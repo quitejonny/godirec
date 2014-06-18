@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>settings.png</normaloff>settings.png</iconset>
+    <normaloff>../../../../.designer/backup/settings.png</normaloff>../../../../.designer/backup/settings.png</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
@@ -29,7 +29,7 @@
         <enum>QTabWidget::North</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="export">
         <attribute name="title">
@@ -41,7 +41,7 @@
            <x>10</x>
            <y>10</y>
            <width>381</width>
-           <height>111</height>
+           <height>131</height>
           </rect>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -53,9 +53,16 @@
            </widget>
           </item>
           <item>
+           <widget class="QCheckBox" name="checkBox_2">
+            <property name="text">
+             <string>MP3</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QCheckBox" name="checkBox">
             <property name="text">
-             <string>FLAGG</string>
+             <string>FLAC</string>
             </property>
             <property name="tristate">
              <bool>false</bool>
@@ -63,9 +70,9 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="QCheckBox" name="checkBox_4">
             <property name="text">
-             <string>MP3</string>
+             <string>OGG</string>
             </property>
            </widget>
           </item>
@@ -89,6 +96,27 @@
          </item>
          <item>
           <widget class="QListView" name="listView"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLineEdit" name="lineEditAdd"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonAdd">
+             <property name="text">
+              <string>Hinzufügen</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonDelete">
+             <property name="text">
+              <string>Entfernen</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </widget>

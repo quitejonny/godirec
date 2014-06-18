@@ -195,6 +195,7 @@ class Recorder(object):
             self._wavefile.close()
             self._is_recording = False
             self.timer.stop()
+            self.timer.cut()
             self.save_current_track()
 
     def save_current_track(self, filetype=''):
