@@ -16,7 +16,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>microphone2.ico</normaloff>microphone2.ico</iconset>
+    <normaloff>../../../../.designer/backup/microphone2.ico</normaloff>../../../../.designer/backup/microphone2.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QWidget" name="verticalLayoutWidget">
@@ -33,37 +33,52 @@
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
         <widget class="QPushButton" name="ButtonStop">
+         <property name="toolTip">
+          <string>strg+J</string>
+         </property>
          <property name="text">
           <string/>
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>media26.png</normaloff>media26.png</iconset>
+           <normaloff>../../../../.designer/backup/media26.png</normaloff>../../../../.designer/backup/media26.png</iconset>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+J</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonRec">
+         <property name="toolTip">
+          <string>strg+K</string>
+         </property>
          <property name="text">
           <string/>
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>record6.png</normaloff>record6.png</iconset>
+           <normaloff>../../../../.designer/backup/record6.png</normaloff>../../../../.designer/backup/record6.png</iconset>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+K</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QPushButton" name="ButtonCut">
          <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt einen neuen Track.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt einen neuen Track.&lt;/p&gt;&lt;p&gt;strg+L&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
           <string/>
          </property>
          <property name="icon">
           <iconset>
-           <normaloff>cutting.png</normaloff>cutting.png</iconset>
+           <normaloff>../../../../.designer/backup/cutting.png</normaloff>../../../../.designer/backup/cutting.png</iconset>
+         </property>
+         <property name="shortcut">
+          <string>Ctrl+L</string>
          </property>
         </widget>
        </item>
@@ -238,7 +253,7 @@
   <action name="ActionSettings">
    <property name="icon">
     <iconset>
-     <normaloff>settings.png</normaloff>settings.png</iconset>
+     <normaloff>../../../../.designer/backup/settings.png</normaloff>../../../../.designer/backup/settings.png</iconset>
    </property>
    <property name="text">
     <string>Einstellungen</string>
