@@ -1,0 +1,20 @@
+Source: python3-godirec
+Priority: optional
+Maintainer: Johannes Roos <johannes.roos@rwth-aachen.de>
+Build-Depends: debhelper (>= 8.0.0),
+ python,
+ python-dev
+Standards-Version: 3.9.5
+Section: libs
+
+Package: python3-godirec
+Section: libs
+Architecture: any
+Depends: ${python3:Depends},
+ ${misc:Depends},
+ python3-pyaudio,
+ libav-tools
+Description: Gottesdienst Aufnahme Programm
+ Mithilfe des Programmes kann auf einfache Weise das Audiosignal des
+ Gottesdienstes mitgeschnitten werden. Das Programm erstellt während der
+ Aufnahme die gewünschten Dateiformate.

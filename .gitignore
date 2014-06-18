@@ -1,4 +1,5 @@
 .gitignore
+.pybuild
 *.egg-info
 *-Godi
 
