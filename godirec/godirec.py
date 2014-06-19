@@ -7,7 +7,6 @@ from pydub import AudioSegment
 import tempfile
 import concurrent.futures
 import threading
-import multiprocessing
 import mutagen
 from mutagen import id3
 
@@ -82,8 +81,6 @@ class Track(object):
             self.save_tags()
         else:
             if folder == None:
-                # TODO: create subfolder if needed which is named after the
-                # given filetype
                 folder = self._folder
             self.worker = threading.Thread(target=self._save,
                                       args=(filetypes, folder))
@@ -124,17 +121,21 @@ class Track(object):
         if 'wav' in filetypes:
             filetypes.remove('wav')
         futures = set()
-        with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
             for filetype in filetypes:
                 filename = "{}.{}".format(self._basename, filetype)
-                path = os.path.abspath(os.path.join(folder, filename))
+                filetype_folder = os.path.join(folder, filetype)
+                if not os.path.exists(filetype_folder):
+                    os.mkdir(filetype_folder)
+                path = os.path.abspath(os.path.join(filetype_folder, filename))
                 future = executor.submit(_run_convert_process,
                                          self.origin_file, path, filetype)
                 futures.add(future)
             concurrent.futures.wait(futures)
         for filetype in filetypes:
+            filetype_folder = os.path.join(folder, filetype)
             filename = "{}.{}".format(self._basename, filetype)
-            path = os.path.abspath(os.path.join(folder, filename))
+            path = os.path.abspath(os.path.join(filetype_folder, filename))
             self._files.append(path)
         self.save_tags()
 
@@ -297,6 +298,5 @@ class Timer(object):
         self.timer.start()
 
 def _run_convert_process(origin_file, path, filetype):
-    #track = AudioSegment.from_wav(origin_file)
     song = AudioSegment.from_wav(origin_file)
     song.export(path, format=filetype)

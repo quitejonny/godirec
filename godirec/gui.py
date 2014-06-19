@@ -128,8 +128,8 @@ class SettingsDialog(QtGui.QDialog):
                 
 
 class PathDialog(QtGui.QDialog):
-    """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
-        und an das Programm zurückgeben."""
+    """ Path Dialog will ask for workspace path and project name. If path
+        doesn't exist it will be created"""
 
     def __init__(self, path=""):
         QtGui.QDialog.__init__(self)
@@ -139,8 +139,8 @@ class PathDialog(QtGui.QDialog):
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
-        projektName = "{:%Y_%m_%d}-Godi".format(datetime.today())
-        self.LineEditProjekt.setText(projektName)
+        projectName = "{:%Y_%m_%d}-Godi".format(datetime.today())
+        self.LineEditProjekt.setText(projectName)
         self.LineEditPath.setText(path)
         self.iconDir = QtGui.QIcon()
         folder_yellow = resource_filename(__name__,'data/ui/folder-yellow.png')
@@ -149,23 +149,26 @@ class PathDialog(QtGui.QDialog):
         self.ButtonCreate.setFocus()
 
     def onButtonDirClicked(self):
+        """ opens project FileDialog"""
         temp_path = QtGui.QFileDialog.getExistingDirectory(
             self,"Neues Projekt erzeugen in:",".")
         self.LineEditPath.setText(temp_path)
 
     def onButtonCreateClicked(self):
+        """ closes PathDialog window and creates necessery directories"""
         temp_path = str(self.LineEditPath.text())
-        projektName = str(self.LineEditProjekt.text())
-        self.cur_path1 = os.path.join(temp_path, projektName)
+        projectName = str(self.LineEditProjekt.text())
+        self.cur_path1 = os.path.join(temp_path, projectName)
         if not os.path.exists(self.cur_path1):
             os.makedirs(self.cur_path1)
         self.close()
 
     def getValues(self):
+        """ returns project folder"""
         return str(self.cur_path1)
         
 
-class GodiRec(QtGui.QMainWindow):
+class GodiRecWindow(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -325,6 +328,6 @@ def run_gui():
     app = QtGui.QApplication(sys.argv)
     QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
                            QtCore.SLOT("quit()"))
-    window = GodiRec()
+    window = GodiRecWindow()
     window.show()
     sys.exit(app.exec_())
