@@ -2,14 +2,14 @@
 import sys
 import os
 from setuptools import setup, find_packages
-from godirec import __version__
+import godirec
 if sys.platform == 'win32':
     import py2exe
     sys.argv.append('py2exe')
 
 setup(
     name = 'GodiRec',
-    version = __version__,
+    version = godirec.__version__,
     description = 'Gottesdienst Aufnahme Programm',
     author = 'Daniel Supplieth & Johannes Roos',
     author_email = 'daniel.supplieth@gmx.de',
@@ -17,7 +17,12 @@ setup(
         'py2exe': {
             'bundle_files': 1,
             'compressed': True,
-            "includes": ["sip"],
+            "includes": [
+                "sip",
+                "readline",
+                "win32api",
+                "win32con"
+            ],
         },
     },
     # windows = [
