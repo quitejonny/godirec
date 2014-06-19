@@ -140,6 +140,13 @@ class PathDialog(QtGui.QDialog):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
         projectName = "{:%Y_%m_%d}-Godi".format(datetime.today())
+        # create new project directory if default directory already exists
+        i = 0
+        projectPath = os.path.join(path, projectName)
+        while os.path.exists(projectPath):
+            i += 1
+            projectName = "{:%Y_%m_%d}-Godi-{}".format(datetime.today(), i)
+            projectPath = os.path.join(path, projectName)
         self.LineEditProjekt.setText(projectName)
         self.LineEditPath.setText(path)
         self.iconDir = QtGui.QIcon()
