@@ -2,7 +2,9 @@
 import sys
 import os
 from setuptools import setup, find_packages
+from pkg_resources import resource_filename
 import godirec
+
 
 extra_setup = dict()
 
@@ -19,12 +21,16 @@ if sys.platform == 'win32':
                 "win32api",
                 "win32con"
             ],
+            'zipfile': None,
         },
     }
     extra_setup['windows'] = {
         'script': "godirec/gui.py",
-        "icon_resources": [(1, "ui/microphone2.ico")],
+        "icon_resources": [
+            (1, resource_filename(godirec.__name__, "data/ui/microphone2.ico"))
+        ],
     }
+
 
 setup(
     name = 'GodiRec',
