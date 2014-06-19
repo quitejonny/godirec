@@ -47,22 +47,19 @@ class SettingsDialog(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent=parent)
         settings_ui_file = resource_filename(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
-        #self.settings.clear()
         if 'tags' in self.settings.allKeys():
-            print("in")
-            self.tags = self.settings.value('tags',
-                                type='QVariantMap')
+            self.tags = self.settings.value('tags', type='QVariantMap')
         else:
             self.tags = dict()
             for tag in set(godirec.Tags().keys()).difference(set(['date'])):
                 key = str(getattr(parent, 'Label'+tag.title()).text())[:-1]
                 self.tags[key] = list()
-        print(self.tags)
         for key in self.tags:
             self.comboBox.addItem(key)
         self.comboBox.activated[str].connect(self.comboBoxChanged)
         self.pushButtonAdd.clicked.connect(self.addTag)
         self.pushButtonDelete.clicked.connect(self.deleteTag)
+        self.comboBoxChanged(str(self.comboBox.currentText()))
 
     def comboBoxChanged(self, key):
         self.model = QtGui.QStandardItemModel(self.listView)
@@ -87,8 +84,7 @@ class SettingsDialog(QtGui.QDialog):
             self.pushButtonDelete.setEnabled(True)
             self.lineEditAdd.setText("")
             self.settings.setValue('tags', self.tags)
-            print("add Tags to settings:")
-            print(self.tags)
+            logging.info("Add Tag "+value+" to "+key)
 
     def deleteTag(self):
         model = self.listView.model()
@@ -96,7 +92,8 @@ class SettingsDialog(QtGui.QDialog):
         for row in range(model.rowCount()):
             item = model.item(row)
             if item.checkState() == QtCore.Qt.Checked:
-                self.tags[key].pop(row)
+                value = self.tags[key].pop(row)
+                logging.info("Delete Tag "+value+" from "+key)
         if model.rowCount() == 0:
             self.pushButtonDelete.setEnabled(False)
         self.settings.setValue('tags', self.tags)
@@ -174,15 +171,14 @@ class GodiRec(QtGui.QMainWindow):
         logging.info('GUI loaded')
 
     def updateWordList(self):
-        self.wordlistTitel = ["Lied","Begrüßung","Präludium","Infos",
-                         "Ankündigungen", "Kinderlied", "Segen",
-                         "Postludium", "Predigt", "Sonstiges"]
-        self.wordlistArtist = ["Andreas T. Reichert", "Samuel Falk", 
-                               "Thomas Klein", "Sigfried Pries"]
-        self.completerTitel = QtGui.QCompleter(self.wordlistTitel, self)
-        self.completerArtist = QtGui.QCompleter(self.wordlistArtist, self)
-        self.LineEditTitle.setCompleter(self.completerTitel)
-        self.LineEditArtist.setCompleter(self.completerArtist)
+        if 'tags' in self.settings.allKeys():
+            tags = self.settings.value('tags', type='QVariantMap')
+            for key in tags:
+                completer = QtGui.QCompleter(tags[key], self)
+                if key == 'Titel':
+                    getattr(self, 'LineEditTitle').setCompleter(completer)
+                else:
+                    getattr(self, 'LineEdit'+key).setCompleter(completer)
 
     def setIcons(self):
         """ This function is used as workaround for not loading icons in
@@ -288,6 +284,7 @@ class GodiRec(QtGui.QMainWindow):
         self.settings_dialog = SettingsDialog(self.settings, self)
         self.settings_dialog.show()
         self.settings_dialog.exec_()
+        self.updateWordList()
 
     def exit(self):
         self.close()
