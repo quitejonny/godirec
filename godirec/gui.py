@@ -301,6 +301,8 @@ class GodiRec(QtGui.QMainWindow):
         self.setWindowTitle(os.path.basename(self.cur_path))
         self.rec_manager = godirec.Manager(self.cur_path)
         self.rec = godirec.Recorder(self.rec_manager)
+        if 'formats' in self.settings.allKeys():
+            self.rec.format_list = self.settings.value('formats',type='QString')
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
         self.status = 1
