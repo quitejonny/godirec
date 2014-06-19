@@ -43,8 +43,8 @@ class RecorderListModel(QtCore.QAbstractListModel):
 class SettingsDialog(QtGui.QDialog):
 
     def __init__(self, settings, parent):
-        self.settings = settings
         QtGui.QDialog.__init__(self, parent=parent)
+        self.settings = settings
         settings_ui_file = resource_filename(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         #Load Tags
@@ -59,13 +59,13 @@ class SettingsDialog(QtGui.QDialog):
             self.comboBox.addItem(key)
         #Load FileFormats
         if 'formats' in self.settings.allKeys():
-            self.formats = self.settings.value('formats',type='QString')
+            self.formats = self.settings.value('formats', type=str)
         else:
             self.formats = list()
-        for format in ['mp3','flac','ogg','wav']:
-            getattr(self, 'checkBox_'+format).clicked.connect(
-                                                self.checkboxesChanged)
-        self.updateCheckboxes()
+        for filetype in ['mp3','flac','ogg','wav']:
+            checkbox = getattr(self, 'checkBox_'+filetype)
+            checkbox.clicked.connect(self.checkBoxesChanged)
+        self.updateCheckBoxes()
         self.comboBox.activated[str].connect(self.comboBoxChanged)
         self.pushButtonAdd.clicked.connect(self.addTag)
         self.pushButtonDelete.clicked.connect(self.deleteTag)
@@ -80,21 +80,18 @@ class SettingsDialog(QtGui.QDialog):
             item.setCheckable(True)
             self.model.appendRow(item)
         self.listView.setModel(self.model)
-        if len(values) == 0:
-            self.pushButtonDelete.setEnabled(False)
-        else:
-            self.pushButtonDelete.setEnabled(True)
+        self.pushButtonDelete.setEnabled(bool(values))
 
     def addTag(self):
-        value = self.lineEditAdd.text()
-        if len(value):
+        value = str(self.lineEditAdd.text())
+        if value:
             key = str(self.comboBox.currentText())
             self.tags[key].append(value)
             self.comboBoxChanged(key)
             self.pushButtonDelete.setEnabled(True)
             self.lineEditAdd.setText("")
             self.settings.setValue('tags', self.tags)
-            logging.info("Add Tag "+value+" to "+key)
+            logging.info("Add Tag {} to {}".format(value, key))
 
     def deleteTag(self):
         model = self.listView.model()
@@ -103,28 +100,28 @@ class SettingsDialog(QtGui.QDialog):
             item = model.item(row)
             if item.checkState() == QtCore.Qt.Checked:
                 value = self.tags[key].pop(row)
-                logging.info("Delete Tag "+value+" from "+key)
+                logging.info("Delete Tag {} from {}".format(value, key))
         if model.rowCount() == 0:
             self.pushButtonDelete.setEnabled(False)
         self.settings.setValue('tags', self.tags)
         self.comboBoxChanged(key)
 
-    def updateCheckboxes(self):
-        for format in ['mp3','flac','ogg','wav']:
-            if self.formats.count(format) == 1:
-                getattr(self,'checkBox_'+format).setCheckState(
-                                                QtCore.Qt.Checked)
+    def updateCheckBoxes(self):
+        for filetype in ['mp3', 'flac', 'ogg', 'wav']:
+            checkbox = getattr(self, 'checkBox_'+filetype)
+            if filetype in self.formats:
+                checkbox.setCheckState(QtCore.Qt.Checked)
             else:
-                getattr(self,'checkBox_'+format).setCheckState(
-                                                QtCore.Qt.Unchecked)
+                checkbox.setCheckState(QtCore.Qt.Unchecked)
 
-    def checkboxesChanged(self):
+    def checkBoxesChanged(self):
         self.formats = list()
-        for format in ['mp3','flac','ogg','wav']:
-            if getattr(self, 'checkBox_'+format).checkState() == QtCore.Qt.Checked:
-                self.formats.append(format)
+        for filetype in ['mp3', 'flac', 'ogg', 'wav']:
+            checkbox = getattr(self, 'checkBox_'+filetype)
+            if checkbox.checkState() == QtCore.Qt.Checked:
+                self.formats.append(filetype)
         self.settings.setValue('formats', self.formats)
-        logging.info("Chenged Exportfile formats")
+        logging.info("Changed Exportfile formats")
                 
 
 class PathDialog(QtGui.QDialog):
@@ -312,7 +309,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.rec_manager = godirec.Manager(self.cur_path)
         self.rec = godirec.Recorder(self.rec_manager)
         if 'formats' in self.settings.allKeys():
-            self.rec.format_list = self.settings.value('formats',type='QString')
+            self.rec.format_list = self.settings.value('formats', type=str)
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
         self.status = 1
