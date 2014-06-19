@@ -29,7 +29,7 @@
         <enum>QTabWidget::North</enum>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="export">
         <attribute name="title">
@@ -53,14 +53,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_2">
+           <widget class="QCheckBox" name="checkBox_mp3">
             <property name="text">
              <string>MP3</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox">
+           <widget class="QCheckBox" name="checkBox_flac">
             <property name="text">
              <string>FLAC</string>
             </property>
@@ -70,14 +70,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_4">
+           <widget class="QCheckBox" name="checkBox_ogg">
             <property name="text">
              <string>OGG</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="checkBox_3">
+           <widget class="QCheckBox" name="checkBox_wav">
             <property name="text">
              <string>WAV</string>
             </property>

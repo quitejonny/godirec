@@ -47,6 +47,7 @@ class SettingsDialog(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent=parent)
         settings_ui_file = resource_filename(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
+        #Load Tags
         if 'tags' in self.settings.allKeys():
             self.tags = self.settings.value('tags', type='QVariantMap')
         else:
@@ -56,6 +57,15 @@ class SettingsDialog(QtGui.QDialog):
                 self.tags[key] = list()
         for key in self.tags:
             self.comboBox.addItem(key)
+        #Load FileFormats
+        if 'formats' in self.settings.allKeys():
+            self.formats = self.settings.value('formats',type='QString')
+        else:
+            self.formats = list()
+        for format in ['mp3','flac','ogg','wav']:
+            getattr(self, 'checkBox_'+format).clicked.connect(
+                                                self.checkboxesChanged)
+        self.updateCheckboxes()
         self.comboBox.activated[str].connect(self.comboBoxChanged)
         self.pushButtonAdd.clicked.connect(self.addTag)
         self.pushButtonDelete.clicked.connect(self.deleteTag)
@@ -99,6 +109,23 @@ class SettingsDialog(QtGui.QDialog):
         self.settings.setValue('tags', self.tags)
         self.comboBoxChanged(key)
 
+    def updateCheckboxes(self):
+        for format in ['mp3','flac','ogg','wav']:
+            if self.formats.count(format) == 1:
+                getattr(self,'checkBox_'+format).setCheckState(
+                                                QtCore.Qt.Checked)
+            else:
+                getattr(self,'checkBox_'+format).setCheckState(
+                                                QtCore.Qt.Unchecked)
+
+    def checkboxesChanged(self):
+        self.formats = list()
+        for format in ['mp3','flac','ogg','wav']:
+            if getattr(self, 'checkBox_'+format).checkState() == QtCore.Qt.Checked:
+                self.formats.append(format)
+        self.settings.setValue('formats', self.formats)
+        logging.info("Chenged Exportfile formats")
+                
 
 class PathDialog(QtGui.QDialog):
     """ Dialog soll Workspace Phat abfragen und Projekt Namen, diese erstellen
