@@ -21,10 +21,10 @@ if sys.platform == 'win32':
             ],
         },
     }
-    extra_setup['windows'] = [
+    extra_setup['windows'] = {
         'script': "godirec/gui.py",
-        "icon_resources": [(1, "ui/microphone2.ico")]},
-    ]
+        "icon_resources": [(1, "ui/microphone2.ico")],
+    }
 
 setup(
     name = 'GodiRec',
@@ -43,5 +43,5 @@ setup(
         'setuptools',
         'mutagen',
     ],
-    **extra_setup,
+    **extra_setup
 )
