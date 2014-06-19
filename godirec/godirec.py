@@ -118,6 +118,8 @@ class Track(object):
                 audio.save()
 
     def _save(self, filetypes, folder):
+        if 'wav' in filetypes:
+            filetypes.remove('wav')
         futures = set()
         with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
             for filetype in filetypes:
