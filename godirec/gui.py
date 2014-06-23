@@ -4,9 +4,9 @@ import os
 import multiprocessing
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
+import godirec
 from godirec import core
 import logging
-from pkg_resources import resource_stream, resource_string
 
 
 class RecorderListModel(QtCore.QAbstractListModel): 
@@ -45,7 +45,7 @@ class SettingsDialog(QtGui.QDialog):
     def __init__(self, settings, parent):
         QtGui.QDialog.__init__(self, parent=parent)
         self.settings = settings
-        settings_ui_file = resource_stream(__name__, 'data/ui/settings.ui')
+        settings_ui_file = godirec.resource_stream(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         #Load Tags
         if 'tags' in self.settings.allKeys():
@@ -130,7 +130,7 @@ class PathDialog(QtGui.QDialog):
 
     def __init__(self, path=""):
         QtGui.QDialog.__init__(self)
-        dialog_ui_file = resource_stream(__name__, 'data/ui/dialog.ui')
+        dialog_ui_file = godirec.resource_stream(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
@@ -174,7 +174,7 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        godi_rec_ui = resource_stream(__name__, 'data/ui/godi_rec.ui')
+        godi_rec_ui = godirec.resource_stream(__name__, 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
         self.RecListModel = RecorderListModel(parent=self)
         self.ListTracks.setModel(self.RecListModel)
@@ -321,7 +321,7 @@ class GodiRecWindow(QtGui.QMainWindow):
 def createIcon(pixmap):
     icon = QtGui.QIcon()
     pmap = QtGui.QPixmap()
-    png_str = resource_string(__name__, pixmap)
+    png_str = godirec.resource_string(__name__, pixmap)
     pmap.loadFromData(png_str)
     icon.addPixmap(pmap)
     return icon

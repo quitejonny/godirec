@@ -1,5 +1,5 @@
-import logging
-import logging.config
+# import logging
+# import logging.config
 import sys
 from PyQt4 import QtGui
 import os.path
@@ -15,8 +15,8 @@ __version__ = '0.1'
 def resource_stream(package, path):
     if hasattr(sys, "frozen"):
         folder = os.path.dirname(sys.argv[0])
-        filename = os.path.join(folder, package, path)
-        return open(filename)
+        filename = os.path.join(folder, __name__, path)
+        return open(filename, 'rb')
     else:
         return pkg_resources.resource_stream(package, path)
 
@@ -52,7 +52,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     sys.exit(1)
 
 
-config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
-logging.config.dictConfig(json.loads(config_str))
-logging.info("Logging loaded")
+# config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
+# logging.config.dictConfig(json.loads(config_str))
+# logging.info("Logging loaded")
 # sys.excepthook = handle_exception

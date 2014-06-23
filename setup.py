@@ -61,15 +61,15 @@ if sys.platform == 'win32':
             ],
         },
     }
-    extra_setup['windows'] = {
-        'script': "godirec/gui.py",
+    extra_setup['windows'] = [{
+        'script': "run_gui.py",
         "icon_resources": [
             (1, "godirec/data/ui/microphone2.ico")
         ],
-    }
+    }]
     extra_setup['zipfile'] = None
     extra_setup['data_files'] = [
-        (os.path.dirname(f), f) for f in glob.glob("godirec/data/*/*")
+        (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
     ]
 
 
