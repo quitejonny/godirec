@@ -4,14 +4,14 @@ import os
 import multiprocessing
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
-from godirec import godirec
+from godirec import core
 import logging
-from pkg_resources import resource_filename
+from pkg_resources import resource_stream, resource_string
 
 
 class RecorderListModel(QtCore.QAbstractListModel): 
 
-    def __init__(self, rec_manager=godirec.Manager(""), parent=None): 
+    def __init__(self, rec_manager=core.Manager(""), parent=None): 
         QtCore.QAbstractListModel.__init__(self, parent) 
         self.set_rec_manager(rec_manager)
 
@@ -45,14 +45,14 @@ class SettingsDialog(QtGui.QDialog):
     def __init__(self, settings, parent):
         QtGui.QDialog.__init__(self, parent=parent)
         self.settings = settings
-        settings_ui_file = resource_filename(__name__, 'data/ui/settings.ui')
+        settings_ui_file = resource_stream(__name__, 'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         #Load Tags
         if 'tags' in self.settings.allKeys():
             self.tags = self.settings.value('tags', type='QVariantMap')
         else:
             self.tags = dict()
-            for tag in set(godirec.Tags().keys()).difference(set(['date'])):
+            for tag in set(core.Tags().keys()).difference(set(['date'])):
                 key = str(getattr(parent, 'Label'+tag.title()).text())[:-1]
                 self.tags[key] = list()
         for key in self.tags:
@@ -130,7 +130,7 @@ class PathDialog(QtGui.QDialog):
 
     def __init__(self, path=""):
         QtGui.QDialog.__init__(self)
-        dialog_ui_file = resource_filename(__name__, 'data/ui/dialog.ui')
+        dialog_ui_file = resource_stream(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
@@ -146,9 +146,7 @@ class PathDialog(QtGui.QDialog):
             projectPath = os.path.join(path, projectName)
         self.LineEditProjekt.setText(projectName)
         self.LineEditPath.setText(path)
-        self.iconDir = QtGui.QIcon()
-        folder_yellow = resource_filename(__name__,'data/ui/folder-yellow.png')
-        self.iconDir.addPixmap(QtGui.QPixmap(folder_yellow))
+        self.iconDir = createIcon('data/ui/folder-yellow.png')
         self.ButtonDir.setIcon(self.iconDir)
         self.ButtonCreate.setFocus()
 
@@ -176,7 +174,7 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
-        godi_rec_ui = resource_filename(__name__, 'data/ui/godi_rec.ui')
+        godi_rec_ui = resource_stream(__name__, 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
         self.RecListModel = RecorderListModel(parent=self)
         self.ListTracks.setModel(self.RecListModel)
@@ -192,15 +190,10 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.status = 0 #Status 0=no projekt, 1=no stream running, 2=rec
         self.setIcons()
         self.updateWordList()
-        self.iconPause = QtGui.QIcon()
-        pause_png = resource_filename(__name__, 'data/ui/pause10.png')
-        self.iconPause.addPixmap(QtGui.QPixmap(pause_png))
-        self.iconRec = QtGui.QIcon()
-        record_png = resource_filename(__name__, 'data/ui/record6.png')
-        self.iconRec.addPixmap(QtGui.QPixmap(record_png))
-        microphone_ico = resource_filename(__name__, 'data/ui/microphone2.ico')
-        self.setWindowIcon(QtGui.QIcon(microphone_ico))
-        self.current_track = godirec.Track("")
+        self.iconPause = createIcon('data/ui/pause10.png')
+        self.iconRec = createIcon('data/ui/record6.png')
+        self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
+        self.current_track = core.Track("")
         self.cur_path = ""
         logging.info('GUI loaded')
 
@@ -220,9 +213,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         icons = {"Stop": "media26.png", "Rec": "record6.png", 
                  "Cut": "cutting.png"}
         for i, img in icons.items():
-            icon = QtGui.QIcon()
-            img_file = resource_filename(__name__, 'data/ui/{}'.format(img))
-            icon.addPixmap(QtGui.QPixmap(img_file))
+            icon = createIcon('data/ui/{}'.format(img))
             getattr(self, "Button"+i).setIcon(icon)
         
     def onButtonStopClicked(self):
@@ -288,7 +279,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.LineEditDate.setDate(QtCore.QDate(year, 1, 1))
 
     def tags(self):
-        tags = godirec.Tags()
+        tags = core.Tags()
         for tag in set(tags.keys()).difference(set(['date'])):
             tags[tag] = str(getattr(self, 'LineEdit'+tag.title()).text())
         tags['date'] = str(self.LineEditDate.date().toPyDate().year)
@@ -306,8 +297,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.cur_path = self.path_dialog.getValues()
         self.settings.setValue('path', os.path.dirname(self.cur_path))
         self.setWindowTitle(os.path.basename(self.cur_path))
-        self.rec_manager = godirec.Manager(self.cur_path)
-        self.rec = godirec.Recorder(self.rec_manager)
+        self.rec_manager = core.Manager(self.cur_path)
+        self.rec = core.Recorder(self.rec_manager)
         if 'formats' in self.settings.allKeys():
             self.rec.format_list = self.settings.value('formats', type=str)
         self.rec.timer.set_callback(self.updateTime)
@@ -327,7 +318,16 @@ class GodiRecWindow(QtGui.QMainWindow):
         sys.exit(app.exec_())
 
 
-def run_gui():
+def createIcon(pixmap):
+    icon = QtGui.QIcon()
+    pmap = QtGui.QPixmap()
+    png_str = resource_string(__name__, pixmap)
+    pmap.loadFromData(png_str)
+    icon.addPixmap(pmap)
+    return icon
+
+
+def run():
     multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)
     QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,

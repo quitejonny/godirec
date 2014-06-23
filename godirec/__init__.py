@@ -4,7 +4,8 @@ import sys
 from PyQt4 import QtGui
 import os.path
 import traceback
-from pkg_resources import resource_filename
+from pkg_resources import resource_string
+import json
 import godirec.gui
 
 
@@ -12,7 +13,8 @@ __version__ = '0.1'
 
 
 def run_gui():
-    godirec.gui.run_gui()
+    godirec.gui.run()
+
 
 def handle_exception(exc_type, exc_value, exc_traceback):
     """ handle all exceptions """
@@ -38,7 +40,8 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     )
     sys.exit(1)
 
-_log_conf_file = resource_filename(__name__, "data/log/log.conf")
-logging.config.fileConfig(_log_conf_file, disable_existing_loggers=False)
+
+config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
+logging.config.dictConfig(json.loads(config_str))
 logging.info("Logging loaded")
-sys.excepthook = handle_exception
+# sys.excepthook = handle_exception
