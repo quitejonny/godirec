@@ -4,7 +4,7 @@ import sys
 from PyQt4 import QtGui
 import os.path
 import traceback
-from pkg_resources import resource_string
+import pkg_resources
 import json
 import godirec.gui
 
@@ -12,8 +12,19 @@ import godirec.gui
 __version__ = '0.1'
 
 
-def run_gui():
-    godirec.gui.run()
+def resource_stream(package, path):
+    if hasattr(sys, "frozen"):
+        folder = os.path.dirname(sys.argv[0])
+        filename = os.path.join(folder, package, path)
+        return open(filename)
+    else:
+        return pkg_resources.resource_stream(package, path)
+
+
+def resource_string(package, path):
+    with resource_stream(package, path) as f:
+        data = f.read()
+    return data
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
