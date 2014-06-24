@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyaudio
 import os
+import sys
 import wave
 import time
 from pydub import AudioSegment
@@ -10,6 +11,9 @@ import threading
 import mutagen
 from mutagen import id3
 
+if hasattr(sys, "frozen"):
+    folder = os.path.dirname(sys.argv[0])
+    AudioSegment.ffmpeg = os.path.join(folder, "ffmpeg.exe")
 
 class Tags(object):
 

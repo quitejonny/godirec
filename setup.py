@@ -9,7 +9,6 @@ extra_setup = dict()
 
 if sys.platform == 'win32':
     import subprocess
-    import re
     import py2exe
     sys.argv.append('py2exe')
     extra_setup['options'] = {
@@ -41,11 +40,11 @@ if sys.platform == 'win32':
     }]
     extra_setup['zipfile'] = None
     # copy ffmpeg to folder
-    ffmpeg_path = subprocess.Popen(["get-command", "ffmeg"])
-    ffmpeg_path = re.findall("[\S]*bin\\ffmpeg.exe", ffmpeg_path)
-    print(ffmpeg_path)
+    ffmpeg_sub = subprocess.Popen(["get-command", "ffmeg"])
+    ffmpeg_path = ffmpeg_sub.decode("utf-8").strip("\r\n")
     extra_setup['data_files'] = [
-        (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*"),
+        (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
+    ] + [
         ('', [ffmpeg_path])
     ]
 
