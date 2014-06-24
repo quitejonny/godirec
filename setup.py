@@ -44,13 +44,15 @@ if sys.platform == 'win32':
         (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
     ]
     # copy ffmpeg to folder
-    ffmpeg_sub = subprocess.Popen(["get-command", "ffmeg"])
-    ffmpeg_path = ffmpeg_sub.decode("utf-8").strip("\r\n")
+    ffmpeg_sub = subprocess.Popen(["where", "ffmpeg"], stdout=subprocess.PIPE)
+    ffmpeg_path, _ = ffmpeg_sub.communicate()
+    ffmpeg_path = ffmpeg_path.decode("utf-8").strip("\r\n")
     extra_setup['data_files'].extend([
         ('', [ffmpeg_path])
     ])
-    python_sub = subprocess.Popen(["get-command", "ffmeg"])
-    python_dir = os.path.dirname(python_sub.decode("utf-8").strip("\r\n"))
+    python_sub = subprocess.Popen(["where", "python"], stdout=subprocess.PIPE)
+    python_dir, _ = python_sub.communicate()
+    python_dir = os.path.dirname(python_dir.decode("utf-8").strip("\r\n"))
     qico_path = os.path.join(python_dir, "Lib", "site-packages", "PyQt4",
                              "plugins", "imageformats", "qico4.dll")
     extra_setup['data_files'].extend([
