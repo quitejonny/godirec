@@ -37,6 +37,7 @@ if sys.platform == 'win32':
         "icon_resources": [
             (1, "godirec/data/ui/microphone2.ico")
         ],
+        "dest_base": "GodiRec",
     }]
     extra_setup['zipfile'] = None
     # copy ffmpeg to folder
@@ -44,9 +45,10 @@ if sys.platform == 'win32':
     ffmpeg_path = ffmpeg_sub.decode("utf-8").strip("\r\n")
     extra_setup['data_files'] = [
         (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
-    ] + [
-        ('', [ffmpeg_path])
     ]
+    extra_setup['data_files'].extend([
+        ('', [ffmpeg_path])
+    ])
 
 
 setup(
