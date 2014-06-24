@@ -286,7 +286,7 @@ class Timer(object):
         else:
             time_delta = 0.0
         seconds = self._previous_track_time + time_delta
-        return time.strftime("%M:%S", time.gmtime(seconds))
+        return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
     def get_recording_time(self):
         if self.is_running:
@@ -294,7 +294,7 @@ class Timer(object):
         else:
             time_delta = 0.0
         seconds = self._previous_rec_time + time_delta
-        return time.strftime("%M:%S", time.gmtime(seconds))
+        return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
     def _run_timer(self):
         self._callback(self)

@@ -40,14 +40,21 @@ if sys.platform == 'win32':
         "dest_base": "GodiRec",
     }]
     extra_setup['zipfile'] = None
-    # copy ffmpeg to folder
-    ffmpeg_sub = subprocess.Popen(["get-command", "ffmeg"])
-    ffmpeg_path = ffmpeg_sub.decode("utf-8").strip("\r\n")
     extra_setup['data_files'] = [
         (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
     ]
+    # copy ffmpeg to folder
+    ffmpeg_sub = subprocess.Popen(["get-command", "ffmeg"])
+    ffmpeg_path = ffmpeg_sub.decode("utf-8").strip("\r\n")
     extra_setup['data_files'].extend([
         ('', [ffmpeg_path])
+    ])
+    python_sub = subprocess.Popen(["get-command", "ffmeg"])
+    python_dir = os.path.dirname(python_sub.decode("utf-8").strip("\r\n"))
+    qico_path = os.path.join(python_dir, "Lib", "site-packages", "PyQt4",
+                             "plugins", "imageformats", "qico4.dll")
+    extra_setup['data_files'].extend([
+        ('imageformats', [qico_path])
     ])
 
 
