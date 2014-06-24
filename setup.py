@@ -4,43 +4,6 @@ import os
 import glob
 import godirec
 from setuptools import setup, find_packages
-# import setuptools.extension
-# from cx_Freeze import setup, Executable
-# 
-# GUI applications require a different base on Windows (the default is for a
-# console application).
-# if sys.platform == "win32":
-#     base = "Win32GUI"
-# else:
-#     base = None
-# 
-# extra_setup["executables"] = [
-#     Executable("run_gui.py",
-#                copyDependentFiles=True,
-#                appendScriptToExe=True,
-#                appendScriptToLibrary=False,
-#                base=base,
-#                compress=True,
-#                )
-# ]
-# 
-# extra_setup["options"] = {
-#     "build_exe": {
-#         "packages": [
-#             #"godirec",
-#         ],
-#         "zip_includes": [(f, f) for f in glob.glob("godirec/data/*/*")],
-#         "create_shared_zip": True,
-#         "include_in_shared_zip": False,
-#         "optimize": 2,
-#         "compressed": True,
-#     }
-# }
-
-# buildOptions = dict(create_shared_zip=False,
-#         include_files=[os.path.join('ui', n) for n in os.listdir('ui')]
-#         )
-
 
 extra_setup = dict()
 
@@ -49,12 +12,19 @@ if sys.platform == 'win32':
     sys.argv.append('py2exe')
     extra_setup['options'] = {
         'py2exe': {
-            'bundle_files': 0,
+            'bundle_files': 1,
             'compressed': True,
             "excludes": [
                 "readline",
                 "win32api",
-                "win32con"
+                "win32con",
+                "ElementTree",
+                "PyQt4.elementtree",
+                "pyaudioloop",
+                "sets",
+                "multiprocessing.SimpleQueue",
+                "elementtree",
+                "PyQt4.uic.port_v2",
             ],
             "includes": [
                 "sip",
