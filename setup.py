@@ -20,7 +20,7 @@ if sys.platform == 'win32':
                 "win32con",
                 "ElementTree",
                 "PyQt4.elementtree",
-                "pyaudioloop",
+                "pyaudioop",
                 "sets",
                 "multiprocessing.SimpleQueue",
                 "elementtree",
