@@ -195,7 +195,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             getattr(self, "Button"+i).clicked.connect(
                     getattr(self, "onButton{}Clicked".format(i)))
             getattr(self, "Button"+i).setEnabled(False)
-        self.ActionExit.triggered.connect(self.exit)
+        self.ActionExit.triggered.connect(self.closeEvent)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
         # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
@@ -326,9 +326,10 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.settings_dialog.exec_()
         self.updateWordList()
 
-    def exit(self):
-        self.close()
-        sys.exit(app.exec_())
+    def closeEvent(self, event=None):
+        if self.status in (NO_STREAM_RUNNING, RECORDING):
+            self.rec.stop()
+        QtGui.QMainWindow.closeEvent(self, event)
 
 
 def createIcon(pixmap):

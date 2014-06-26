@@ -76,6 +76,7 @@ class Track(object):
         self._folder = os.path.dirname(origin_file)
         self.tags = tags
         self._files = list()
+        self.workers = list()
 
     def save(self, filetypes=[], folder=None):
         """ will save the track with the specified filetype. If no filetype is
@@ -86,10 +87,11 @@ class Track(object):
         else:
             if folder == None:
                 folder = self._folder
-            self.worker = threading.Thread(target=self._save,
+            worker = threading.Thread(target=self._save,
                                       args=(filetypes, folder))
-            self.worker.daemon = True
-            self.worker.start()
+            worker.daemon = True
+            worker.start()
+            self.workers.append(worker)
 
     @property
     def basename(self):
@@ -142,6 +144,11 @@ class Track(object):
             path = os.path.abspath(os.path.join(filetype_folder, filename))
             self._files.append(path)
         self.save_tags()
+
+    def __del__(self):
+        for worker in self.workers:
+            if worker.is_alive():
+                worker.join()
 
 
 class Recorder(object):
