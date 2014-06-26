@@ -5,9 +5,9 @@ import traceback
 import multiprocessing
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
+import logging
 import godirec
 from godirec import core
-import logging
 
 
 class RecorderListModel(QtCore.QAbstractListModel): 
@@ -35,7 +35,6 @@ class RecorderListModel(QtCore.QAbstractListModel):
 
     def update(self):
         self.layoutChanged.emit()
-        index = self.index(len(self.rec_manager.tracklist)-1)
 
     def getLastItemIndex(self):
         return self.index(len(self.rec_manager.tracklist)-1)
@@ -46,9 +45,16 @@ class SettingsDialog(QtGui.QDialog):
     def __init__(self, settings, parent):
         QtGui.QDialog.__init__(self, parent=parent)
         self.settings = settings
-        settings_ui_file = godirec.resource_stream(__name__, 'data/ui/settings.ui')
+        settings_ui_file = godirec.resource_stream(__name__,
+                                                   'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
-        #Load Tags
+        self.supported_filetypes = ['mp3', 'flac', 'ogg', 'wav']
+        for filetype in self.supported_filetypes:
+            checkbox = QtGui.QCheckBox(filetype.upper())
+            setattr(self, "CheckBox"+filetype.title(), checkbox)
+            self.VLayoutFiletypes.addWidget(checkbox)
+        self.VLayoutFiletypes.addStretch()
+        # Load Tags
         if 'tags' in self.settings.allKeys():
             self.tags = self.settings.value('tags', type='QVariantMap')
         else:
@@ -58,13 +64,13 @@ class SettingsDialog(QtGui.QDialog):
                 self.tags[key] = list()
         for key in self.tags:
             self.comboBox.addItem(key)
-        #Load FileFormats
+        # Load FileFormats
         if 'formats' in self.settings.allKeys():
             self.formats = self.settings.value('formats', type=str)
         else:
             self.formats = list()
-        for filetype in ['mp3','flac','ogg','wav']:
-            checkbox = getattr(self, 'checkBox_'+filetype)
+        for filetype in self.supported_filetypes:
+            checkbox = getattr(self, 'CheckBox'+filetype.title())
             checkbox.clicked.connect(self.checkBoxesChanged)
         self.updateCheckBoxes()
         self.comboBox.activated[str].connect(self.comboBoxChanged)
@@ -108,8 +114,8 @@ class SettingsDialog(QtGui.QDialog):
         self.comboBoxChanged(key)
 
     def updateCheckBoxes(self):
-        for filetype in ['mp3', 'flac', 'ogg', 'wav']:
-            checkbox = getattr(self, 'checkBox_'+filetype)
+        for filetype in self.supported_filetypes:
+            checkbox = getattr(self, 'CheckBox'+filetype.title())
             if filetype in self.formats:
                 checkbox.setCheckState(QtCore.Qt.Checked)
             else:
@@ -117,8 +123,8 @@ class SettingsDialog(QtGui.QDialog):
 
     def checkBoxesChanged(self):
         self.formats = list()
-        for filetype in ['mp3', 'flac', 'ogg', 'wav']:
-            checkbox = getattr(self, 'checkBox_'+filetype)
+        for filetype in self.supported_filetypes:
+            checkbox = getattr(self, 'CheckBox'+filetype.title())
             if checkbox.checkState() == QtCore.Qt.Checked:
                 self.formats.append(filetype)
         self.settings.setValue('formats', self.formats)
@@ -169,7 +175,11 @@ class PathDialog(QtGui.QDialog):
     def getValues(self):
         """ returns project folder"""
         return str(self.cur_path1)
-        
+
+
+NO_STREAM_RUNNING = "no stream is running"
+NO_PROJECT = "no project opened"
+RECORDING = "currently recording"
 
 class GodiRecWindow(QtGui.QMainWindow):
 
@@ -188,7 +198,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.ActionExit.triggered.connect(self.exit)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
-        self.status = 0 #Status 0=no projekt, 1=no stream running, 2=rec
+        # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
+        self.status = NO_PROJECT
         self.setIcons()
         self.updateWordList()
         self.iconPause = createIcon('data/ui/pause10.png')
@@ -218,30 +229,32 @@ class GodiRecWindow(QtGui.QMainWindow):
             getattr(self, "Button"+i).setIcon(icon)
         
     def onButtonStopClicked(self):
-        if self.status == 1 or self.status == 2:
+        if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.ButtonRec.setIcon(self.iconRec)
             self.ButtonCut.setEnabled(False)
+            self.ButtonStop.setEnabled(False)
             self.rec.stop()
             self.onListTracksIndexChanged()
-            self.status = 1
+            self.status = NO_STREAM_RUNNING
 
     def onButtonRecClicked(self):
-        if self.status == 1:
+        if self.status is NO_STREAM_RUNNING:
             self.ButtonRec.setIcon(self.iconPause)
             self.ButtonCut.setEnabled(True)
-            self.status = 2
+            self.ButtonStop.setEnabled(True)
+            self.status = RECORDING
             self.rec.play()
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
-        elif self.status == 2:
-            self.status = 1
+        elif self.status is RECORDING:
+            self.status = NO_STREAM_RUNNING
             self.ButtonRec.setIcon(self.iconRec)
             self.rec.pause()
 
     def onButtonCutClicked(self):
         """ Erzeugt neue Datei und nimmt weiter auf"""
-        if self.status == 1 or self.status == 2:
+        if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.rec.cut()
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
@@ -304,9 +317,8 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.rec.format_list = self.settings.value('formats', type=str)
         self.rec.timer.set_callback(self.updateTime)
         self.RecListModel.set_rec_manager(self.rec_manager)
-        self.status = 1
-        for i in ("Stop", "Rec"):
-            getattr(self, "Button"+i).setEnabled(True)
+        self.status = NO_STREAM_RUNNING
+        self.ButtonRec.setEnabled(True)
 
     def openSettings(self):
         self.settings_dialog = SettingsDialog(self.settings, self)
