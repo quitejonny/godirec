@@ -11,9 +11,11 @@ import threading
 import mutagen
 from mutagen import id3
 
+
 if hasattr(sys, "frozen"):
     folder = os.path.dirname(sys.argv[0])
     AudioSegment.ffmpeg = os.path.join(folder, "ffmpeg.exe")
+
 
 class Tags(object):
 
@@ -85,7 +87,7 @@ class Track(object):
         if not filetypes:
             self.save_tags()
         else:
-            if folder == None:
+            if folder is None:
                 folder = self._folder
             worker = threading.Thread(target=self._save,
                                       args=(filetypes, folder))
@@ -181,14 +183,13 @@ class Recorder(object):
                                         pyaudio.paInt16))
             self._wavefile.setframerate(self._rate)
         self._stream = self._p.open(format=pyaudio.paInt16,
-                channels=self._channels,
-                rate=self._rate,
-                input=True,
-                stream_callback=self._get_callback())
+                                    channels=self._channels,
+                                    rate=self._rate,
+                                    input=True,
+                                    stream_callback=self._get_callback())
         self._stream.start_stream()
         self._is_recording = True
         self._is_pausing = False
-
 
     def pause(self):
         if self._is_recording:
@@ -307,6 +308,7 @@ class Timer(object):
         self._callback(self)
         self.timer = threading.Timer(1.0, self._run_timer)
         self.timer.start()
+
 
 def _run_convert_process(origin_file, path, filetype):
     song = AudioSegment.from_wav(origin_file)

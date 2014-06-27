@@ -10,24 +10,24 @@ import godirec
 from godirec import core
 
 
-class RecorderListModel(QtCore.QAbstractListModel): 
+class RecorderListModel(QtCore.QAbstractListModel):
 
-    def __init__(self, rec_manager=core.Manager(""), parent=None): 
-        QtCore.QAbstractListModel.__init__(self, parent) 
+    def __init__(self, rec_manager=core.Manager(""), parent=None):
+        QtCore.QAbstractListModel.__init__(self, parent)
         self.set_rec_manager(rec_manager)
 
     def set_rec_manager(self, rec_manager):
         self.rec_manager = rec_manager
         self.rec_manager.set_callback(self.update)
 
-    def rowCount(self, parent=QtCore.QModelIndex()): 
-        return len(self.rec_manager.tracklist) 
- 
-    def data(self, index, role): 
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self.rec_manager.tracklist)
+
+    def data(self, index, role):
         if index.isValid() and role == QtCore.Qt.DisplayRole:
             track = self.rec_manager.get_track(index.row())
             return track.basename
-        else: 
+        else:
             return None
 
     def itemFromIndex(self, index):
@@ -129,7 +129,7 @@ class SettingsDialog(QtGui.QDialog):
                 self.formats.append(filetype)
         self.settings.setValue('formats', self.formats)
         logging.info("Changed Exportfile formats")
-                
+
 
 class PathDialog(QtGui.QDialog):
     """ Path Dialog will ask for workspace path and project name. If path
@@ -142,7 +142,7 @@ class PathDialog(QtGui.QDialog):
         self.cur_path1 = ""
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
-                    getattr(self, "onButton{}Clicked".format(i)))
+                getattr(self, "onButton{}Clicked".format(i)))
         projectName = "{:%Y_%m_%d}-Godi".format(datetime.today())
         # create new project directory if default directory already exists
         i = 0
@@ -160,7 +160,7 @@ class PathDialog(QtGui.QDialog):
     def onButtonDirClicked(self):
         """ opens project FileDialog"""
         temp_path = QtGui.QFileDialog.getExistingDirectory(
-            self,"Neues Projekt erzeugen in:",".")
+            self, "Neues Projekt erzeugen in:", ".")
         self.LineEditPath.setText(temp_path)
 
     def onButtonCreateClicked(self):
@@ -181,6 +181,7 @@ NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
 RECORDING = "currently recording"
 
+
 class GodiRecWindow(QtGui.QMainWindow):
 
     def __init__(self):
@@ -193,7 +194,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.settings = QtCore.QSettings("EFG Aachen", "GodiRec")
         for i in ("Stop", "Rec", "Cut"):
             getattr(self, "Button"+i).clicked.connect(
-                    getattr(self, "onButton{}Clicked".format(i)))
+                getattr(self, "onButton{}Clicked".format(i)))
             getattr(self, "Button"+i).setEnabled(False)
         self.ActionExit.triggered.connect(self.closeEvent)
         self.ActionNewProject.triggered.connect(self.createNewProject)
@@ -222,12 +223,12 @@ class GodiRecWindow(QtGui.QMainWindow):
     def setIcons(self):
         """ This function is used as workaround for not loading icons in
             python generated ui code"""
-        icons = {"Stop": "media26.png", "Rec": "record6.png", 
+        icons = {"Stop": "media26.png", "Rec": "record6.png",
                  "Cut": "cutting.png"}
         for i, img in icons.items():
             icon = createIcon('data/ui/{}'.format(img))
             getattr(self, "Button"+i).setIcon(icon)
-        
+
     def onButtonStopClicked(self):
         if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.ButtonRec.setIcon(self.iconRec)
@@ -268,7 +269,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.RecListModel.update()
 
     def updateTime(self, timer):
-        if self.rec != None:
+        if self.rec is not None:
             track_time = timer.get_track_time()
             rec_time = timer.get_recording_time()
             self.LabelTime.setText(track_time+"/"+rec_time)
@@ -303,7 +304,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
         if 'path' in self.settings.allKeys():
-            self.path_dialog = PathDialog(self.settings.value('path',type=str))
+            self.path_dialog = PathDialog(self.settings.value('path',
+                                          type=str))
         else:
             self.path_dialog = PathDialog()
         self.path_dialog.show()
@@ -355,10 +357,10 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     QtGui.QMessageBox.critical(
         None, "Error",
         ("<html>A critical error has occured.<br/> "
-        "<b>{:s}</b><br/><br/>"
-        "It occurred at <b>line {:d}</b> of file <b>{:s}</b>.<br/>"
-        "For more information see error log file"
-        "</html>").format(error, line, filename)
+            "<b>{:s}</b><br/><br/>"
+            "It occurred at <b>line {:d}</b> of file <b>{:s}</b>.<br/>"
+            "For more information see error log file"
+            "</html>").format(error, line, filename)
     )
     logging.error(
         "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))

@@ -61,17 +61,17 @@ if sys.platform == 'win32':
 
 
 setup(
-    name = 'GodiRec',
-    version = godirec.__version__,
-    description = 'Gottesdienst Aufnahme Programm',
-    author = 'Daniel Supplieth & Johannes Roos',
-    author_email = 'daniel.supplieth@gmx.de',
-    packages = find_packages(),
-    include_package_data = True,
-    entry_points = {
+    name='GodiRec',
+    version=godirec.__version__,
+    description='Gottesdienst Aufnahme Programm',
+    author='Daniel Supplieth & Johannes Roos',
+    author_email='daniel.supplieth@gmx.de',
+    packages=find_packages(),
+    include_package_data=True,
+    entry_points={
         'gui_scripts': ['godirec=godirec.gui:run'],
     },
-    install_requires = [
+    install_requires=[
         'pydub',
         'setuptools',
         'mutagen',
