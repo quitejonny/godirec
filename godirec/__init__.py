@@ -26,6 +26,6 @@ def resource_string(package, path):
     return data
 
 
-config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
+#config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
 # logging.config.dictConfig(json.loads(config_str))
 # logging.info("Logging loaded")

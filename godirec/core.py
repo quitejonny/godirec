@@ -77,6 +77,7 @@ class Track(object):
         self._basename = os.path.splitext(os.path.basename(origin_file))[0]
         self._folder = os.path.dirname(origin_file)
         self.tags = tags
+        self.tags.album = os.path.basename(self._folder)
         self._files = list()
         self.workers = list()
 
