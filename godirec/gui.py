@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import shutil
 import traceback
 import multiprocessing
 from datetime import datetime
@@ -333,6 +334,8 @@ class GodiRecWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.rec.stop()
+            if 'wav' not in self.settings.value('formats', type=str):
+                shutil.rmtree(os.path.join(self.cur_path, 'wav'))
         QtGui.QMainWindow.closeEvent(self, event)
 
 

@@ -45,11 +45,14 @@ class Manager(object):
         self._tracks = list()
         self._track_count = 1
         self._callback = lambda: None
+        wav_folder = os.path.join(folder, 'wav')
+        if not os.path.exists(wav_folder):
+            os.mkdir(os.path.join(folder, 'wav'))
 
     def create_new_track(self):
         filename = "track_{0:d}.wav".format(self._track_count)
-        filename = os.path.join(self._folder, filename)
-        track = Track(filename)
+        filename = os.path.join(self._folder, 'wav', filename)
+        track = Track(filename, self._folder)
         self._tracks.append(track)
         self._track_count += 1
         self._callback()
@@ -72,10 +75,13 @@ class Manager(object):
 
 class Track(object):
 
-    def __init__(self, origin_file, tags=Tags()):
+    def __init__(self, origin_file, folder=None, tags=Tags()):
         self._origin_file = origin_file
         self._basename = os.path.splitext(os.path.basename(origin_file))[0]
-        self._folder = os.path.dirname(origin_file)
+        if folder is None:
+            self._folder = os.path.dirname(origin_file)
+        else:
+            self._folder = folder
         self.tags = tags
         self.tags.album = os.path.basename(self._folder)
         self._files = list()
