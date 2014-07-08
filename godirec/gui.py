@@ -196,7 +196,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             getattr(self, "Button"+i).clicked.connect(
                 getattr(self, "onButton{}Clicked".format(i)))
             getattr(self, "Button"+i).setEnabled(False)
-        self.ActionExit.triggered.connect(self.closeEvent)
+        self.ActionExit.triggered.connect(self.close)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
         # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
@@ -248,6 +248,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
+            self.LineEditTitle.setFocus()
         elif self.status is RECORDING:
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setIcon(self.iconRec)
@@ -260,6 +261,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
+            self.LineEditTitle.setFocus()
 
     def onButtonChangeClicked(self):
         """ Schreibt Tags in MP3 datei"""
@@ -328,7 +330,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.settings_dialog.exec_()
         self.updateWordList()
 
-    def closeEvent(self, event=None):
+    def closeEvent(self, event):
         if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.rec.stop()
         QtGui.QMainWindow.closeEvent(self, event)
