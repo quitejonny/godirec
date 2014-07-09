@@ -140,7 +140,7 @@ class PathDialog(QtGui.QDialog):
         QtGui.QDialog.__init__(self)
         dialog_ui_file = godirec.resource_stream(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
-        self.cur_path1 = ""
+        self.cur_path = ""
         for i in ("Dir", "Create"):
             getattr(self, "Button"+i).clicked.connect(
                 getattr(self, "onButton{}Clicked".format(i)))
@@ -168,14 +168,14 @@ class PathDialog(QtGui.QDialog):
         """ closes PathDialog window and creates necessery directories"""
         temp_path = str(self.LineEditPath.text())
         projectName = str(self.LineEditProjekt.text())
-        self.cur_path1 = os.path.join(temp_path, projectName)
-        if not os.path.exists(self.cur_path1):
-            os.makedirs(self.cur_path1)
+        self.cur_path = os.path.join(temp_path, projectName)
+        if not os.path.exists(self.cur_path):
+            os.makedirs(self.cur_path)
         self.close()
 
     def getValues(self):
         """ returns project folder"""
-        return str(self.cur_path1)
+        return str(self.cur_path)
 
 
 NO_STREAM_RUNNING = "no stream is running"
@@ -306,24 +306,25 @@ class GodiRecWindow(QtGui.QMainWindow):
     def createNewProject(self):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
+        path = ""
         if 'path' in self.settings.allKeys():
-            self.path_dialog = PathDialog(self.settings.value('path',
-                                          type=str))
-        else:
-            self.path_dialog = PathDialog()
+            path = self.settings.value('path', type=str)
+        self.path_dialog = PathDialog(path)
         self.path_dialog.show()
         self.path_dialog.exec_()
-        self.cur_path = self.path_dialog.getValues()
-        self.settings.setValue('path', os.path.dirname(self.cur_path))
-        self.setWindowTitle(os.path.basename(self.cur_path))
-        self.rec_manager = core.Manager(self.cur_path)
-        self.rec = core.Recorder(self.rec_manager)
-        if 'formats' in self.settings.allKeys():
-            self.rec.format_list = self.settings.value('formats', type=str)
-        self.rec.timer.set_callback(self.updateTime)
-        self.RecListModel.set_rec_manager(self.rec_manager)
-        self.status = NO_STREAM_RUNNING
-        self.ButtonRec.setEnabled(True)
+        current_path = self.path_dialog.getValues()
+        if current_path != "":
+            self.cur_path = self.path_dialog.getValues()
+            self.settings.setValue('path', os.path.dirname(current_path))
+            self.setWindowTitle(os.path.basename(current_path))
+            self.rec_manager = core.Manager(current_path)
+            self.rec = core.Recorder(self.rec_manager)
+            if 'formats' in self.settings.allKeys():
+                self.rec.format_list = self.settings.value('formats', type=str)
+            self.rec.timer.set_callback(self.updateTime)
+            self.RecListModel.set_rec_manager(self.rec_manager)
+            self.status = NO_STREAM_RUNNING
+            self.ButtonRec.setEnabled(True)
 
     def openSettings(self):
         self.settings_dialog = SettingsDialog(self.settings, self)
