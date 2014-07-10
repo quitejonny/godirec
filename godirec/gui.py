@@ -8,7 +8,7 @@ from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 import logging
 import godirec
-from godirec import core
+from godirec import core, trackconverter
 
 
 class RecorderListModel(QtCore.QAbstractListModel):
@@ -185,6 +185,9 @@ RECORDING = "currently recording"
 
 class GodiRecWindow(QtGui.QMainWindow):
 
+    statusSet = QtCore.pyqtSignal()
+    statusClear = QtCore.pyqtSignal()
+
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
         godi_rec_ui = godirec.resource_stream(__name__, 'data/ui/godi_rec.ui')
@@ -209,6 +212,11 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
         self.current_track = core.Track("")
         self.cur_path = ""
+        # connect status for statusbar
+        self.statusSet.connect(self.setStatus)
+        self.statusClear.connect(self.clearStatus)
+        trackconverter.set_start_callback(self.statusSet.emit)
+        trackconverter.set_done_callback(self.statusClear.emit)
         logging.info('GUI loaded')
 
     def updateWordList(self):
@@ -270,6 +278,12 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def onButtonSaveClicked(self):
         self.RecListModel.update()
+
+    def setStatus(self, message="Converting Track"):
+        self.statusbar.showMessage(message)
+
+    def clearStatus(self):
+        self.statusbar.clearMessage()
 
     def updateTime(self, timer):
         if self.rec is not None:
@@ -333,6 +347,13 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.updateWordList()
 
     def closeEvent(self, event):
+        if trackconverter.has_running_threads():
+            title = "Bitte warten"
+            message = ("Die Tracks müssen erst fertig konvertiert sein, "
+                       "bevor das Programm geschlossen werden kann!")
+            QtGui.QMessageBox.information(self, title, message)
+            event.ignore()
+            return
         if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.rec.stop()
             if 'wav' not in self.settings.value('formats', type=str):

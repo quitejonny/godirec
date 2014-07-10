@@ -11,17 +11,21 @@ if hasattr(sys, "frozen"):
 
 
 futures = set()
-_start_callback = lambda: None
-_done_callback = lambda: None
+_callbacks = {"start": lambda: None, "done": lambda: None}
 
 
 def start(filetypes, basename, origin_file, track_files, folder, tag_callback):
-    with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+    if not futures:
+        _callbacks["start"]()
+    try:
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
         future = executor.submit(convert, filetypes, basename, origin_file,
                                  track_files, folder)
         future.tag_callback = tag_callback
         futures.add(future)
         future.add_done_callback(_run_after_finished_thread)
+    finally:
+        executor.shutdown(wait=False)
 
 
 def cancel():
@@ -63,11 +67,11 @@ def has_running_threads():
 
 
 def set_start_callback(callback):
-    _start_callback = callback
+    _callbacks["start"] = callback
 
 
 def set_done_callback(callback):
-    _done_callback = callback
+    _callbacks["done"] = callback
 
 
 def _run_convert_process(origin_file, path, filetype):
@@ -78,4 +82,5 @@ def _run_convert_process(origin_file, path, filetype):
 def _run_after_finished_thread(future):
     futures.remove(future)
     future.tag_callback()
-    _done_callback()
+    if not futures:
+        _callbacks["done"]()
