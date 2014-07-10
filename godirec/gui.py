@@ -347,14 +347,21 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.updateWordList()
 
     def closeEvent(self, event):
-        if trackconverter.has_running_threads():
+        if self.status is RECORDING:
+            title = "Stream beenden"
+            message = ("Um das Programm zu schließen,\n"
+                       "müssen sie zuerst den Stream beenden")
+            QtGui.QMessageBox.information(self, title, message)
+            event.ignore()
+            return
+        elif trackconverter.has_running_threads():
             title = "Bitte warten"
             message = ("Die Tracks müssen erst fertig konvertiert sein, "
                        "bevor das Programm geschlossen werden kann!")
             QtGui.QMessageBox.information(self, title, message)
             event.ignore()
             return
-        if self.status in (NO_STREAM_RUNNING, RECORDING):
+        if self.status is NO_STREAM_RUNNING:
             self.rec.stop()
             if 'wav' not in self.settings.value('formats', type=str):
                 shutil.rmtree(os.path.join(self.cur_path, 'wav'))
