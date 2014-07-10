@@ -1,20 +1,13 @@
 # -*- coding: utf-8 -*-
 import pyaudio
 import os
-import sys
 import wave
 import time
-from pydub import AudioSegment
 import tempfile
-import concurrent.futures
 import threading
 import mutagen
 from mutagen import id3
-
-
-if hasattr(sys, "frozen"):
-    folder = os.path.dirname(sys.argv[0])
-    AudioSegment.ffmpeg = os.path.join(folder, "ffmpeg.exe")
+from godirec import trackconverter
 
 
 class Tags(object):
@@ -85,7 +78,6 @@ class Track(object):
         self.tags = tags
         self.tags.album = os.path.basename(self._folder)
         self._files = list()
-        self.workers = list()
 
     def save(self, filetypes=[], folder=None):
         """ will save the track with the specified filetype. If no filetype is
@@ -94,13 +86,9 @@ class Track(object):
         if not filetypes:
             self.save_tags()
         else:
-            if folder is None:
-                folder = self._folder
-            worker = threading.Thread(target=self._save,
-                                      args=(filetypes, folder))
-            worker.daemon = True
-            worker.start()
-            self.workers.append(worker)
+            trackconverter.start(filetypes, self._basename,
+                                 self._origin_file, self._files,
+                                 self._folder, self.save_tags)
 
     @property
     def basename(self):
@@ -131,33 +119,6 @@ class Track(object):
                     except KeyError:
                         pass
                 audio.save()
-
-    def _save(self, filetypes, folder):
-        if 'wav' in filetypes:
-            filetypes.remove('wav')
-        futures = set()
-        with concurrent.futures.ProcessPoolExecutor(max_workers=2) as executor:
-            for filetype in filetypes:
-                filename = "{}.{}".format(self._basename, filetype)
-                filetype_folder = os.path.join(folder, filetype)
-                if not os.path.exists(filetype_folder):
-                    os.mkdir(filetype_folder)
-                path = os.path.abspath(os.path.join(filetype_folder, filename))
-                future = executor.submit(_run_convert_process,
-                                         self.origin_file, path, filetype)
-                futures.add(future)
-            concurrent.futures.wait(futures)
-        for filetype in filetypes:
-            filetype_folder = os.path.join(folder, filetype)
-            filename = "{}.{}".format(self._basename, filetype)
-            path = os.path.abspath(os.path.join(filetype_folder, filename))
-            self._files.append(path)
-        self.save_tags()
-
-    def __del__(self):
-        for worker in self.workers:
-            if worker.is_alive():
-                worker.join()
 
 
 class Recorder(object):
@@ -315,8 +276,3 @@ class Timer(object):
         self._callback(self)
         self.timer = threading.Timer(1.0, self._run_timer)
         self.timer.start()
-
-
-def _run_convert_process(origin_file, path, filetype):
-    song = AudioSegment.from_wav(origin_file)
-    song.export(path, format=filetype)
