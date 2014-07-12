@@ -161,7 +161,7 @@ class PathDialog(QtGui.QDialog):
     def onButtonDirClicked(self):
         """ opens project FileDialog"""
         temp_path = QtGui.QFileDialog.getExistingDirectory(
-            self, "Neues Projekt erzeugen in:", ".")
+            self, self.tr("Neues Projekt erzeugen in:"), ".")
         self.LineEditPath.setText(temp_path)
 
     def onButtonCreateClicked(self):
@@ -279,7 +279,9 @@ class GodiRecWindow(QtGui.QMainWindow):
     def onButtonSaveClicked(self):
         self.RecListModel.update()
 
-    def setStatus(self, message="Converting Track"):
+    def setStatus(self, message=""):
+        if message is "":
+            message = self.tr("Converting Track")
         self.statusbar.showMessage(message)
 
     def clearStatus(self):
@@ -348,16 +350,17 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def closeEvent(self, event):
         if self.status is RECORDING:
-            title = "Stream beenden"
-            message = ("Um das Programm zu schließen,\n"
+            title = self.tr("Stream beenden")
+            message = self.tr("Um das Programm zu schließen,\n"
                        "müssen sie zuerst den Stream beenden")
             QtGui.QMessageBox.information(self, title, message)
             event.ignore()
             return
         elif trackconverter.has_running_threads():
             title = "Bitte warten"
-            message = ("Die Tracks müssen erst fertig konvertiert sein, "
-                       "bevor das Programm geschlossen werden kann!")
+            message = self.tr("Die Tracks müssen erst fertig konvertiert "
+                              "sein, bevor das Programm geschlossen werden "
+                              "kann!")
             QtGui.QMessageBox.information(self, title, message)
             event.ignore()
             return
@@ -406,6 +409,12 @@ def run():
     sys.excepthook = handle_exception
     multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)
+    # set translation language
+    locale = QtCore.QLocale.system().name()
+    translator = QtCore.QTranslator()
+    folder = godirec.resource_filename(__name__, 'data/language')
+    if translator.load("godirec_{}".format(locale), folder):
+        app.installTranslator(translator)
     QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
                            QtCore.SLOT("quit()"))
     window = GodiRecWindow()
