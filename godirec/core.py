@@ -3,6 +3,7 @@ import pyaudio
 import os
 import wave
 import time
+import copy
 import tempfile
 import threading
 import mutagen
@@ -12,14 +13,16 @@ from godirec import trackconverter
 
 class Tags(object):
 
-    __slots__ = ("title", "artist", "album", "genre", "date")
+    __slots__ = ("title", "artist", "album", "genre", "date", "tracknumber")
 
-    def __init__(self, title="", artist="", album="", genre="", date=""):
+    def __init__(self, title="", artist="", album="", genre="", date="",
+                 tracknumber=""):
         self.title = title
         self.artist = artist
         self.album = album
         self.genre = genre
         self.date = date
+        self.tracknumber = tracknumber
 
     def keys(self):
         return list(self.__slots__)
@@ -43,9 +46,11 @@ class Manager(object):
             os.mkdir(wav_folder)
 
     def create_new_track(self):
-        filename = "track_{0:d}.wav".format(self._track_count)
+        filename = "track_{:02d}.wav".format(self._track_count)
         filename = os.path.join(self._folder, 'wav', filename)
-        track = Track(filename, self._folder)
+        tags = Tags()
+        tags["tracknumber"] = str(self._track_count)
+        track = Track(filename, self._folder, tags)
         self._tracks.append(track)
         self._track_count += 1
         self._callback()
@@ -60,6 +65,9 @@ class Manager(object):
 
     def get_track(self, index):
         return self._tracks[index]
+
+    def get_index(self, track):
+        return self._tracks.index(track)
 
     def save_tracks(self, filetypes=['mp3']):
         for track in self._tracks:
@@ -103,7 +111,8 @@ class Track(object):
             if f.endswith('.mp3'):
                 tags = mutagen.id3.ID3()
                 tags['TIT2'] = id3.TIT2(encoding=3, text=self.tags['title'])
-                # tags['TRCK'] = id3.TRCK(encoding=3, text=self.tags['track'])
+                tags['TRCK'] = id3.TRCK(encoding=3,
+                                        text=self.tags['tracknumber'])
                 tags['TPE1'] = id3.TPE1(encoding=3, text=self.tags['artist'])
                 tags['TALB'] = id3.TALB(encoding=3, text=self.tags['album'])
                 tags['TDRC'] = id3.TDRC(encoding=3, text=self.tags['date'])

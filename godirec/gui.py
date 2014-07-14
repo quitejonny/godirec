@@ -60,7 +60,8 @@ class SettingsDialog(QtGui.QDialog):
             self.tags = self.settings.value('tags', type='QVariantMap')
         else:
             self.tags = dict()
-            for tag in set(core.Tags().keys()).difference(set(['date'])):
+            exclude = set(['date', 'tracknumber'])
+            for tag in set(core.Tags().keys()).difference(exclude):
                 key = str(getattr(parent, 'Label'+tag.title()).text())[:-1]
                 self.tags[key] = list()
         for key in self.tags:
@@ -296,6 +297,7 @@ class GodiRecWindow(QtGui.QMainWindow):
     def onListTracksIndexChanged(self):
         # save old Tags if tags have changed
         tags = self.tags()
+        tags["tracknumber"] = self.current_track.tags["tracknumber"]
         if self.current_track.tags != tags:
             self.current_track.tags = tags
             self.current_track.save()
@@ -304,7 +306,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.setTags(self.current_track)
 
     def setTags(self, track):
-        for tag in set(track.tags.keys()).difference(set(['date'])):
+        exclude = set(['date', 'tracknumber'])
+        for tag in set(track.tags.keys()).difference(exclude):
             getattr(self, 'LineEdit'+tag.title()).setText(track.tags[tag])
         if track.tags['date'] == "":
             year = datetime.now().year
@@ -314,7 +317,8 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def tags(self):
         tags = core.Tags()
-        for tag in set(tags.keys()).difference(set(['date'])):
+        exclude = set(['date', 'tracknumber'])
+        for tag in set(tags.keys()).difference(exclude):
             tags[tag] = str(getattr(self, 'LineEdit'+tag.title()).text())
         tags['date'] = str(self.LineEditDate.date().toPyDate().year)
         return tags
