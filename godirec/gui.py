@@ -19,7 +19,7 @@ class RecorderListModel(QtCore.QAbstractListModel):
 
     def set_rec_manager(self, rec_manager):
         self.rec_manager = rec_manager
-        self.rec_manager.set_callback(self.update)
+        self.rec_manager.set_callback(self.layoutChanged.emit)
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.rec_manager.tracklist)
@@ -188,6 +188,7 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     statusSet = QtCore.pyqtSignal()
     statusClear = QtCore.pyqtSignal()
+    timeUpdate = QtCore.pyqtSignal(core.Timer)
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -216,6 +217,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         # connect status for statusbar
         self.statusSet.connect(self.setStatus)
         self.statusClear.connect(self.clearStatus)
+        self.timeUpdate.connect(self.updateTime)
         trackconverter.set_start_callback(self.statusSet.emit)
         trackconverter.set_done_callback(self.statusClear.emit)
         logging.info('GUI loaded')
@@ -341,7 +343,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.rec = core.Recorder(self.rec_manager)
             if 'formats' in self.settings.allKeys():
                 self.rec.format_list = self.settings.value('formats', type=str)
-            self.rec.timer.set_callback(self.updateTime)
+            self.rec.timer.set_callback(self.timeUpdate.emit)
             self.RecListModel.set_rec_manager(self.rec_manager)
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setEnabled(True)

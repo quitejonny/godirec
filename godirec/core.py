@@ -3,7 +3,6 @@ import pyaudio
 import os
 import wave
 import time
-import copy
 import tempfile
 import threading
 import mutagen
