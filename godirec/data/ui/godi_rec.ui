@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>331</width>
-    <height>402</height>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,192 +19,194 @@
     <normaloff>../../../../.designer/backup/microphone2.ico</normaloff>../../../../.designer/backup/microphone2.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QWidget" name="verticalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>311</width>
-      <height>173</height>
-     </rect>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QPushButton" name="ButtonStop">
-         <property name="toolTip">
-          <string>strg+J</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../../../.designer/backup/media26.png</normaloff>../../../../.designer/backup/media26.png</iconset>
-         </property>
-         <property name="shortcut">
-          <string>Ctrl+J</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ButtonRec">
-         <property name="toolTip">
-          <string>strg+K</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../../../.designer/backup/record6.png</normaloff>../../../../.designer/backup/record6.png</iconset>
-         </property>
-         <property name="shortcut">
-          <string>Ctrl+K</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="ButtonCut">
-         <property name="toolTip">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt einen neuen Track.&lt;/p&gt;&lt;p&gt;strg+L&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../../../.designer/backup/cutting.png</normaloff>../../../../.designer/backup/cutting.png</iconset>
-         </property>
-         <property name="shortcut">
-          <string>Ctrl+L</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="LabelTime">
-         <property name="text">
-          <string>-- / --</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </item>
-     <item>
-      <widget class="QListView" name="ListTracks"/>
-     </item>
-    </layout>
-   </widget>
-   <widget class="QWidget" name="formLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>190</y>
-      <width>311</width>
-      <height>161</height>
-     </rect>
-    </property>
-    <layout class="QFormLayout" name="formLayout">
-     <property name="fieldGrowthPolicy">
-      <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-     </property>
-     <item row="0" column="0">
-      <widget class="QLabel" name="LabelTitle">
-       <property name="text">
-        <string>Titel:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLineEdit" name="LineEditTitle"/>
-     </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="LabelArtist">
-       <property name="text">
-        <string>Artist:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="LineEditArtist"/>
-     </item>
-     <item row="2" column="0">
-      <widget class="QLabel" name="LabelAlbum">
-       <property name="text">
-        <string>Album:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="LineEditAlbum"/>
-     </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="LabelGenre">
-       <property name="text">
-        <string>Genre:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="LineEditGenre"/>
-     </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="LabelDate">
-       <property name="text">
-        <string>Jahr:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QDateEdit" name="LineEditDate">
-       <property name="locale">
-        <locale language="German" country="Germany"/>
-       </property>
-       <property name="minimumDate">
-        <date>
-         <year>2014</year>
-         <month>1</month>
-         <day>1</day>
-        </date>
-       </property>
-       <property name="displayFormat">
-        <string>yyyy</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <property name="sizePolicy">
+    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+     <horstretch>0</horstretch>
+     <verstretch>0</verstretch>
+    </sizepolicy>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="ButtonStop">
+          <property name="toolTip">
+           <string>strg+J</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>../../../../.designer/backup/media26.png</normaloff>../../../../.designer/backup/media26.png</iconset>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+J</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ButtonRec">
+          <property name="toolTip">
+           <string>strg+K</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>../../../../.designer/backup/record6.png</normaloff>../../../../.designer/backup/record6.png</iconset>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+K</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="ButtonCut">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt einen neuen Track.&lt;/p&gt;&lt;p&gt;strg+L&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="icon">
+           <iconset>
+            <normaloff>../../../../.designer/backup/cutting.png</normaloff>../../../../.designer/backup/cutting.png</iconset>
+          </property>
+          <property name="shortcut">
+           <string>Ctrl+L</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QLabel" name="LabelTime">
+          <property name="text">
+           <string>-- / --</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QListView" name="ListTracks"/>
+      </item>
+      <item>
+       <layout class="QFormLayout" name="formLayout">
+        <property name="fieldGrowthPolicy">
+         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+        </property>
+        <item row="0" column="0">
+         <widget class="QLabel" name="LabelTitle">
+          <property name="text">
+           <string>Titel:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QLineEdit" name="LineEditTitle"/>
+        </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="LabelArtist">
+          <property name="text">
+           <string>Artist:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="LineEditArtist"/>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="LabelComment">
+          <property name="text">
+           <string>Kommentar:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="LineEditComment"/>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="LabelAlbum">
+          <property name="text">
+           <string>Album:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="LineEditAlbum"/>
+        </item>
+        <item row="4" column="0">
+         <widget class="QLabel" name="LabelGenre">
+          <property name="text">
+           <string>Genre:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="1">
+         <widget class="QLineEdit" name="LineEditGenre"/>
+        </item>
+        <item row="5" column="0">
+         <widget class="QLabel" name="LabelDate">
+          <property name="text">
+           <string>Jahr:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="5" column="1">
+         <widget class="QDateEdit" name="LineEditDate">
+          <property name="locale">
+           <locale language="German" country="Germany"/>
+          </property>
+          <property name="minimumDate">
+           <date>
+            <year>2014</year>
+            <month>1</month>
+            <day>1</day>
+           </date>
+          </property>
+          <property name="displayFormat">
+           <string>yyyy</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -263,6 +265,18 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>ButtonStop</tabstop>
+  <tabstop>ButtonRec</tabstop>
+  <tabstop>ButtonCut</tabstop>
+  <tabstop>ListTracks</tabstop>
+  <tabstop>LineEditTitle</tabstop>
+  <tabstop>LineEditArtist</tabstop>
+  <tabstop>LineEditComment</tabstop>
+  <tabstop>LineEditAlbum</tabstop>
+  <tabstop>LineEditGenre</tabstop>
+  <tabstop>LineEditDate</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

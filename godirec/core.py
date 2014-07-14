@@ -13,16 +13,18 @@ from godirec import trackconverter
 
 class Tags(object):
 
-    __slots__ = ("title", "artist", "album", "genre", "date", "tracknumber")
+    __slots__ = ("title", "artist", "album", "genre", "date", "tracknumber",
+                 "comment")
 
     def __init__(self, title="", artist="", album="", genre="", date="",
-                 tracknumber=""):
+                 tracknumber="", comment=""):
         self.title = title
         self.artist = artist
         self.album = album
         self.genre = genre
         self.date = date
         self.tracknumber = tracknumber
+        self.comment = comment
 
     def keys(self):
         return list(self.__slots__)
@@ -111,12 +113,14 @@ class Track(object):
             if f.endswith('.mp3'):
                 tags = mutagen.id3.ID3()
                 tags['TIT2'] = id3.TIT2(encoding=3, text=self.tags['title'])
-                tags['TRCK'] = id3.TRCK(encoding=3,
-                                        text=self.tags['tracknumber'])
                 tags['TPE1'] = id3.TPE1(encoding=3, text=self.tags['artist'])
                 tags['TALB'] = id3.TALB(encoding=3, text=self.tags['album'])
                 tags['TDRC'] = id3.TDRC(encoding=3, text=self.tags['date'])
                 tags['TCON'] = id3.TCON(encoding=3, text=self.tags['genre'])
+                tags['COMM'] = id3.COMM(encoding=3, lang='eng', desc='desc',
+                                        text=self.tags['comment'])
+                tags['TRCK'] = id3.TRCK(encoding=3,
+                                        text=self.tags['tracknumber'])
                 tags.update_to_v23()
                 tags.save(f, v2_version=3)
             else:
