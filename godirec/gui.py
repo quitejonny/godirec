@@ -362,7 +362,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             QtGui.QMessageBox.information(self, title, message)
             event.ignore()
             return
-        elif trackconverter.has_running_threads():
+        elif trackconverter.has_running_processes():
             title = "Bitte warten"
             message = self.tr("Die Tracks müssen erst fertig konvertiert "
                               "sein, bevor das Programm geschlossen werden "
