@@ -2,12 +2,12 @@ import sys
 import os
 import concurrent.futures
 import threading
-from pydub import AudioSegment
+import subprocess
 
 
 if hasattr(sys, "frozen"):
     folder = os.path.dirname(sys.argv[0])
-    AudioSegment.ffmpeg = os.path.join(folder, "ffmpeg.exe")
+    _Converter.ffmpeg = os.path.join(folder, "ffmpeg.exe")
 
 
 futures = set()
@@ -75,8 +75,8 @@ def set_done_callback(callback):
 
 
 def _run_convert_process(origin_file, path, filetype):
-    song = AudioSegment.from_wav(origin_file)
-    song.export(path, format=filetype)
+    song = _WaveConverter(origin_file)
+    song.export(path)
 
 
 def _run_after_finished_thread(future):
@@ -84,3 +84,82 @@ def _run_after_finished_thread(future):
     future.tag_callback()
     if not futures:
         _callbacks["done"]()
+
+
+def _get_encoder_name():
+    """
+    Return enconder default application for system, either avconv or ffmpeg
+    """
+    if _which("avconv"):
+        return "avconv"
+    elif _which("ffmpeg"):
+        return "ffmpeg"
+    else:
+        raise NoEncoderError("Couldn't find ffmpeg or avconv. If you have one"
+                             " of this programs please specify the path")
+
+
+def _which(program):
+    """
+    Mimics behavior of UNIX which command.
+    """
+    #Add .exe program extension for windows support
+    if os.name == "nt" and not program.endswith(".exe"):
+        program += ".exe"
+    envdir_list = os.environ["PATH"].split(os.pathsep)
+    for envdir in envdir_list:
+        program_path = os.path.join(envdir, program)
+        if os.path.isfile(program_path) and os.access(program_path, os.X_OK):
+            return program_path
+
+
+class _WaveConverter(object):
+
+    converter = _get_encoder_name()
+
+    ffmpeg = property(lambda cls: cls.converter,
+                      lambda cls, value: setattr(cls, 'converter', value))
+
+    def __init__(self, wav_file):
+        if wav_file.endswith(".wav"):
+            self.wav_file = wav_file
+        else:
+            raise NoWaveError("Given file is not a wav file!")
+
+    def export(self, filename, fmt=""):
+        self._run_conversion(filename, fmt=fmt)
+
+    def _run_conversion(self, filename, fmt=""):
+        conversion_command = [self.converter, '-y']
+        if fmt:
+            conversion_command += ['-f', fmt]
+        conversion_command += ["-i", self.wav_file]
+        conversion_command += [filename]
+        if sys.platform == 'win32':
+            si = subprocess.STARTUPINFO()
+            si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            si.wShowWindow = subprocess.SW_HIDE
+            ret_code = subprocess.call(conversion_command,
+                                       stderr=open(os.devnull), startupinfo=si)
+        else:
+            ret_code = subprocess.call(conversion_command,
+                                       stderr=open(os.devnull))
+        if ret_code != 0:
+            raise NoDecoderError("Decoding failed. ffmpeg error: {}".format(
+                                 ret_code))
+
+
+class WaveConverterError(Exception):
+    pass
+
+
+class NoWaveError(WaveConverterError):
+    pass
+
+
+class NoDecoderError(WaveConverterError):
+    pass
+
+
+class NoEncoderError(WaveConverterError):
+    pass
