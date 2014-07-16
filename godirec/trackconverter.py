@@ -7,7 +7,7 @@ import subprocess
 
 if hasattr(sys, "frozen"):
     folder = os.path.dirname(sys.argv[0])
-    _Converter.ffmpeg = os.path.join(folder, "ffmpeg.exe")
+    _WaveConverter.ffmpeg = os.path.join(folder, "ffmpeg.exe")
 
 
 futures = set()
