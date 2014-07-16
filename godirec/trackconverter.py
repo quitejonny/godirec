@@ -3,11 +3,7 @@ import os
 import concurrent.futures
 import threading
 import subprocess
-
-
-if hasattr(sys, "frozen"):
-    folder = os.path.dirname(sys.argv[0])
-    _WaveConverter.ffmpeg = os.path.join(folder, "ffmpeg.exe")
+import logging
 
 
 futures = set()
@@ -75,8 +71,12 @@ def set_done_callback(callback):
 
 
 def _run_convert_process(origin_file, path, filetype):
-    song = _WaveConverter(origin_file)
-    song.export(path)
+    try:
+        song = _WaveConverter(origin_file)
+        song.export(path)
+    except Exception as e:
+        logging.error(e, exc_info=True)
+        raise e
 
 
 def _run_after_finished_thread(future):
@@ -116,9 +116,6 @@ def _which(program):
 class _WaveConverter(object):
 
     converter = _get_encoder_name()
-
-    ffmpeg = property(lambda cls: cls.converter,
-                      lambda cls, value: setattr(cls, 'converter', value))
 
     def __init__(self, wav_file):
         if wav_file.endswith(".wav"):
@@ -163,3 +160,8 @@ class NoDecoderError(WaveConverterError):
 
 class NoEncoderError(WaveConverterError):
     pass
+
+
+if hasattr(sys, "frozen"):
+    folder = os.path.dirname(sys.argv[0])
+    _WaveConverter.converter = os.path.join(folder, "ffmpeg.exe")

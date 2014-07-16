@@ -1,5 +1,5 @@
-# import logging
-# import logging.config
+import logging
+import logging.config
 import sys
 from PyQt4 import QtGui
 import os.path
@@ -32,6 +32,6 @@ def resource_filename(package, path):
         return pkg_resources.resource_filename(package, path)
 
 
-#config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
-# logging.config.dictConfig(json.loads(config_str))
-# logging.info("Logging loaded")
+config_str = resource_string(__name__, "data/log/config.json").decode('utf-8')
+logging.config.dictConfig(json.loads(config_str))
+logging.info("Logging loaded")

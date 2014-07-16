@@ -29,6 +29,7 @@ if sys.platform == 'win32':
             ],
             "includes": [
                 "sip",
+                "logging.config",
             ],
         },
     }
