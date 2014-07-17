@@ -42,11 +42,11 @@ class Manager(object):
         self._tracks = list()
         self._track_count = 1
         self._callback = lambda: None
-        wav_folder = os.path.join(folder, 'wav')
-        if not os.path.exists(wav_folder):
-            os.mkdir(wav_folder)
 
     def create_new_track(self):
+        wav_folder = os.path.join(self._folder, 'wav')
+        if not os.path.exists(wav_folder):
+            os.mkdir(wav_folder)
         filename = "track_{:02d}.wav".format(self._track_count)
         filename = os.path.join(self._folder, 'wav', filename)
         tags = Tags()
