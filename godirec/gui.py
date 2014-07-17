@@ -373,7 +373,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         if self.status is NO_STREAM_RUNNING:
             self.rec.stop()
             if 'wav' not in self.settings.value('formats', type=str):
-                shutil.rmtree(os.path.join(self.cur_path, 'wav'))
+                shutil.rmtree(self.rec_manager.wav_folder)
         QtGui.QMainWindow.closeEvent(self, event)
 
 

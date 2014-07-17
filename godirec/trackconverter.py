@@ -10,7 +10,8 @@ futures_array = list()
 _callbacks = {"start": lambda: None, "done": lambda: None}
 
 
-def start(filetypes, basename, origin_file, track_files, folder, tag_callback):
+def start(filetypes, basename, origin_file, track_files, folder, project_name,
+          tag_callback):
     if not futures_array:
         _callbacks["start"]()
     if 'wav' in filetypes:
@@ -21,7 +22,9 @@ def start(filetypes, basename, origin_file, track_files, folder, tag_callback):
         executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
         for filetype in filetypes:
             filename = "{}.{}".format(basename, filetype)
-            filetype_folder = os.path.join(folder, filetype)
+            seperator = "-" if project_name else ""
+            type_folder = "".join((filetype, seperator, project_name))
+            filetype_folder = os.path.join(folder, type_folder)
             if not os.path.exists(filetype_folder):
                 os.mkdir(filetype_folder)
             path = os.path.abspath(os.path.join(filetype_folder, filename))

@@ -37,21 +37,28 @@ class Tags(object):
 
 class Manager(object):
 
-    def __init__(self, folder=tempfile.mkdtemp()):
+    def __init__(self, folder=tempfile.mkdtemp(), project_name=None):
+        if project_name is None:
+            self._project_name = os.path.basename(folder)
+        else:
+            self._project_name = project_name
         self._folder = os.path.abspath(folder)
         self._tracks = list()
         self._track_count = 1
         self._callback = lambda: None
+        self._wav_folder = ""
 
     def create_new_track(self):
-        wav_folder = os.path.join(self._folder, 'wav')
-        if not os.path.exists(wav_folder):
-            os.mkdir(wav_folder)
+        seperator = "-" if self._project_name else ""
+        type_folder = "".join(('wav', seperator, self._project_name))
+        self._wav_folder = os.path.join(self._folder, type_folder)
+        if not os.path.exists(self.wav_folder):
+            os.mkdir(self.wav_folder)
         filename = "track_{:02d}.wav".format(self._track_count)
-        filename = os.path.join(self._folder, 'wav', filename)
+        filename = os.path.join(self.wav_folder, filename)
         tags = Tags()
         tags["tracknumber"] = str(self._track_count)
-        track = Track(filename, self._folder, tags)
+        track = Track(filename, self._folder, self._project_name, tags)
         self._tracks.append(track)
         self._track_count += 1
         self._callback()
@@ -59,6 +66,10 @@ class Manager(object):
 
     def set_callback(self, func):
         self._callback = func
+
+    @property
+    def wav_folder(self):
+        return self._wav_folder
 
     @property
     def tracklist(self):
@@ -77,9 +88,11 @@ class Manager(object):
 
 class Track(object):
 
-    def __init__(self, origin_file, folder=None, tags=Tags()):
+    def __init__(self, origin_file, folder=None, project_name=None,
+                 tags=Tags()):
         self._origin_file = origin_file
         self._basename = os.path.splitext(os.path.basename(origin_file))[0]
+        self._project_name = project_name
         if folder is None:
             self._folder = os.path.dirname(origin_file)
         else:
@@ -97,7 +110,8 @@ class Track(object):
         else:
             trackconverter.start(filetypes, self._basename,
                                  self._origin_file, self._files,
-                                 self._folder, self.save_tags)
+                                 self._folder, self._project_name,
+                                 self.save_tags)
 
     @property
     def basename(self):
