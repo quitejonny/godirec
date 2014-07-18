@@ -355,6 +355,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.updateWordList()
 
     def closeEvent(self, event):
+        self.onListTracksIndexChanged()
         if self.status is RECORDING:
             title = self.tr("Stream beenden")
             message = self.tr("Um das Programm zu schließen,\n"
