@@ -129,8 +129,8 @@ class NoDecoderError(WaveConverterError):
 class NoEncoderError(WaveConverterError):
     """Error for WaveConverter class
 
-    the class could not find the location of the converter.
-    The converter path may be specified manually in the converter property.
+    the class could not find the location of the converter. The
+    converter path may be specified manually in the converter property.
     """
     pass
 

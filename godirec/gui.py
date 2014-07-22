@@ -235,8 +235,8 @@ class GodiRecWindow(QtGui.QMainWindow):
                     getattr(self, 'LineEdit'+key).setCompleter(completer)
 
     def setIcons(self):
-        """ This function is used as workaround for not loading icons in
-            python generated ui code"""
+        """This function is used as workaround for not loading icons in
+           python generated ui code"""
         icons = {"Stop": "media26.png", "Rec": "record6.png",
                  "Cut": "cutting.png"}
         for i, img in icons.items():
@@ -392,8 +392,8 @@ def createIcon(pixmap):
 def handle_exception(exc_type, exc_value, exc_traceback):
     """handle all exceptions
 
-    exceptions will be caught by this function. The error will be shown in a
-    message box to the user and logged to the configured file.
+    exceptions will be caught by this function. The error will be shown
+    in a message box to the user and logged to the configured file.
     """
     # KeyboardInterrupt is a special case.
     # We don't raise the error dialog when it occurs.

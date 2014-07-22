@@ -30,15 +30,24 @@ class Tags(object):
     __slots__ = ("title", "artist", "album", "genre", "date", "tracknumber",
                  "comment")
 
-    def __init__(self, title="", artist="", album="", genre="", date="",
-                 tracknumber="", comment=""):
-        self.title = title
-        self.artist = artist
-        self.album = album
-        self.genre = genre
-        self.date = date
-        self.tracknumber = tracknumber
-        self.comment = comment
+    def __init__(self, **kwargs):
+        """takes properties as keyword arguments
+
+        At initialization of the Tags class it is possible to specify
+        tags properties as keyword arguments. Possible arguments are:
+        title, artist, album, genre, date, tracknumber and comment
+
+        Example:
+        tags = Tags(title="This is a title", tracknumber="1")
+        """
+        for prop in self.keys():
+            setattr(self, prop, "")
+        try:
+            for arg, value in kwargs.items():
+                setattr(self, arg, value)
+        except AttributeError as e:
+            raise KeyError("The specified keyword {} is not supported by the"
+                           " Tags class".format(arg))
 
     def keys(self):
         """return a list of available tag names"""
@@ -125,8 +134,8 @@ class Track(object):
     def save(self, filetypes=[], folder=None):
         """will save the track with specified filetype.
         
-        If no filetype is given, the function will write the metadata in the
-        already exported files
+        If no filetype is given, the function will write the metadata
+        in the already exported files
         """
         if not filetypes:
             self.save_tags()
@@ -373,6 +382,12 @@ def _run_convert_process(origin_file, path, filetype):
 
 
 class Futures(set):
+    """Stores a set of futures from concurrent.futures
+
+    The Futures object stores a set of futures and manages them as well
+    in an class attribute which can be accessed with the all_futures
+    property.
+    """
 
     _futures = set()
 
@@ -381,29 +396,55 @@ class Futures(set):
 
     @property
     def all_futures(self):
+        """property which includes all futures
+
+        futures of all Futures object are managed by this property and
+        given to the user as frozen set
+        """
         return frozenset(Futures._futures)
 
     def add(self, elem):
+        """add future to futures object
+
+        if the future object is allready stored in another Futures
+        instance, a ValueError will be raised
+        """
         if elem in Futures._futures:
             raise ValueError("element is allready in a Futures instance")
         Futures._futures.add(elem)
         set.add(self, elem)
 
     def remove(self, elem):
+        """remove future from futures object
+
+        if the given future does not exist in this Future object an
+        error will be raised
+        """
         set.remove(self, elem)
         Futures._futures.remove(elem)
 
     def discard(self, elem):
+        """remove future from futures object
+
+        this method works like remove method but does not raise an
+        error if no future element can be remove
+        """
         if elem in Futures._futures:
             Futures._futures.remove(elem)
         set.discard(self, elem)
 
     def pop(self, elem):
+        """pop last future element
+
+        last future element will be deleted from Futures object an
+        returned by this function
+        """
         elem = set.pop(self)
         Futures._futures.remove(elem)
         return elem
 
     def clear(self):
+        """all future elements will be deleted from this instance"""
         for elem in self:
             Futures._futures.remove(elem)
         set.clear(self)
