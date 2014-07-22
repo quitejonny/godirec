@@ -365,7 +365,7 @@ class Timer(object):
 
 def _run_convert_process(origin_file, path, filetype):
     try:
-        song = audio._WaveConverter(origin_file)
+        song = audio.WaveConverter(origin_file)
         song.export(path)
     except Exception as e:
         logging.error(e, exc_info=True)
