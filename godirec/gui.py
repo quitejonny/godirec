@@ -8,7 +8,7 @@ from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 import logging
 import godirec
-from godirec import core, trackconverter
+from godirec import core
 
 
 class RecorderListModel(QtCore.QAbstractListModel):
@@ -134,8 +134,10 @@ class SettingsDialog(QtGui.QDialog):
 
 
 class PathDialog(QtGui.QDialog):
-    """ Path Dialog will ask for workspace path and project name. If path
-        doesn't exist it will be created"""
+    """Path Dialog will ask for workspace path and project name.
+
+    If path doesn't exist it will be created
+    """
 
     def __init__(self, path=""):
         QtGui.QDialog.__init__(self)
@@ -160,13 +162,13 @@ class PathDialog(QtGui.QDialog):
         self.ButtonCreate.setFocus()
 
     def onButtonDirClicked(self):
-        """ opens project FileDialog"""
+        """opens project FileDialog"""
         temp_path = QtGui.QFileDialog.getExistingDirectory(
             self, self.tr("Neues Projekt erzeugen in:"), ".")
         self.LineEditPath.setText(temp_path)
 
     def onButtonCreateClicked(self):
-        """ closes PathDialog window and creates necessery directories"""
+        """closes PathDialog window and creates necessery directories"""
         temp_path = str(self.LineEditPath.text())
         projectName = str(self.LineEditProjekt.text())
         self.cur_path = os.path.join(temp_path, projectName)
@@ -175,7 +177,7 @@ class PathDialog(QtGui.QDialog):
         self.close()
 
     def getValues(self):
-        """ returns project folder"""
+        """returns project folder"""
         return str(self.cur_path)
 
 
@@ -218,8 +220,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.statusSet.connect(self.setStatus)
         self.statusClear.connect(self.clearStatus)
         self.timeUpdate.connect(self.updateTime)
-        trackconverter.set_start_callback(self.statusSet.emit)
-        trackconverter.set_done_callback(self.statusClear.emit)
+        core.future_pool.start_callback = self.statusSet.emit
+        core.future_pool.done_callback = self.statusClear.emit
         logging.info('GUI loaded')
 
     def updateWordList(self):
@@ -267,7 +269,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.rec.pause()
 
     def onButtonCutClicked(self):
-        """ Erzeugt neue Datei und nimmt weiter auf"""
+        """Erzeugt neue Datei und nimmt weiter auf"""
         if self.status in (NO_STREAM_RUNNING, RECORDING):
             self.rec.cut()
             index = self.RecListModel.getLastItemIndex()
@@ -276,7 +278,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.LineEditTitle.setFocus()
 
     def onButtonChangeClicked(self):
-        """ Schreibt Tags in MP3 datei"""
+        """Schreibt Tags in MP3 datei"""
         self.onListTracksIndexChanged()
 
     def onButtonSaveClicked(self):
@@ -359,11 +361,11 @@ class GodiRecWindow(QtGui.QMainWindow):
         if self.status is RECORDING:
             title = self.tr("Stream beenden")
             message = self.tr("Um das Programm zu schließen,\n"
-                       "müssen sie zuerst den Stream beenden")
+                              "müssen sie zuerst den Stream beenden")
             QtGui.QMessageBox.information(self, title, message)
             event.ignore()
             return
-        elif trackconverter.has_running_processes():
+        elif core.future_pool.has_running_processes():
             title = "Bitte warten"
             message = self.tr("Die Tracks müssen erst fertig konvertiert "
                               "sein, bevor das Programm geschlossen werden "
@@ -388,7 +390,11 @@ def createIcon(pixmap):
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
-    """ handle all exceptions """
+    """handle all exceptions
+
+    exceptions will be caught by this function. The error will be shown in a
+    message box to the user and logged to the configured file.
+    """
     # KeyboardInterrupt is a special case.
     # We don't raise the error dialog when it occurs.
     if issubclass(exc_type, KeyboardInterrupt):
@@ -413,6 +419,11 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 
 def run():
+    """start GUI
+
+    The function will create the main thread for Qt Gui. It will set the
+    language to system locals an start an instance of the main window.
+    """
     sys.excepthook = handle_exception
     multiprocessing.freeze_support()
     app = QtGui.QApplication(sys.argv)

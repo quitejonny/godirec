@@ -4,13 +4,28 @@ import os
 import wave
 import time
 import tempfile
+import concurrent.futures
 import threading
 import mutagen
+import logging
 from mutagen import id3
-from godirec import trackconverter
+from godirec import audio
+
+
+class ConvertParams(object):
+
+    def __init__ (self, codec):
+        self._codec = codec
 
 
 class Tags(object):
+    """Tags object stores tags or metadata for music tracks
+
+    The class provides tags for seven diffenrent tags:
+    title, artist, album, genre, date, tracknumber, comment
+    They may be accessed a dict, for example:
+    tags["title"] = "This is a title"
+    """
 
     __slots__ = ("title", "artist", "album", "genre", "date", "tracknumber",
                  "comment")
@@ -26,6 +41,7 @@ class Tags(object):
         self.comment = comment
 
     def keys(self):
+        """return a list of available tag names"""
         return list(self.__slots__)
 
     def __setitem__(self, key, value):
@@ -75,6 +91,10 @@ class Manager(object):
     def tracklist(self):
         return self._tracks
 
+    def set_album(self, album):
+        for track in self._tracks:
+            track.tags.album = album
+
     def get_track(self, index):
         return self._tracks[index]
 
@@ -100,18 +120,54 @@ class Track(object):
         self.tags = tags
         self.tags.album = os.path.basename(self._folder)
         self._files = list()
+        self._futures = Futures()
 
     def save(self, filetypes=[], folder=None):
-        """ will save the track with the specified filetype. If no filetype is
-            given, the function will write the metadata in the already
-            exported files"""
+        """will save the track with specified filetype.
+        
+        If no filetype is given, the function will write the metadata in the
+        already exported files
+        """
         if not filetypes:
             self.save_tags()
         else:
-            trackconverter.start(filetypes, self._basename,
-                                 self._origin_file, self._files,
-                                 self._folder, self._project_name,
-                                 self.save_tags)
+            folder = folder if folder else self._folder
+            self._run_convertion(filetypes, folder)
+
+    def _run_convertion(self, filetypes, folder):
+        if not self._futures.all_futures:
+            future_pool.start_callback()
+        if 'wav' in filetypes:
+            filetypes.remove('wav')
+        try:
+            executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+            for filetype in filetypes:
+                filename = "{}.{}".format(self.basename, filetype)
+                seperator = "-" if self.project_name else ""
+                type_folder = "".join((filetype, seperator, self.project_name))
+                filetype_folder = os.path.join(folder, type_folder)
+                if not os.path.exists(filetype_folder):
+                    os.mkdir(filetype_folder)
+                path = os.path.abspath(os.path.join(filetype_folder, filename))
+                future = executor.submit(_run_convert_process,
+                                         self.origin_file, path, filetype)
+                future.add_done_callback(self._run_after_finished_process)
+                future.path = path
+                self._futures.add(future)
+        finally:
+            executor.shutdown(wait=False)
+
+    def _run_after_finished_process(self, future):
+        self._futures.remove(future)
+        e = future.exception()
+        if e:
+            raise e
+        with threading.RLock():
+            self._files.append(future.path)
+        if not self._futures:
+            self.save_tags()
+        if not self._futures.all_futures:
+            future_pool.done_callback()
 
     @property
     def basename(self):
@@ -120,6 +176,10 @@ class Track(object):
     @property
     def origin_file(self):
         return self._origin_file
+
+    @property
+    def project_name(self):
+        return self._project_name
 
     def save_tags(self):
         for f in self._files:
@@ -148,8 +208,7 @@ class Track(object):
 
 
 class Recorder(object):
-
-    """ A recorder class for recording audio."""
+    """A recorder class for recording audio."""
 
     def __init__(self, manager=Manager(), channels=2, rate=44100,
                  frames_per_buffer=1024):
@@ -302,3 +361,85 @@ class Timer(object):
         self._callback(self)
         self.timer = threading.Timer(1.0, self._run_timer)
         self.timer.start()
+
+
+def _run_convert_process(origin_file, path, filetype):
+    try:
+        song = audio._WaveConverter(origin_file)
+        song.export(path)
+    except Exception as e:
+        logging.error(e, exc_info=True)
+        raise e
+
+
+class Futures(set):
+
+    _futures = set()
+
+    def __init__(self, *args, **kwargs):
+        set.__init__(self, *args, **kwargs)
+
+    @property
+    def all_futures(self):
+        return frozenset(Futures._futures)
+
+    def add(self, elem):
+        if elem in Futures._futures:
+            raise ValueError("element is allready in a Futures instance")
+        Futures._futures.add(elem)
+        set.add(self, elem)
+
+    def remove(self, elem):
+        set.remove(self, elem)
+        Futures._futures.remove(elem)
+
+    def discard(self, elem):
+        if elem in Futures._futures:
+            Futures._futures.remove(elem)
+        set.discard(self, elem)
+
+    def pop(self, elem):
+        elem = set.pop(self)
+        Futures._futures.remove(elem)
+        return elem
+
+    def clear(self):
+        for elem in self:
+            Futures._futures.remove(elem)
+        set.clear(self)
+
+
+class FuturePool(object):
+
+    _instance = None
+
+    def __new__(cls):
+        if FuturePool._instance is None:
+            FuturePool._instance = object.__new__(cls)
+        return FuturePool._instance
+
+    def __init__(self):
+        self._futures = Futures()
+        self._start_callback = lambda: None
+        self._done_callback = lambda: None
+
+    start_callback = property(lambda s: s._start_callback,
+                              lambda s, v: setattr(s, "_start_callback", v))
+
+    done_callback = property(lambda s: s._done_callback,
+                             lambda s, v: setattr(s, "_done_callback", v))
+
+    def has_running_processes(self):
+        for future in self._futures:
+            if future.running():
+                return True
+        return False
+
+    def cancel(self):
+        for future in self._futures:
+            if not future.cancel():
+                return False
+        return True
+
+
+future_pool = FuturePool()

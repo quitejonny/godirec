@@ -1,91 +1,7 @@
 import sys
 import os
-import concurrent.futures
-import threading
 import subprocess
 import logging
-
-
-futures_array = list()
-_callbacks = {"start": lambda: None, "done": lambda: None}
-
-
-def start(filetypes, basename, origin_file, track_files, folder, project_name,
-          tag_callback):
-    if not futures_array:
-        _callbacks["start"]()
-    if 'wav' in filetypes:
-        filetypes.remove('wav')
-    futures = set()
-    futures_array.append(futures)
-    try:
-        executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
-        for filetype in filetypes:
-            filename = "{}.{}".format(basename, filetype)
-            seperator = "-" if project_name else ""
-            type_folder = "".join((filetype, seperator, project_name))
-            filetype_folder = os.path.join(folder, type_folder)
-            if not os.path.exists(filetype_folder):
-                os.mkdir(filetype_folder)
-            path = os.path.abspath(os.path.join(filetype_folder, filename))
-            future = executor.submit(_run_convert_process,
-                                     origin_file, path, filetype)
-            future.tag_callback = tag_callback
-            future.path = path
-            future.track_files = track_files
-            future.add_done_callback(_run_after_finished_process)
-            future.futures = futures
-            futures.add(future)
-    finally:
-        executor.shutdown(wait=False)
-
-
-def _run_after_finished_process(future):
-    future.futures.remove(future)
-    e = future.exception()
-    if e:
-        raise e
-    path = future.path
-    with threading.RLock():
-        future.track_files.append(path)
-    if not future.futures:
-        futures_array.remove(future.futures)
-        future.tag_callback()
-    if not futures_array:
-        _callbacks["done"]()
-
-
-def cancel():
-    for future in futures:
-        if not future.cancel():
-            return False
-    return True
-
-
-def has_running_processes():
-    for futures in futures_array:
-        for future in futures:
-            if future.running():
-                return True
-    return False
-
-
-def set_start_callback(callback):
-    _callbacks["start"] = callback
-
-
-def set_done_callback(callback):
-    _callbacks["done"] = callback
-
-
-def _run_convert_process(origin_file, path, filetype):
-    try:
-        song = _WaveConverter(origin_file)
-        song.export(path)
-    except Exception as e:
-        logging.error(e, exc_info=True)
-        raise e
-
 
 
 class _MetaWaveConverter(type):
@@ -96,16 +12,19 @@ class _MetaWaveConverter(type):
 
     @property
     def converter(cls):
+        """Get converter path of external used converter"""
         return cls._converter
 
     @converter.setter
     def converter(cls, value):
+        """Set converter path of ffmpeg manually"""
         cls._converter = value
 
     @classmethod
     def _get_encoder_name(cls):
-        """
-        Return enconder default application for system, either avconv or ffmpeg
+        """Return enconder default application for system
+
+        the encoder may be either avconv or ffmpeg
         """
         if cls._which("avconv"):
             return "avconv"
@@ -118,9 +37,7 @@ class _MetaWaveConverter(type):
 
     @classmethod
     def _which(cls, program):
-        """
-        Mimics behavior of UNIX which command.
-        """
+        """Mimics behavior of UNIX which command."""
         #Add .exe program extension for windows support
         if os.name == "nt" and not program.endswith(".exe"):
             program += ".exe"
@@ -132,23 +49,40 @@ class _MetaWaveConverter(type):
                 return program_path
 
 
-class _WaveConverter(object, metaclass=_MetaWaveConverter):
+class WaveConverter(object, metaclass=_MetaWaveConverter):
+    """Converts a wav file into other codec files like mp3, flac or ogg
+
+    options:
+    -f fmt: force input or output file format
+    -i filename: input file name
+    -y: Overwrite output files without asking
+    -c: codec
+    -stats: Print encoding progress/statistics. It is on by default.
+    -progress url: Send program-friendly progress information to url.
+    -b:a 128k: Sets bitrate for audio to 128kbit/s
+    """
 
     def __init__(self, wav_file):
         if wav_file.endswith(".wav"):
             self.wav_file = wav_file
         else:
             raise NoWaveError("Given file is not a wav file!")
-
+ 
     @property
     def converter(self):
-        return _WaveConverter._converter
+        """Get converter path of external used converter"""
+        return WaveConverter._converter
 
     @converter.setter
     def converter(self, value):
-        _WaveConverter._converter = value
+        """Set converter path of ffmpeg manually"""
+        WaveConverter._converter = value
 
     def export(self, filename, fmt=""):
+        """Export wav file to specified filename
+
+        the filetype may be specified in with the keyword argument fmt
+        """
         self._run_conversion(filename, fmt=fmt)
 
     def _run_conversion(self, filename, fmt=""):
@@ -172,21 +106,35 @@ class _WaveConverter(object, metaclass=_MetaWaveConverter):
 
 
 class WaveConverterError(Exception):
+    """Base error for the WaveConverter class"""
     pass
 
 
 class NoWaveError(WaveConverterError):
+    """Error for WaveConverter class
+
+    No wav at initialization is specified
+    """
     pass
 
 
 class NoDecoderError(WaveConverterError):
+    """Error for WaveConverter class
+
+    Is raised when somewithing went wrong with the external converter
+    """
     pass
 
 
 class NoEncoderError(WaveConverterError):
+    """Error for WaveConverter class
+
+    the class could not find the location of the converter.
+    The converter path may be specified manually in the converter property.
+    """
     pass
 
 
 if hasattr(sys, "frozen"):
     folder = os.path.dirname(sys.argv[0])
-    _WaveConverter.converter = os.path.join(folder, "ffmpeg.exe")
+    WaveConverter.converter = os.path.join(folder, "ffmpeg.exe")
