@@ -303,8 +303,13 @@ class GodiRecWindow(QtGui.QMainWindow):
         tags = self.tags()
         tags["tracknumber"] = self.current_track.tags["tracknumber"]
         if self.current_track.tags != tags:
+            has_different_albums = self.current_track.tags.album != tags.album
             self.current_track.tags = tags
-            self.current_track.save()
+            if has_different_albums:
+                self.rec_manager.set_album(tags.album)
+                self.rec_manager.save_tracks()
+            else:
+                self.current_track.save()
         index = self.ListTracks.selectedIndexes()[0]
         self.current_track = self.RecListModel.itemFromIndex(index)
         self.setTags(self.current_track)
@@ -357,7 +362,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.updateWordList()
 
     def closeEvent(self, event):
-        self.onListTracksIndexChanged()
+        if self.RecListModel.rowCount():
+            self.onListTracksIndexChanged()
         if self.status is RECORDING:
             title = self.tr("Stream beenden")
             message = self.tr("Um das Programm zu schließen,\n"

@@ -83,6 +83,10 @@ class Manager(object):
         filename = os.path.join(self.wav_folder, filename)
         tags = Tags()
         tags["tracknumber"] = str(self._track_count)
+        if self._tracks:
+            tags["album"] = self._tracks[-1].tags.album
+        else:
+            tags["album"] = self._project_name
         track = Track(filename, self._folder, self._project_name, tags)
         self._tracks.append(track)
         self._track_count += 1
@@ -110,7 +114,7 @@ class Manager(object):
     def get_index(self, track):
         return self._tracks.index(track)
 
-    def save_tracks(self, filetypes=['mp3']):
+    def save_tracks(self, filetypes=[]):
         for track in self._tracks:
             track.save(filetypes)
 
@@ -127,7 +131,6 @@ class Track(object):
         else:
             self._folder = folder
         self.tags = tags
-        self.tags.album = os.path.basename(self._folder)
         self._files = list()
         self._futures = Futures()
 
