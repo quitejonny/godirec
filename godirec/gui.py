@@ -214,7 +214,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.iconPause = createIcon('data/ui/pause10.png')
         self.iconRec = createIcon('data/ui/record6.png')
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
-        self.current_track = core.Track("")
+        self.current_track = core.Track("", "")
         self.cur_path = ""
         # connect status for statusbar
         self.statusSet.connect(self.setStatus)

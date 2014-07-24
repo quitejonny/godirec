@@ -6,6 +6,7 @@ import time
 import tempfile
 import concurrent.futures
 import threading
+import re
 import mutagen
 import logging
 from mutagen import id3
@@ -120,16 +121,19 @@ class Manager(object):
 
 
 class Track(object):
+    """Manages track with origin wav file, tags and converted files
 
-    def __init__(self, origin_file, folder=None, project_name=None,
-                 tags=Tags()):
+    The track object stores the origin wave file and the tags to it. To
+    convert the track to other file formats the save function may be
+    used. The file paths are internally stored. This gives the
+    possibility to change the tags of the files and the filename.
+    """
+
+    def __init__(self, origin_file, folder, project_name=None, tags=Tags()):
         self._origin_file = origin_file
         self._basename = os.path.splitext(os.path.basename(origin_file))[0]
         self._project_name = project_name
-        if folder is None:
-            self._folder = os.path.dirname(origin_file)
-        else:
-            self._folder = folder
+        self._folder = folder
         self.tags = tags
         self._files = list()
         self._futures = Futures()
@@ -184,6 +188,16 @@ class Track(object):
     @property
     def basename(self):
         return self._basename
+
+    @basename.setter
+    def basename(self, value):
+        new_files = list()
+        for f in self._files:
+            pattern = "{}(?=\.\w+$)".format(self._basename)
+            f_new = re.sub(pattern, value, f)
+            os.rename(f, f_new)
+            new_files.append(f_new)
+        self._files = new_files
 
     @property
     def origin_file(self):
