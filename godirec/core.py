@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pyaudio
 import os
+import shutil
 import wave
 import time
 import tempfile
@@ -63,7 +64,7 @@ class Tags(object):
 
 class Manager(object):
 
-    def __init__(self, folder=tempfile.mkdtemp(), project_name=None):
+    def __init__(self, folder, project_name=None):
         if project_name is None:
             self._project_name = os.path.basename(folder)
         else:
@@ -75,11 +76,8 @@ class Manager(object):
         self._wav_folder = ""
 
     def create_new_track(self):
-        seperator = "-" if self._project_name else ""
-        type_folder = "".join(('wav', seperator, self._project_name))
-        self._wav_folder = os.path.join(self._folder, type_folder)
-        if not os.path.exists(self.wav_folder):
-            os.mkdir(self.wav_folder)
+        if not self.wav_folder:
+            self._wav_folder = tempfile.mkdtemp()
         filename = "{:02d} - track.wav".format(self._track_count)
         filename = os.path.join(self.wav_folder, filename)
         tags = Tags()
@@ -119,6 +117,9 @@ class Manager(object):
         for track in self._tracks:
             track.save(filetypes)
 
+    def __del__(self):
+        shutil.rmtree(self.wav_folder)
+
 
 class Track(object):
     """Manages track with origin wav file, tags and converted files
@@ -156,8 +157,6 @@ class Track(object):
     def _run_convertion(self, filetypes, folder):
         if not self._futures.all_futures:
             future_pool.start_callback()
-        if 'wav' in filetypes:
-            filetypes.remove('wav')
         try:
             executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
             for filetype in filetypes:
@@ -237,6 +236,8 @@ class Track(object):
                                         text=self.tags['tracknumber'])
                 tags.update_to_v23()
                 tags.save(f, v2_version=3)
+            elif f.endswith('.wav'):
+                pass
             else:
                 # save tags in every track file
                 audio = mutagen.File(f, easy=True)
@@ -251,7 +252,7 @@ class Track(object):
 class Recorder(object):
     """A recorder class for recording audio."""
 
-    def __init__(self, manager=Manager(), channels=2, rate=44100,
+    def __init__(self, manager=Manager(""), channels=2, rate=44100,
                  frames_per_buffer=1024):
         self._manager = manager
         self._channels = channels

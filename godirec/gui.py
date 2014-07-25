@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import shutil
 import traceback
 import multiprocessing
 from datetime import datetime
@@ -386,9 +385,6 @@ class GodiRecWindow(QtGui.QMainWindow):
             return
         if self.status is NO_STREAM_RUNNING:
             self.rec.stop()
-            if 'wav' not in self.settings.value('formats', type=str):
-                if os.path.exists(self.rec_manager.wav_folder):
-                    shutil.rmtree(self.rec_manager.wav_folder)
         QtGui.QMainWindow.closeEvent(self, event)
 
 
