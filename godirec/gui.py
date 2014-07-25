@@ -27,7 +27,11 @@ class RecorderListModel(QtCore.QAbstractListModel):
     def data(self, index, role):
         if index.isValid() and role == QtCore.Qt.DisplayRole:
             track = self.rec_manager.get_track(index.row())
-            return track.basename
+            if track.tags.title:
+                return "{:02d} - {}".format(int(track.tags.tracknumber),
+                                            track.tags.title)
+            else:
+                return track.basename
         else:
             return None
 
@@ -313,6 +317,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         index = self.ListTracks.selectedIndexes()[0]
         self.current_track = self.RecListModel.itemFromIndex(index)
         self.setTags(self.current_track)
+        self.RecListModel.update()
 
     def setTags(self, track):
         exclude = set(['date', 'tracknumber'])
@@ -382,7 +387,8 @@ class GodiRecWindow(QtGui.QMainWindow):
         if self.status is NO_STREAM_RUNNING:
             self.rec.stop()
             if 'wav' not in self.settings.value('formats', type=str):
-                shutil.rmtree(self.rec_manager.wav_folder)
+                if os.path.exists(self.rec_manager.wav_folder):
+                    shutil.rmtree(self.rec_manager.wav_folder)
         QtGui.QMainWindow.closeEvent(self, event)
 
 

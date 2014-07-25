@@ -80,7 +80,7 @@ class Manager(object):
         self._wav_folder = os.path.join(self._folder, type_folder)
         if not os.path.exists(self.wav_folder):
             os.mkdir(self.wav_folder)
-        filename = "track_{:02d}.wav".format(self._track_count)
+        filename = "{:02d} - track.wav".format(self._track_count)
         filename = os.path.join(self.wav_folder, filename)
         tags = Tags()
         tags["tracknumber"] = str(self._track_count)
@@ -132,8 +132,11 @@ class Track(object):
     def __init__(self, origin_file, folder, project_name=None, tags=Tags()):
         self._origin_file = origin_file
         self._basename = os.path.splitext(os.path.basename(origin_file))[0]
+        self._origin_basename = self._basename
         self._project_name = project_name
         self._folder = folder
+        self._old_title = tags.title
+        self._has_file_changed = False
         self.tags = tags
         self._files = list()
         self._futures = Futures()
@@ -180,6 +183,7 @@ class Track(object):
             raise e
         with threading.RLock():
             self._files.append(future.path)
+            self._has_file_changed = True
         if not self._futures:
             self.save_tags()
         if not self._futures.all_futures:
@@ -191,6 +195,8 @@ class Track(object):
 
     @basename.setter
     def basename(self, value):
+        if self._futures.has_running_processes():
+            return
         new_files = list()
         for f in self._files:
             pattern = "{}(?=\.\w+$)".format(self._basename)
@@ -198,6 +204,8 @@ class Track(object):
             os.rename(f, f_new)
             new_files.append(f_new)
         self._files = new_files
+        self._basename = value
+        self._has_file_changed = False
 
     @property
     def origin_file(self):
@@ -208,6 +216,13 @@ class Track(object):
         return self._project_name
 
     def save_tags(self):
+        if self._has_file_changed or self._old_title != self.tags.title:
+            if self.tags.title:
+                self.basename = "{:02d} - {}".format(
+                    int(self.tags.tracknumber), self.tags.title)
+            else:
+                self.basename = self._origin_basename
+            self._old_title = self.tags.title
         for f in self._files:
             if f.endswith('.mp3'):
                 tags = mutagen.id3.ID3()
@@ -465,6 +480,12 @@ class Futures(set):
         for elem in self:
             Futures._futures.remove(elem)
         set.clear(self)
+
+    def has_running_processes(self):
+        for future in self:
+            if future.running():
+                return True
+        return False
 
 
 class FuturePool(object):
