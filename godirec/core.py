@@ -14,12 +14,6 @@ from mutagen import id3
 from godirec import audio
 
 
-class ConvertParams(object):
-
-    def __init__ (self, codec):
-        self._codec = codec
-
-
 class Tags(object):
     """Tags object stores tags or metadata for music tracks
 
@@ -63,8 +57,24 @@ class Tags(object):
 
 
 class Manager(object):
+    """keeps track of the tracks an their recording files
+
+    the manager keeps a list of all created tracks. Tracks can be easily
+    created with this class and passes the right parameters to the track
+    object at initialization.
+    """
 
     def __init__(self, folder, project_name=None):
+        """initializes manager 
+
+        two arguments may be passed:
+        folder: if not allready created, the manager will create the
+            folder. Under this folder the subfolders for the different
+            codecs will be created.
+        project_name: will be used for creating the subfolder. The name
+            is a coumpround of the codec name and the project name.
+            Futher more the project name will be used as album tag.
+        """
         if project_name is None:
             self._project_name = os.path.basename(folder)
         else:
@@ -76,6 +86,11 @@ class Manager(object):
         self._wav_folder = ""
 
     def create_new_track(self):
+        """create new track and add it to the manager's track list
+
+        besides the creation of a new track, this function also sets
+        the track count and album tag
+        """
         if not self.wav_folder:
             self._wav_folder = tempfile.mkdtemp()
         filename = "{:02d} - track.wav".format(self._track_count)
@@ -93,6 +108,10 @@ class Manager(object):
         return track
 
     def set_callback(self, func):
+        """sets callback function
+
+        it will be called after creation of a new track
+        """
         self._callback = func
 
     @property
@@ -104,10 +123,12 @@ class Manager(object):
         return self._tracks
 
     def set_album(self, album):
+        """sets the album tag in each track"""
         for track in self._tracks:
             track.tags.album = album
 
     def get_track(self, index):
+        """returns the track from the tracklist"""
         return self._tracks[index]
 
     def get_index(self, track):
@@ -118,7 +139,8 @@ class Manager(object):
             track.save(filetypes)
 
     def __del__(self):
-        shutil.rmtree(self.wav_folder)
+        if os.path.exists(self.wav_folder):
+            shutil.rmtree(self.wav_folder)
 
 
 class Track(object):

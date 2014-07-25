@@ -4,6 +4,16 @@ import subprocess
 import logging
 
 
+class ConvertParams(object):
+
+    def __init__(self, codec):
+        self._codec = codec
+
+
+    def __str__(self):
+        return self._codec
+
+
 class _MetaWaveConverter(type):
 
     def __init__(cls, name, base, dct):
