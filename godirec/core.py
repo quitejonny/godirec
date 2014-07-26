@@ -538,7 +538,7 @@ class FuturePool(object):
                              lambda s, v: setattr(s, "_done_callback", v))
 
     def has_running_processes(self):
-        for future in self._futures:
+        for future in Futures._futures:
             if future.running():
                 return True
         return False
