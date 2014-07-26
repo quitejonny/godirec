@@ -10,7 +10,6 @@ import threading
 import re
 import mutagen
 import logging
-import string
 from mutagen import id3
 from godirec import audio
 
@@ -210,7 +209,7 @@ class Track(object):
             self.save_tags()
         if not self._futures.all_futures:
             future_pool.done_callback()
-        
+
     @property
     def basename(self):
         return self._basename
@@ -222,14 +221,13 @@ class Track(object):
         new_files = list()
         for f in self._files:
             pattern = "{}(?=\.\w+$)".format(self._basename)
-            value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', '', value)
+            value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', '_', value)
             f_new = re.sub(pattern, value, f)
             try:
                 os.rename(f, f_new)
                 new_files.append(f_new)
             except OSError as ose:
                 logging.error(ose, exc_info=True)
-                pass
         self._files = new_files
         self._basename = value
         self._has_file_changed = False
@@ -538,13 +536,13 @@ class FuturePool(object):
                              lambda s, v: setattr(s, "_done_callback", v))
 
     def has_running_processes(self):
-        for future in Futures._futures:
+        for future in self._futures.all_futures:
             if future.running():
                 return True
         return False
 
     def cancel(self):
-        for future in self._futures:
+        for future in self._futures.all_futures:
             if not future.cancel():
                 return False
         return True
