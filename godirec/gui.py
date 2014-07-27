@@ -187,6 +187,7 @@ class PathDialog(QtGui.QDialog):
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
 RECORDING = "currently recording"
+STREAM_PAUSING = "currently pausing"
 
 
 class GodiRecWindow(QtGui.QMainWindow):
@@ -256,7 +257,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.status = NO_STREAM_RUNNING
 
     def onButtonRecClicked(self):
-        if self.status is NO_STREAM_RUNNING:
+        if self.status in (NO_STREAM_RUNNING, STREAM_PAUSING):
             self.ButtonRec.setIcon(self.iconPause)
             self.ButtonCut.setEnabled(True)
             self.ButtonStop.setEnabled(True)
@@ -267,7 +268,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.onListTracksIndexChanged()
             self.LineEditTitle.setFocus()
         elif self.status is RECORDING:
-            self.status = NO_STREAM_RUNNING
+            self.status = STREAM_PAUSING
             self.ButtonRec.setIcon(self.iconRec)
             self.rec.pause()
 
@@ -368,7 +369,7 @@ class GodiRecWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         if self.RecListModel.rowCount():
             self.onListTracksIndexChanged()
-        if self.status is RECORDING:
+        if self.status in (RECORDING, STREAM_PAUSING):
             title = self.tr("Stream beenden")
             message = self.tr("Um das Programm zu schließen,\n"
                               "müssen sie zuerst den Stream beenden")
