@@ -248,7 +248,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             getattr(self, "Button"+i).setIcon(icon)
 
     def onButtonStopClicked(self):
-        if self.status in (NO_STREAM_RUNNING, RECORDING):
+        if self.status in (NO_STREAM_RUNNING, RECORDING, STREAM_PAUSING):
             self.ButtonRec.setIcon(self.iconRec)
             self.ButtonCut.setEnabled(False)
             self.ButtonStop.setEnabled(False)
@@ -274,8 +274,10 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def onButtonCutClicked(self):
         """Erzeugt neue Datei und nimmt weiter auf"""
-        if self.status in (NO_STREAM_RUNNING, RECORDING):
+        if self.status in (NO_STREAM_RUNNING, RECORDING, STREAM_PAUSING):
             self.rec.cut()
+            self.ButtonRec.setIcon(self.iconPause)
+            self.status = RECORDING
             index = self.RecListModel.getLastItemIndex()
             self.ListTracks.setCurrentIndex(index)
             self.onListTracksIndexChanged()
