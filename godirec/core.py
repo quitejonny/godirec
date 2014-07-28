@@ -184,7 +184,9 @@ class Track(object):
             for filetype in filetypes:
                 filename = "{}.{}".format(self.basename, filetype)
                 seperator = "-" if self.project_name else ""
-                type_folder = "".join((filetype, seperator, self.project_name))
+                type_folder = "".join(
+                        (str(filetype), seperator, self.project_name)
+                )
                 filetype_folder = os.path.join(folder, type_folder)
                 if not os.path.exists(filetype_folder):
                     os.mkdir(filetype_folder)
@@ -288,7 +290,7 @@ class Recorder(object):
         self._is_recording = False
         self._is_pausing = False
         self.timer = Timer()
-        self.format_list = ['mp3', 'flac', 'ogg']
+        self.format_list = audio.codec_dict.values()
 
     def play(self):
         if self._is_recording and not self._is_pausing:
@@ -434,7 +436,7 @@ class Timer(object):
 def _run_convert_process(origin_file, path, filetype):
     try:
         song = audio.WaveConverter(origin_file)
-        song.export(path)
+        song.export(path, fmt=filetype)
     except Exception as e:
         logging.error(e, exc_info=True)
         raise e

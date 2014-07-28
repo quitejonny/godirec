@@ -7,7 +7,7 @@ from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 import logging
 import godirec
-from godirec import core
+from godirec import core, audio
 
 
 class RecorderListModel(QtCore.QAbstractListModel):
@@ -52,7 +52,7 @@ class SettingsDialog(QtGui.QDialog):
         settings_ui_file = godirec.resource_stream(__name__,
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
-        self.supported_filetypes = ['mp3', 'flac', 'ogg', 'wav']
+        self.supported_filetypes = [str(f) for f in audio.codec_dict.values()]
         for filetype in self.supported_filetypes:
             checkbox = QtGui.QCheckBox(filetype.upper())
             setattr(self, "CheckBox"+filetype.title(), checkbox)
@@ -273,7 +273,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.rec.pause()
 
     def onButtonCutClicked(self):
-        """Erzeugt neue Datei und nimmt weiter auf"""
+        """stops recording, creates new file and starts recording again"""
         if self.status in (NO_STREAM_RUNNING, RECORDING, STREAM_PAUSING):
             self.rec.cut()
             self.ButtonRec.setIcon(self.iconPause)
@@ -284,18 +284,20 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.LineEditTitle.setFocus()
 
     def onButtonChangeClicked(self):
-        """Schreibt Tags in MP3 datei"""
+        """writes tags to audio files"""
         self.onListTracksIndexChanged()
 
     def onButtonSaveClicked(self):
         self.RecListModel.update()
 
     def setStatus(self, message=""):
+        """shows the given message in the program statusbar"""
         if message is "":
             message = self.tr("Converting Track")
         self.statusbar.showMessage(message)
 
     def clearStatus(self):
+        """clears the status of the program statusbar"""
         self.statusbar.clearMessage()
 
     def updateTime(self, timer):
@@ -305,6 +307,11 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.LabelTime.setText(track_time+"/"+rec_time)
 
     def onListTracksIndexChanged(self):
+        """is called when the index in ListTracks has changed
+
+        it saved the old Tags in its corresponding track and loads the
+        tags of the new selected track
+        """
         # save old Tags if tags have changed
         tags = self.tags()
         tags["tracknumber"] = self.current_track.tags["tracknumber"]
@@ -322,6 +329,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.RecListModel.update()
 
     def setTags(self, track):
+        """sets the tags of a given track in program window"""
         exclude = set(['date', 'tracknumber'])
         for tag in set(track.tags.keys()).difference(exclude):
             getattr(self, 'LineEdit'+tag.title()).setText(track.tags[tag])
@@ -332,6 +340,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.LineEditDate.setDate(QtCore.QDate(year, 1, 1))
 
     def tags(self):
+        """returns a Tags object with the given tags in program window"""
         tags = core.Tags()
         exclude = set(['date', 'tracknumber'])
         for tag in set(tags.keys()).difference(exclude):
@@ -356,19 +365,22 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.rec_manager = core.Manager(current_path)
             self.rec = core.Recorder(self.rec_manager)
             if 'formats' in self.settings.allKeys():
-                self.rec.format_list = self.settings.value('formats', type=str)
+                f_list = self.settings.value('formats', type=str)
+                self.rec.format_list = [audio.codec_dict[f] for f in f_list]
             self.rec.timer.set_callback(self.timeUpdate.emit)
             self.RecListModel.set_rec_manager(self.rec_manager)
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setEnabled(True)
 
     def openSettings(self):
+        """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)
         self.settings_dialog.show()
         self.settings_dialog.exec_()
         self.updateWordList()
 
     def closeEvent(self, event):
+        """method is called when close event is emitted"""
         if self.RecListModel.rowCount():
             self.onListTracksIndexChanged()
         if self.status in (RECORDING, STREAM_PAUSING):
@@ -392,6 +404,11 @@ class GodiRecWindow(QtGui.QMainWindow):
 
 
 def createIcon(pixmap):
+    """creates a Qt-icon from an pixmap
+
+    this function look up the given pixmap in its own resources. Icons
+    outside of the godirec project can not be loaded with this function
+    """
     icon = QtGui.QIcon()
     pmap = QtGui.QPixmap()
     png_str = godirec.resource_string(__name__, pixmap)

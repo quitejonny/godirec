@@ -5,16 +5,70 @@ import logging
 
 
 class ConvertParams(object):
+    """Defines the convertion parameters for WaveConverter"""
 
     def __init__(self, codec):
         self._codec = codec
-
+        self._bitrate = None
+        self.override = True
 
     def __str__(self):
         return self._codec
 
+    def get_converter_list(self):
+        """returns the parameters as list for subprocess usage"""
+        converter_list = list()
+        # TODO: does not work with flac format for now
+        # converter_list.extend(['-f', self._codec])
+        if self.override:
+            converter_list.append('-y')
+        if self.bitrate:
+            converter_list.extend(['-b:a', self.bitrate])
+        return converter_list
+
+    @property
+    def override(self):
+        """defines wether a existing file will be overritten or not
+
+        by default this property is set to True
+        """
+        return self._override
+
+    @override.setter
+    def override(self, is_file_overritten):
+        self._override = is_file_overritten
+
+    @property
+    def codec(self):
+        """defines the used audio codec such as wav, mp3 or flac"""
+        return self._codec
+
+    @codec.setter
+    def codec(self, codec):
+        self._codec = codec
+
+    @property
+    def bitrate(self):
+        return self._bitrate
+
+    @bitrate.setter
+    def bitrate(self, bitrate):
+        self._bitrate = bitrate
+
+
+codec_dict = {
+    "mp3": ConvertParams("mp3"),
+    "flac": ConvertParams("flac"),
+    "wav": ConvertParams("wav"),
+    "ogg": ConvertParams("ogg")
+}
+
 
 class _MetaWaveConverter(type):
+    """Metaclass for WaveConverter
+
+    is needed for the class property "converter"
+    """
 
     def __init__(cls, name, base, dct):
         cls._converter = cls._get_encoder_name()
@@ -32,7 +86,7 @@ class _MetaWaveConverter(type):
 
     @classmethod
     def _get_encoder_name(cls):
-        """Return enconder default application for system
+        """return enconder default application for system
 
         the encoder may be either avconv or ffmpeg
         """
@@ -47,7 +101,7 @@ class _MetaWaveConverter(type):
 
     @classmethod
     def _which(cls, program):
-        """Mimics behavior of UNIX which command."""
+        """mimics behavior of UNIX which command."""
         #Add .exe program extension for windows support
         if os.name == "nt" and not program.endswith(".exe"):
             program += ".exe"
@@ -80,25 +134,25 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
  
     @property
     def converter(self):
-        """Get converter path of external used converter"""
+        """converter path of external used converter"""
         return WaveConverter._converter
 
     @converter.setter
     def converter(self, value):
-        """Set converter path of ffmpeg manually"""
+        """set converter path of ffmpeg manually"""
         WaveConverter._converter = value
 
-    def export(self, filename, fmt=""):
-        """Export wav file to specified filename
+    def export(self, filename, fmt=None):
+        """export wav file to specified filename
 
         the filetype may be specified in with the keyword argument fmt
         """
         self._run_conversion(filename, fmt=fmt)
 
-    def _run_conversion(self, filename, fmt=""):
-        conversion_command = [self.converter, '-y']
+    def _run_conversion(self, filename, fmt=None):
+        conversion_command = [self.converter]
         if fmt:
-            conversion_command += ['-f', fmt]
+            conversion_command += fmt.get_converter_list()
         conversion_command += ["-i", self.wav_file]
         conversion_command += [filename]
         if sys.platform == 'win32':
