@@ -33,7 +33,7 @@
         <item>
          <widget class="QPushButton" name="ButtonStop">
           <property name="toolTip">
-           <string>strg+J</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beendet Track&lt;br/&gt;Strg+J&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string/>
@@ -50,7 +50,7 @@
         <item>
          <widget class="QPushButton" name="ButtonRec">
           <property name="toolTip">
-           <string>strg+K</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;startet/pausiert Track&lt;br/&gt;Strg+K&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string/>
@@ -67,7 +67,7 @@
         <item>
          <widget class="QPushButton" name="ButtonCut">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt einen neuen Track.&lt;/p&gt;&lt;p&gt;strg+L&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;beginnt neuen Track&lt;br/&gt;Strg+L&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
            <string/>
