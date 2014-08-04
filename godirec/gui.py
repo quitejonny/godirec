@@ -106,13 +106,15 @@ class SettingsDialog(QtGui.QDialog):
             logging.info("Add Tag {} to {}".format(value, key))
 
     def deleteTag(self):
+        offset = 0
         model = self.listView.model()
         key = str(self.comboBox.currentText())
         for row in range(model.rowCount()):
             item = model.item(row)
             if item.checkState() == QtCore.Qt.Checked:
-                value = self.tags[key].pop(row)
+                value = self.tags[key].pop(row-offset)
                 logging.info("Delete Tag {} from {}".format(value, key))
+                offset += 1
         if model.rowCount() == 0:
             self.pushButtonDelete.setEnabled(False)
         self.settings.setValue('tags', self.tags)
