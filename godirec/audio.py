@@ -17,9 +17,7 @@ class ConvertParams(object):
 
     def get_converter_list(self):
         """returns the parameters as list for subprocess usage"""
-        converter_list = list()
-        # TODO: does not work with flac format for now
-        # converter_list.extend(['-f', self._codec])
+        converter_list = ['-f', self._codec]
         if self.override:
             converter_list.append('-y')
         if self.bitrate:
@@ -151,9 +149,9 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
 
     def _run_conversion(self, filename, fmt=None):
         conversion_command = [self.converter]
+        conversion_command += ["-i", self.wav_file]
         if fmt:
             conversion_command += fmt.get_converter_list()
-        conversion_command += ["-i", self.wav_file]
         conversion_command += [filename]
         if sys.platform == 'win32':
             si = subprocess.STARTUPINFO()
