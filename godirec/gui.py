@@ -145,6 +145,12 @@ class SettingsDialog(QtGui.QDialog):
         self.settings.setValue('formats', self.formats)
         logging.info("Changed Exportfile formats")
 
+    def getValues(self):
+        """returns project folder"""
+        # TODO: create Dict, which contains all settings
+        return str(self.labelPath.text())
+
+
 
 class PathDialog(QtGui.QDialog):
     """Path Dialog will ask for workspace path and project name.
@@ -386,7 +392,12 @@ class GodiRecWindow(QtGui.QMainWindow):
         """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)
         self.settings_dialog.show()
-        self.settings_dialog.exec_()
+        # TODO: get settings and save if ok
+        if self.settings_dialog.exec_():
+            print("ok")
+            print(self.settings_dialog.getValues())
+        else:
+            print("rejekt")
         self.updateWordList()
 
     def closeEvent(self, event):
