@@ -1,6 +1,8 @@
 import sys
 import os
 import subprocess
+import weakref
+import wave
 import logging
 
 
@@ -11,9 +13,14 @@ class ConvertParams(object):
         self._codec = codec
         self._bitrate = None
         self.override = True
+        self.acodec = None
 
     def __str__(self):
-        return self._codec
+        if self._bitrate:
+            string = "-".join((self._codec, self._bitrate))
+        else:
+            string = self._codec
+        return string
 
     def get_converter_list(self):
         """returns the parameters as list for subprocess usage"""
@@ -22,6 +29,8 @@ class ConvertParams(object):
             converter_list.append('-y')
         if self.bitrate:
             converter_list.extend(['-b:a', self.bitrate])
+        if self.acodec:
+            converter_list.extend(['-acodec', self.acodec])
         return converter_list
 
     @property
@@ -53,13 +62,18 @@ class ConvertParams(object):
     def bitrate(self, bitrate):
         self._bitrate = bitrate
 
+def create_codec_dict():
+    codecs = [ConvertParams(i) for i in ["flac", "wav"]]
+    for bitrate in ["64k", "128k"]:
+        codecs.append(ConvertParams("mp3"))
+        codecs[-1].bitrate = bitrate
+        codecs.append(ConvertParams("ogg"))
+        codecs[-1].bitrate = bitrate
+        codecs[-1].acodec = 'libvorbis'
+    return {str(i): i for i in codecs}
 
-codec_dict = {
-    "mp3": ConvertParams("mp3"),
-    "flac": ConvertParams("flac"),
-    "wav": ConvertParams("wav"),
-    "ogg": ConvertParams("ogg")
-}
+
+codec_dict = create_codec_dict()
 
 
 class _MetaWaveConverter(type):
@@ -120,15 +134,34 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
     -y: Overwrite output files without asking
     -c: codec
     -stats: Print encoding progress/statistics. It is on by default.
-    -progress url: Send program-friendly progress information to url.
     -b:a 128k: Sets bitrate for audio to 128kbit/s
     """
 
+    _instances = weakref.WeakSet()
+
     def __init__(self, wav_file):
+        WaveConverter._instances.add(self)
         if wav_file.endswith(".wav"):
             self.wav_file = wav_file
+            with wave.open(wav_file) as f:
+                frames = f.getnframes()
+                rate = f.getframerate()
+                self._duration = frames / float(rate)
         else:
             raise NoWaveError("Given file is not a wav file!")
+
+    @classmethod
+    def get_progress(cls):
+        duration = 0.0
+        time = 0.0
+        for instance in cls._instances:
+            if instance.time:
+                duration += instance._duration
+                time += instance._time
+        if duration:
+            return time / duration * 100.0
+        else:
+            return None
  
     @property
     def converter(self):
