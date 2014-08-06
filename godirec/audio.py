@@ -2,7 +2,9 @@ import sys
 import os
 import subprocess
 import weakref
+import io
 import wave
+import re
 import logging
 
 
@@ -186,16 +188,28 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
         if fmt:
             conversion_command += fmt.get_converter_list()
         conversion_command += [filename]
+        kwargs = {}
         if sys.platform == 'win32':
             si = subprocess.STARTUPINFO()
             si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             si.wShowWindow = subprocess.SW_HIDE
-            ret_code = subprocess.call(conversion_command,
-                                       stderr=open(os.devnull), startupinfo=si)
-        else:
-            ret_code = subprocess.call(conversion_command,
-                                       stderr=open(os.devnull))
-        if ret_code != 0:
+            kwargs['startupinfo'] = si
+        try:
+            process = subprocess.Popen(conversion_command,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT, **kwargs)
+            log = ''
+            for line in io.TextIOWrapper(process.stdout):
+                log += line
+                match = re.findall('time=(\d+\.\d*)', line)
+                if match:
+                    self._time = float(match[0])
+                    print(self._time)
+                else:
+                    continue
+        except Exception as error:
+            logging.error(error, exc_info=True)
+            logging.error(log)
             raise NoDecoderError("Decoding failed. ffmpeg error: {}".format(
                                  ret_code))
 
