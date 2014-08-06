@@ -52,7 +52,7 @@ class SettingsDialog(QtGui.QDialog):
         settings_ui_file = godirec.resource_stream(__name__,
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
-        self.supported_filetypes = [str(f) for f in audio.codec_dict.values()]
+        self.supported_filetypes = sorted(audio.codec_dict.keys())
         for filetype in self.supported_filetypes:
             checkbox = QtGui.QCheckBox(filetype.upper())
             setattr(self, "CheckBox"+filetype.title(), checkbox)
