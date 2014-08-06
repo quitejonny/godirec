@@ -80,6 +80,7 @@ class SettingsDialog(QtGui.QDialog):
         self.updateCheckBoxes()
         self.comboBox.activated[str].connect(self.comboBoxChanged)
         self.pushButtonAdd.clicked.connect(self.addTag)
+        self.pushButtonDir.clicked.connect(self.onButtonDirClicked)
         self.pushButtonDelete.clicked.connect(self.deleteTag)
         self.comboBoxChanged(str(self.comboBox.currentText()))
 
@@ -93,6 +94,13 @@ class SettingsDialog(QtGui.QDialog):
             self.model.appendRow(item)
         self.listView.setModel(self.model)
         self.pushButtonDelete.setEnabled(bool(values))
+        
+    def onButtonDirClicked(self):
+        """opens log FileDialog"""
+        temp_path = QtGui.QFileDialog.getExistingDirectory(
+            self, self.tr("Logfile erzeugen in:"), ".")
+        if temp_path:
+            self.labelPath.setText(temp_path)
 
     def addTag(self):
         value = str(self.lineEditAdd.text())

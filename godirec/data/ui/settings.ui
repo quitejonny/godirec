@@ -41,7 +41,7 @@
         <enum>QTabWidget::North</enum>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="export">
         <attribute name="title">
@@ -94,6 +94,54 @@
           </layout>
          </item>
         </layout>
+       </widget>
+       <widget class="QWidget" name="tab">
+        <attribute name="title">
+         <string>Log File</string>
+        </attribute>
+        <widget class="QLabel" name="labelPath">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>100</y>
+           <width>331</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>/</string>
+         </property>
+        </widget>
+        <widget class="QPushButton" name="pushButtonDir">
+         <property name="geometry">
+          <rect>
+           <x>360</x>
+           <y>100</y>
+           <width>31</width>
+           <height>27</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset>
+           <normaloff>folder-yellow.png</normaloff>folder-yellow.png</iconset>
+         </property>
+        </widget>
+        <widget class="QLabel" name="labelText">
+         <property name="geometry">
+          <rect>
+           <x>30</x>
+           <y>40</y>
+           <width>321</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>Wählen sie den Speicherort der Logdatein:</string>
+         </property>
+        </widget>
        </widget>
       </widget>
      </item>
