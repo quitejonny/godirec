@@ -143,6 +143,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
     _instances = weakref.WeakSet()
     _time = {}
     _duration = {}
+    progress_callback = lambda x, y: None
 
     def __init__(self, wav_file):
         WaveConverter._instances.add(self)
@@ -158,6 +159,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
 
     @classmethod
     def get_progress(cls):
+        """returns the progress of the current converting tracks"""
         with threading.RLock():
             duration = sum(cls._duration.values())
             time = sum(cls._time.values())
@@ -206,7 +208,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
                 if match:
                     with threading.RLock():
                         self._time[id(self)] = float(match[0])
-                    print(self.get_progress())
+                    self.progress_callback(self.get_progress())
                 else:
                     continue
         except Exception as error:

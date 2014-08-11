@@ -211,6 +211,7 @@ class GodiRecWindow(QtGui.QMainWindow):
     statusSet = QtCore.pyqtSignal()
     statusClear = QtCore.pyqtSignal()
     timeUpdate = QtCore.pyqtSignal(core.Timer)
+    progressUpdate = QtCore.pyqtSignal(float)
 
     def __init__(self):
         QtGui.QMainWindow.__init__(self)
@@ -236,12 +237,17 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
         self.current_track = core.Track("", "")
         self.cur_path = ""
+        self.ProgressBar = QtGui.QProgressBar()
+        self.statusbar.addWidget(self.ProgressBar)
+        self.ProgressBar.hide()
         # connect status for statusbar
         self.statusSet.connect(self.setStatus)
         self.statusClear.connect(self.clearStatus)
         self.timeUpdate.connect(self.updateTime)
+        self.progressUpdate.connect(self.updateProgressBar)
         core.future_pool.start_callback = self.statusSet.emit
         core.future_pool.done_callback = self.statusClear.emit
+        audio.WaveConverter.progress_callback = self.progressUpdate.emit
         logging.info('GUI loaded')
 
     def updateWordList(self):
@@ -308,13 +314,15 @@ class GodiRecWindow(QtGui.QMainWindow):
 
     def setStatus(self, message=""):
         """shows the given message in the program statusbar"""
-        if message is "":
-            message = self.tr("Converting Track")
-        self.statusbar.showMessage(message)
+        self.ProgressBar.setValue(0.0)
+        self.ProgressBar.show()
 
     def clearStatus(self):
         """clears the status of the program statusbar"""
-        self.statusbar.clearMessage()
+        self.ProgressBar.hide()
+
+    def updateProgressBar(self, value):
+        self.ProgressBar.setValue(value)
 
     def updateTime(self, timer):
         if self.rec is not None:
