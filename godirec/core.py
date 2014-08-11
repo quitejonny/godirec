@@ -180,7 +180,7 @@ class Track(object):
         if not self._futures.all_futures:
             future_pool.start_callback()
         try:
-            executor = concurrent.futures.ProcessPoolExecutor(max_workers=2)
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
             for filetype in filetypes:
                 filename = "{}.{}".format(self.basename, filetype.codec)
                 seperator = "-" if self.project_name else ""

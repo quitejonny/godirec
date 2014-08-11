@@ -1,6 +1,7 @@
 import sys
 import os
 import subprocess
+import threading
 import weakref
 import io
 import wave
@@ -140,6 +141,8 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
     """
 
     _instances = weakref.WeakSet()
+    _time = {}
+    _duration = {}
 
     def __init__(self, wav_file):
         WaveConverter._instances.add(self)
@@ -148,20 +151,18 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
             with wave.open(wav_file) as f:
                 frames = f.getnframes()
                 rate = f.getframerate()
-                self._duration = frames / float(rate)
+                with threading.RLock():
+                    self._duration[id(self)] = frames / float(rate)
         else:
             raise NoWaveError("Given file is not a wav file!")
 
     @classmethod
     def get_progress(cls):
-        duration = 0.0
-        time = 0.0
-        for instance in cls._instances:
-            if instance.time:
-                duration += instance._duration
-                time += instance._time
+        with threading.RLock():
+            duration = sum(cls._duration.values())
+            time = sum(cls._time.values())
         if duration:
-            return time / duration * 100.0
+            return round(time / duration * 100.0, 1)
         else:
             return None
  
@@ -203,15 +204,22 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
                 log += line
                 match = re.findall('time=(\d+\.\d*)', line)
                 if match:
-                    self._time = float(match[0])
-                    print(self._time)
+                    with threading.RLock():
+                        self._time[id(self)] = float(match[0])
+                    print(self.get_progress())
                 else:
                     continue
         except Exception as error:
             logging.error(error, exc_info=True)
             logging.error(log)
-            raise NoDecoderError("Decoding failed. ffmpeg error: {}".format(
-                                 ret_code))
+            raise error
+            # raise NoDecoderError("Decoding failed. ffmpeg error")
+
+    def __del__(self):
+        if len(self._instances) <= 1:
+            with threading.RLock():
+                self._time.clear()
+                self._duration.clear()
 
 
 class WaveConverterError(Exception):
