@@ -28,6 +28,13 @@ def get_config_file():
     return config_file
 
 
+def get_log_dir():
+    with open(config_file, 'r') as f:
+        config = json.load(f)
+    info_filename = config['handlers']['info_file_handler']['filename']
+    return os.path.dirname(info_filename)
+
+
 def change_log_dir(log_dir, config_file):
     with open(config_file, 'r') as f:
         config = json.load(f)

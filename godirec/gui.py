@@ -49,6 +49,7 @@ class SettingsDialog(QtGui.QDialog):
     def __init__(self, settings, parent):
         QtGui.QDialog.__init__(self, parent=parent)
         self.settings = settings
+        self._settings_dict = {}
         settings_ui_file = godirec.resource_stream(__name__,
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
@@ -83,6 +84,8 @@ class SettingsDialog(QtGui.QDialog):
         self.pushButtonDir.clicked.connect(self.onButtonDirClicked)
         self.pushButtonDelete.clicked.connect(self.deleteTag)
         self.comboBoxChanged(str(self.comboBox.currentText()))
+        # Load log filename
+        self.labelPath.setText(godirec.get_log_dir())
 
     def comboBoxChanged(self, key):
         self.model = QtGui.QStandardItemModel(self.listView)
@@ -98,9 +101,10 @@ class SettingsDialog(QtGui.QDialog):
     def onButtonDirClicked(self):
         """opens log FileDialog"""
         temp_path = QtGui.QFileDialog.getExistingDirectory(
-            self, self.tr("Logfile erzeugen in:"), ".")
+            self, self.tr("Logfile erzeugen in:"), self.labelPath.text())
         if temp_path:
             self.labelPath.setText(temp_path)
+            self._settings_dict["log_dir"] = temp_path
 
     def addTag(self):
         value = str(self.lineEditAdd.text())
@@ -110,7 +114,7 @@ class SettingsDialog(QtGui.QDialog):
             self.comboBoxChanged(key)
             self.pushButtonDelete.setEnabled(True)
             self.lineEditAdd.setText("")
-            self.settings.setValue('tags', self.tags)
+            self._settings_dict["tags"] = self.tags
             logging.info("Add Tag {} to {}".format(value, key))
 
     def deleteTag(self):
@@ -125,7 +129,7 @@ class SettingsDialog(QtGui.QDialog):
                 offset += 1
         if model.rowCount() == 0:
             self.pushButtonDelete.setEnabled(False)
-        self.settings.setValue('tags', self.tags)
+        self._settings_dict["tags"] = self.tags
         self.comboBoxChanged(key)
 
     def updateCheckBoxes(self):
@@ -142,14 +146,12 @@ class SettingsDialog(QtGui.QDialog):
             checkbox = getattr(self, 'CheckBox'+filetype.title())
             if checkbox.checkState() == QtCore.Qt.Checked:
                 self.formats.append(filetype)
-        self.settings.setValue('formats', self.formats)
+        self._settings_dict["formats"] = self.formats
         logging.info("Changed Exportfile formats")
 
-    def getValues(self):
-        """returns project folder"""
-        # TODO: create Dict, which contains all settings
-        return str(self.labelPath.text())
-
+    def values(self):
+        """returns dict which contains changed settings"""
+        return self._settings_dict
 
 
 class PathDialog(QtGui.QDialog):
@@ -195,7 +197,7 @@ class PathDialog(QtGui.QDialog):
             os.makedirs(self.cur_path)
         self.close()
 
-    def getValues(self):
+    def values(self):
         """returns project folder"""
         return str(self.cur_path)
 
@@ -238,7 +240,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.current_track = core.Track("", "")
         self.cur_path = ""
         self.ProgressBar = QtGui.QProgressBar()
-        self.statusbar.addWidget(self.ProgressBar)
+        self.statusbar.addWidget(self.ProgressBar, 1)
         self.ProgressBar.hide()
         # connect status for statusbar
         self.statusSet.connect(self.setStatus)
@@ -381,9 +383,9 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.path_dialog = PathDialog(path)
         self.path_dialog.show()
         self.path_dialog.exec_()
-        current_path = self.path_dialog.getValues()
+        current_path = self.path_dialog.values()
         if current_path != "":
-            self.cur_path = self.path_dialog.getValues()
+            self.cur_path = self.path_dialog.values()
             self.settings.setValue('path', os.path.dirname(current_path))
             self.setWindowTitle(os.path.basename(current_path))
             self.rec_manager = core.Manager(current_path)
@@ -400,12 +402,16 @@ class GodiRecWindow(QtGui.QMainWindow):
         """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)
         self.settings_dialog.show()
-        # TODO: get settings and save if ok
+        # get settings and save if ok
         if self.settings_dialog.exec_():
-            print("ok")
-            print(self.settings_dialog.getValues())
-        else:
-            print("rejekt")
+            settings = self.settings_dialog.values()
+            if "formats" in settings:
+                self.settings.setValue("formats", settings["formats"])
+            if "tags" in settings:
+                self.settings.setValue("tags", settings["tags"])
+            if "log_dir" in settings:
+                godirec.change_log_dir(settings["log_dir"],
+                                       godirec.config_file)
         self.updateWordList()
 
     def closeEvent(self, event):
