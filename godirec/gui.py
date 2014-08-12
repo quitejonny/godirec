@@ -6,19 +6,38 @@ import multiprocessing
 from datetime import datetime
 from PyQt4 import QtCore, QtGui, uic
 import logging
+import queue
 import godirec
 from godirec import core, audio
+
+
+class SignalThread(QtCore.QThread):
+
+    def __init__(self, q_object):
+        QtCore.QThread.__init__(self)
+        self._q_object = q_object
+        self.queue = queue.Queue()
+        self.start()
+
+    def signal(self):
+        return self.queue.put
+
+    def run(self):
+        while True:
+            signal, *args = self.queue.get()
+            getattr(self._q_object, signal).emit(*args)
 
 
 class RecorderListModel(QtCore.QAbstractListModel):
 
     def __init__(self, rec_manager=core.Manager(""), parent=None):
         QtCore.QAbstractListModel.__init__(self, parent)
+        self.signals = SignalThread(self)
         self.set_rec_manager(rec_manager)
 
     def set_rec_manager(self, rec_manager):
         self.rec_manager = rec_manager
-        self.rec_manager.set_callback(self.layoutChanged.emit)
+        self.rec_manager.set_callback(self.signals.signal(), "layoutChanged")
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.rec_manager.tracklist)
@@ -219,6 +238,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
         godi_rec_ui = godirec.resource_stream(__name__, 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
+        self.signals = SignalThread(self)
         self.RecListModel = RecorderListModel(parent=self)
         self.ListTracks.setModel(self.RecListModel)
         self.ListTracks.clicked.connect(self.onListTracksIndexChanged)
@@ -247,9 +267,11 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.statusClear.connect(self.clearStatus)
         self.timeUpdate.connect(self.updateTime)
         self.progressUpdate.connect(self.updateProgressBar)
-        core.future_pool.start_callback = self.statusSet.emit
-        core.future_pool.done_callback = self.statusClear.emit
-        audio.WaveConverter.progress_callback = self.progressUpdate.emit
+        core.future_pool.set_start_callback(self.signals.signal(), "statusSet")
+        core.future_pool.set_done_callback(self.signals.signal(),
+                                           "statusClear")
+        audio.WaveConverter.set_progress_callback(self.signals.signal(),
+                                                  "progressUpdate")
         logging.info('GUI loaded')
 
     def updateWordList(self):
@@ -393,7 +415,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
-            self.rec.timer.set_callback(self.timeUpdate.emit)
+            self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
             self.RecListModel.set_rec_manager(self.rec_manager)
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setEnabled(True)

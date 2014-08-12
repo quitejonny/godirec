@@ -11,6 +11,7 @@ import re
 import mutagen
 import logging
 from mutagen import id3
+import godirec
 from godirec import audio
 
 
@@ -82,7 +83,7 @@ class Manager(object):
         self._folder = os.path.abspath(folder)
         self._tracks = list()
         self._track_count = 1
-        self._callback = lambda: None
+        self._callback = godirec.Callback()
         self._wav_folder = ""
 
     def create_new_track(self):
@@ -104,15 +105,15 @@ class Manager(object):
         track = Track(filename, self._folder, self._project_name, tags)
         self._tracks.append(track)
         self._track_count += 1
-        self._callback()
+        self._callback.emit()
         return track
 
-    def set_callback(self, func):
+    def set_callback(self, func, *callback_args):
         """sets callback function
 
         it will be called after creation of a new track
         """
-        self._callback = func
+        self._callback.set_func(func, *callback_args)
 
     @property
     def wav_folder(self):
@@ -151,6 +152,8 @@ class Track(object):
     used. The file paths are internally stored. This gives the
     possibility to change the tags of the files and the filename.
     """
+
+    lock = threading.RLock()
 
     def __init__(self, origin_file, folder, project_name=None, tags=Tags()):
         self._origin_file = origin_file
@@ -204,7 +207,7 @@ class Track(object):
         e = future.exception()
         if e:
             raise e
-        with threading.RLock():
+        with self.lock:
             self._files.append(future.path)
             self._has_file_changed = True
         if not self._futures:
@@ -376,15 +379,15 @@ class Recorder(object):
 
 class Timer(object):
 
-    def __init__(self, callback=None):
+    def __init__(self, callback=lambda:None, *callback_args):
         self._start_time = 0.0
         self._previous_track_time = 0.0
         self._previous_rec_time = 0.0
-        self._callback = callback
+        self._callback = godirec.Callback(callback, *callback_args)
         self.is_running = False
 
-    def set_callback(self, callback_func):
-        self._callback = callback_func
+    def set_callback(self, callback_func, *callback_args):
+        self._callback.set_func(callback_func, *callback_args)
 
     def start(self):
         if not self.is_running:
@@ -428,7 +431,7 @@ class Timer(object):
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
     def _run_timer(self):
-        self._callback(self)
+        self._callback.emit(self)
         self.timer = threading.Timer(1.0, self._run_timer)
         self.timer.start()
 
@@ -528,14 +531,18 @@ class FuturePool(object):
 
     def __init__(self):
         self._futures = Futures()
-        self._start_callback = lambda: None
-        self._done_callback = lambda: None
+        self._start_callback = godirec.Callback()
+        self._done_callback = godirec.Callback()
 
-    start_callback = property(lambda s: s._start_callback,
-                              lambda s, v: setattr(s, "_start_callback", v))
+    start_callback = property(lambda s: s._start_callback.emit)
 
-    done_callback = property(lambda s: s._done_callback,
-                             lambda s, v: setattr(s, "_done_callback", v))
+    done_callback = property(lambda s: s._done_callback.emit)
+
+    def set_start_callback(self, func, *args):
+        self._start_callback.set_func(func, *args)
+
+    def set_done_callback(self, func, *args):
+        self._done_callback.set_func(func, *args)
 
     def has_running_processes(self):
         for future in self._futures.all_futures:

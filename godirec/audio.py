@@ -7,6 +7,7 @@ import io
 import wave
 import re
 import logging
+import godirec
 
 
 class ConvertParams(object):
@@ -140,10 +141,15 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
     -b:a 128k: Sets bitrate for audio to 128kbit/s
     """
 
+    lock = threading.RLock()
     _instances = weakref.WeakSet()
     _time = {}
     _duration = {}
-    progress_callback = lambda x, y: None
+    _progress_callback = godirec.Callback()
+
+    @classmethod
+    def set_progress_callback(cls, func, *args):
+        cls._progress_callback.set_func(func, *args)
 
     def __init__(self, wav_file):
         WaveConverter._instances.add(self)
@@ -152,7 +158,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
             with wave.open(wav_file) as f:
                 frames = f.getnframes()
                 rate = f.getframerate()
-                with threading.RLock():
+                with self.lock:
                     self._duration[id(self)] = frames / float(rate)
         else:
             raise NoWaveError("Given file is not a wav file!")
@@ -160,7 +166,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
     @classmethod
     def get_progress(cls):
         """returns the progress of the current converting tracks"""
-        with threading.RLock():
+        with cls.lock:
             duration = sum(cls._duration.values())
             time = sum(cls._time.values())
         if duration:
@@ -206,9 +212,9 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
                 log += line
                 match = re.findall('time=(\d+\.\d*)', line)
                 if match:
-                    with threading.RLock():
+                    with self.lock:
                         self._time[id(self)] = float(match[0])
-                    self.progress_callback(self.get_progress())
+                        self._progress_callback.emit(self.get_progress())
                 else:
                     continue
         except Exception as error:
@@ -219,7 +225,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
 
     def __del__(self):
         if len(self._instances) <= 1:
-            with threading.RLock():
+            with self.lock:
                 self._time.clear()
                 self._duration.clear()
 

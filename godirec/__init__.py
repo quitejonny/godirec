@@ -6,10 +6,30 @@ import os
 import os.path
 import pkg_resources
 import json
-import godirec.gui
 
 
 __version__ = '0.1'
+
+
+class Callback(object):
+
+    def __init__(self, func=lambda:None, *args):
+        self.set_func(func, *args)
+
+    def __nonzero__(self):
+        zero_func = lambda: None
+        if self._func == zero_func:
+            return False
+        else:
+            return True
+
+    def set_func(self, func, *args):
+        self._func = func
+        self._args = args
+
+    def emit(self, *args):
+        complete_args = self._args + args
+        self._func(complete_args)
 
 
 def get_config_file():
