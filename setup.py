@@ -22,7 +22,7 @@ import godirec
 import subprocess
 from setuptools import setup, find_packages
 try:
-    from py2exe.distutils_build_exe import py2exe as ExeCommand
+    from py2exe.distutils_buildexe import py2exe as ExeCommand
 except ImportError:
     from setuptools import Command as ExeCommand
 
@@ -93,10 +93,9 @@ class WindowsInstaller(ExeCreator):
 
     def run(self):
         ExeCreator.run(self)
-        nsis_dir = self.nsisdir
-        cmd_list = [os.path.join(nsis_dir, "makensis.exe"),
-                    os.path.join(os.getcwd(), "make_godirec_installer.msi")]
-        cmd = subprocess.Popen(cmd_list, cwd=nsis_dir, stdout=subprocess.PIPE)
+        cmd_list = [os.path.join(self.nsisdir, "makensis.exe"),
+                    os.path.join(os.getcwd(), "make_godirec_installer.nsi")]
+        cmd = subprocess.Popen(cmd_list, cwd=self.nsisdir)
         cmd.wait()
 
     def initialize_options(self):
@@ -123,7 +122,7 @@ setup(
         'setuptools',
         'mutagen',
     ],
-    class_cmd={
+    cmdclass={
         'build_windows_installer': WindowsInstaller,
         'build_exe': ExeCreator,
     },
