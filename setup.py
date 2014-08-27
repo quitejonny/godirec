@@ -96,6 +96,8 @@ class ExeCreator(ExeCommand):
         if not has_py2exe_module:
             raise ValueError("py2exe is not installed")
         ExeCommand.initialize_options(self)
+        for key, value in extra_setup['options']['py2exe'].items():
+            setattr(self, key, value)
 
     def finalize_options(self):
         ExeCommand.finalize_options(self)
