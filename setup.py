@@ -19,62 +19,94 @@ import sys
 import os
 import glob
 import godirec
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
+
 
 extra_setup = dict()
 
-if sys.platform == 'win32':
-    import subprocess
-    import py2exe
-    sys.argv.append('py2exe')
-    extra_setup['options'] = {
-        'py2exe': {
-            'bundle_files': 1,
-            'compressed': True,
-            "excludes": [
-                "readline",
-                "win32api",
-                "win32con",
-                "ElementTree",
-                "PyQt4.elementtree",
-                "pyaudioop",
-                "sets",
-                "multiprocessing.SimpleQueue",
-                "elementtree",
-                "PyQt4.uic.port_v2",
+
+class ExeCreator(Command):
+
+    def run(self):
+        import subprocess
+        import py2exe
+        sys.argv.append('py2exe')
+        extra_setup['options'] = {
+            'py2exe': {
+                'bundle_files': 1,
+                'compressed': True,
+                "excludes": [
+                    "readline",
+                    "win32api",
+                    "win32con",
+                    "ElementTree",
+                    "PyQt4.elementtree",
+                    "pyaudioop",
+                    "sets",
+                    "multiprocessing.SimpleQueue",
+                    "elementtree",
+                    "PyQt4.uic.port_v2",
+                ],
+                "includes": [
+                    "sip",
+                    "logging.config",
+                ],
+            },
+        }
+        extra_setup['windows'] = [{
+            'script': "run_gui.py",
+            "icon_resources": [
+                (1, "godirec/data/ui/microphone2.ico")
             ],
-            "includes": [
-                "sip",
-                "logging.config",
-            ],
-        },
-    }
-    extra_setup['windows'] = [{
-        'script': "run_gui.py",
-        "icon_resources": [
-            (1, "godirec/data/ui/microphone2.ico")
-        ],
-        "dest_base": "GodiRec",
-    }]
-    extra_setup['zipfile'] = None
-    extra_setup['data_files'] = [
-        (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
-    ]
-    # copy ffmpeg to folder
-    ffmpeg_sub = subprocess.Popen(["where", "ffmpeg"], stdout=subprocess.PIPE)
-    ffmpeg_path, _ = ffmpeg_sub.communicate()
-    ffmpeg_path = ffmpeg_path.decode("utf-8").strip("\r\n")
-    extra_setup['data_files'].extend([
-        ('', [ffmpeg_path])
-    ])
-    python_sub = subprocess.Popen(["where", "python"], stdout=subprocess.PIPE)
-    python_dir, _ = python_sub.communicate()
-    python_dir = os.path.dirname(python_dir.decode("utf-8").strip("\r\n"))
-    qico_path = os.path.join(python_dir, "Lib", "site-packages", "PyQt4",
-                             "plugins", "imageformats", "qico4.dll")
-    extra_setup['data_files'].extend([
-        ('imageformats', [qico_path])
-    ])
+            "dest_base": "GodiRec",
+        }]
+        extra_setup['zipfile'] = None
+        extra_setup['data_files'] = [
+            (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
+        ]
+        # copy ffmpeg to folder
+        ffmpeg_sub = subprocess.Popen(["where", "ffmpeg"],
+                                      stdout=subprocess.PIPE)
+        ffmpeg_path, _ = ffmpeg_sub.communicate()
+        ffmpeg_path = ffmpeg_path.decode("utf-8").strip("\r\n")
+        extra_setup['data_files'].extend([
+            ('', [ffmpeg_path])
+        ])
+        python_sub = subprocess.Popen(["where", "python"],
+                                      stdout=subprocess.PIPE)
+        python_dir, _ = python_sub.communicate()
+        python_dir = os.path.dirname(python_dir.decode("utf-8").strip("\r\n"))
+        qico_path = os.path.join(python_dir, "Lib", "site-packages", "PyQt4",
+                                 "plugins", "imageformats", "qico4.dll")
+        extra_setup['data_files'].extend([
+            ('imageformats', [qico_path])
+        ])
+
+    def initialize_options(self):
+        if not sys.platform == 'win32':
+            raise ValueError("This option is only available under WINDOWS")
+
+    def finalize_options(self):
+        pass
+
+
+class WindowsInstaller(ExeCreator):
+
+    user_options = [("nsis_dir=", None, "Directory to NSIS folder"),]
+
+    def run(self):
+        ExeCreator.run()
+        nsis_dir = self.nsis_dir
+        cmd_list = [os.path.join(nsis_dir, "makensis.exe"),
+                    os.path.join(os.getcwd(), "make_godirec_installer.msi")]
+        cmd = subprocess.Popen(cmd_list, cwd=nsis_dir, stdout=subprocess.PIPE)
+        cmd.wait()
+
+    def initialize_options(self):
+        self.nsis_dir = r"C:\Program Files (x86)\NSIS"
+
+    def finalize_options(self):
+        pass
 
 
 setup(
@@ -93,5 +125,9 @@ setup(
         'setuptools',
         'mutagen',
     ],
+    class_cmd={
+        'build_windows_installer': WindowsInstaller,
+        'build_exe': ExeCreator,
+    },
     **extra_setup
 )
