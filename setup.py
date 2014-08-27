@@ -19,49 +19,50 @@ import sys
 import os
 import glob
 import godirec
-from setuptools import setup, find_packages, Command
+import subprocess
+from setuptools import setup, find_packages
+try:
+    from py2exe.distutils_build_exe import py2exe as ExeCommand
+except ImportError:
+    from setuptools import Command as ExeCommand
 
 
 extra_setup = dict()
 
 
-class ExeCreator(Command):
+class ExeCreator(ExeCommand):
 
     def run(self):
-        import subprocess
-        import py2exe
-        sys.argv.append('py2exe')
-        extra_setup['options'] = {
-            'py2exe': {
-                'bundle_files': 1,
-                'compressed': True,
-                "excludes": [
-                    "readline",
-                    "win32api",
-                    "win32con",
-                    "ElementTree",
-                    "PyQt4.elementtree",
-                    "pyaudioop",
-                    "sets",
-                    "multiprocessing.SimpleQueue",
-                    "elementtree",
-                    "PyQt4.uic.port_v2",
-                ],
-                "includes": [
-                    "sip",
-                    "logging.config",
-                ],
-            },
-        }
-        extra_setup['windows'] = [{
+        ExeCommand.run(self)
+
+    def initialize_options(self):
+        if not sys.platform == 'win32':
+            raise ValueError("This option is only available under WINDOWS")
+        ExeCommand.initialize_options(self)
+        self.bundle_files = 1
+        self.compressed = True
+        self.excludes = [
+            "readline",
+            "win32api",
+            "win32con",
+            "ElementTree",
+            "PyQt4.elementtree",
+            "pyaudioop",
+            "sets",
+            "multiprocessing.SimpleQueue",
+            "elementtree",
+            "PyQt4.uic.port_v2",
+        ]
+        self.includes = ["sip", "logging.config"]
+        self.distribution.windows = [{
             'script': "run_gui.py",
             "icon_resources": [
                 (1, "godirec/data/ui/microphone2.ico")
             ],
             "dest_base": "GodiRec",
         }]
-        extra_setup['zipfile'] = None
-        extra_setup['data_files'] = [
+        self.distribution.zipfile = None
+        self.distribution.data_files = [
             (os.path.dirname(f), [f]) for f in glob.glob("godirec/data/*/*")
         ]
         # copy ffmpeg to folder
@@ -69,7 +70,7 @@ class ExeCreator(Command):
                                       stdout=subprocess.PIPE)
         ffmpeg_path, _ = ffmpeg_sub.communicate()
         ffmpeg_path = ffmpeg_path.decode("utf-8").strip("\r\n")
-        extra_setup['data_files'].extend([
+        self.distribution.data_files.extend([
             ('', [ffmpeg_path])
         ])
         python_sub = subprocess.Popen(["where", "python"],
@@ -78,35 +79,32 @@ class ExeCreator(Command):
         python_dir = os.path.dirname(python_dir.decode("utf-8").strip("\r\n"))
         qico_path = os.path.join(python_dir, "Lib", "site-packages", "PyQt4",
                                  "plugins", "imageformats", "qico4.dll")
-        extra_setup['data_files'].extend([
+        self.distribution.data_files.extend([
             ('imageformats', [qico_path])
         ])
 
-    def initialize_options(self):
-        if not sys.platform == 'win32':
-            raise ValueError("This option is only available under WINDOWS")
-
     def finalize_options(self):
-        pass
+        ExeCommand.finalize_options(self)
 
 
 class WindowsInstaller(ExeCreator):
 
-    user_options = [("nsis_dir=", None, "Directory to NSIS folder"),]
+    user_options = [("nsisdir=", None, "Directory to NSIS folder"),]
 
     def run(self):
-        ExeCreator.run()
-        nsis_dir = self.nsis_dir
+        ExeCreator.run(self)
+        nsis_dir = self.nsisdir
         cmd_list = [os.path.join(nsis_dir, "makensis.exe"),
                     os.path.join(os.getcwd(), "make_godirec_installer.msi")]
         cmd = subprocess.Popen(cmd_list, cwd=nsis_dir, stdout=subprocess.PIPE)
         cmd.wait()
 
     def initialize_options(self):
-        self.nsis_dir = r"C:\Program Files (x86)\NSIS"
+        ExeCreator.initialize_options(self)
+        self.nsisdir = r"C:\Program Files (x86)\NSIS"
 
     def finalize_options(self):
-        pass
+        ExeCreator.finalize_options(self)
 
 
 setup(
