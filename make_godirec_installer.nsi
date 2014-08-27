@@ -11,7 +11,7 @@
 Name "${MUI_PRODUCT}"
 
 ; The file to write
-OutFile "${MUI_PRODUCT}.exe"
+OutFile "${MUI_PRODUCT}_Installer.exe"
 
 ; The default installation directory
 InstallDir "$PROGRAMFILES\${MUI_PRODUCT}"
