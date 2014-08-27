@@ -20,23 +20,74 @@ import os
 import glob
 import godirec
 from setuptools import setup, find_packages, Command
-
+# import py2exe
+from setuptools.command.sdist import sdist
+from py2exe.distutils_buildexe import py2exe as ExeCommand
 
 extra_setup = dict()
 
 
-class ExeCreator(Command):
-
+class ExeCreator(ExeCommand):
+    
+    user_options = []
+    
     def run(self):
+        ExeCommand.run(self)
+
+    def initialize_options(self):
+        if not sys.platform == 'win32':
+            raise ValueError("This option is only available under WINDOWS")
+        self.xref = 0
         import subprocess
         import py2exe
-        sys.argv.append('py2exe')
+        # sys.argv.append('py2exe')
+        self.compressed = True
+        self.bundle_files = 1
+        self.includes = ["sip", "logging.config"]
+        self.unbuffered = 0
+        self.optimize = 0
+        self.excludes = ["readline",
+                        "win32api",
+                        "win32con",
+                        "ElementTree",
+                        "PyQt4.elementtree",
+                        "pyaudioop",
+                        "sets",
+                        "multiprocessing.SimpleQueue",
+                        "elementtree",
+                        "PyQt4.uic.port_v2",                 
+                        "win32api",
+                        "win32con",
+                        "ElementTree",
+                        "PyQt4.elementtree",
+                        "pyaudioop",
+                        "sets",
+                        "multiprocessing.SimpleQueue",
+                        "elementtree",
+                        "PyQt4.uic.port_v2",
+        ]
+        self.ignores = None
+        self.packages = None
+        self.dll_excludes = None
+        self.typelibs = None
+        self.skip_archive = 0
+        self.ascii = 0
+        self.custom_boot_script = None
         extra_setup['options'] = {
             'py2exe': {
                 'bundle_files': 1,
                 'compressed': True,
                 "excludes": [
                     "readline",
+                    "win32api",
+                    "win32con",
+                    "ElementTree",
+                    "PyQt4.elementtree",
+                    "pyaudioop",
+                    "sets",
+                    "multiprocessing.SimpleQueue",
+                    "elementtree",
+                    "PyQt4.uic.port_v2",                 
                     "win32api",
                     "win32con",
                     "ElementTree",
@@ -82,28 +133,26 @@ class ExeCreator(Command):
             ('imageformats', [qico_path])
         ])
 
-    def initialize_options(self):
-        if not sys.platform == 'win32':
-            raise ValueError("This option is only available under WINDOWS")
-
     def finalize_options(self):
-        pass
+        self.dist_dir = "dist"
+        
 
 
 class WindowsInstaller(ExeCreator):
 
-    user_options = [("nsis_dir=", None, "Directory to NSIS folder"),]
+    user_options = [("nsisdir=", None, "Directory to NSIS folder"),]
 
     def run(self):
-        ExeCreator.run()
-        nsis_dir = self.nsis_dir
+        import subprocess
+        ExeCreator.run(self)
+        nsis_dir = self.nsisdir
         cmd_list = [os.path.join(nsis_dir, "makensis.exe"),
                     os.path.join(os.getcwd(), "make_godirec_installer.msi")]
         cmd = subprocess.Popen(cmd_list, cwd=nsis_dir, stdout=subprocess.PIPE)
         cmd.wait()
 
     def initialize_options(self):
-        self.nsis_dir = r"C:\Program Files (x86)\NSIS"
+        self.nsisdir = r"C:\Program Files (x86)\NSIS"
 
     def finalize_options(self):
         pass
@@ -125,7 +174,7 @@ setup(
         'setuptools',
         'mutagen',
     ],
-    class_cmd={
+    cmdclass={
         'build_windows_installer': WindowsInstaller,
         'build_exe': ExeCreator,
     },
