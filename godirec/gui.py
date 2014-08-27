@@ -399,6 +399,8 @@ class GodiRecWindow(QtGui.QMainWindow):
     def createNewProject(self):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
+        if self.isRunning():
+            return
         path = ""
         if 'path' in self.settings.allKeys():
             path = self.settings.value('path', type=str)
@@ -417,8 +419,10 @@ class GodiRecWindow(QtGui.QMainWindow):
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
             self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
             self.RecListModel.set_rec_manager(self.rec_manager)
+            self.RecListModel.update()
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setEnabled(True)
+            self.LabelTime.setText("-- / --")
 
     def openSettings(self):
         """opens the settings dialog"""
@@ -436,23 +440,27 @@ class GodiRecWindow(QtGui.QMainWindow):
                                        godirec.config_file)
         self.updateWordList()
 
-    def closeEvent(self, event):
-        """method is called when close event is emitted"""
+    def isRunning(self):
         if self.RecListModel.rowCount():
             self.onListTracksIndexChanged()
         if self.status in (RECORDING, STREAM_PAUSING):
             title = self.tr("Stream beenden")
-            message = self.tr("Um das Programm zu schließen,\n"
+            message = self.tr("Um das Projekt zu schließen,\n"
                               "müssen sie zuerst den Stream beenden")
             QtGui.QMessageBox.information(self, title, message)
-            event.ignore()
-            return
+            return True
         elif core.future_pool.has_running_processes():
             title = "Bitte warten"
             message = self.tr("Die Tracks müssen erst fertig konvertiert "
-                              "sein, bevor das Programm geschlossen werden "
+                              "sein, bevor das Projekt geschlossen werden "
                               "kann!")
             QtGui.QMessageBox.information(self, title, message)
+            return True
+        return False
+
+    def closeEvent(self, event):
+        """method is called when close event is emitted"""
+        if self.isRunning():
             event.ignore()
             return
         if self.status is NO_STREAM_RUNNING:

@@ -212,12 +212,13 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
                 log += line
                 match = 0.0
                 match_avconv = re.findall('time=(\d+)\.\d*', line)
-                match_ffmpg = re.findall('time=(\d{2}\:\d{2}\:\d{2})\.\d*', line)
+                match_ffmpg = re.findall('time=(\d{2}\:\d{2}\:\d{2})\.\d*',
+                                         line)
                 if match_avconv:
                         match = float(match_avconv[0])
                 elif match_ffmpg:
                         l = match_ffmpg[0].split(':')
-                        match = float(l[0]) * 3600 + float(l[1]) * 60 + float(l[2])
+                        match = float(l[0])*3600 + float(l[1])*60 + float(l[2])
                 if match:
                     with self.lock:
                         self._time[id(self)] = match
