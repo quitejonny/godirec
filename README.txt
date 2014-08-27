@@ -1,0 +1,52 @@
+
+                          GodiRec
+
+  What is it?
+  -----------
+  GodiRec is a Programm for recording church servive. It is optimized
+  for recording every part in one single file. You can add Tags or
+  chose many export types.
+
+
+  The Latest Version
+  ------------------
+
+  Details of the latest version can be found on the Github
+  project page under <link>.
+
+  Documentation
+  -------------
+
+  The documentation available as of the date of this release is
+  included in HTML format in the docs/manual/ directory.  The most
+  up-to-date documentation can be found at
+
+  Installation
+  ------------
+
+  Windows:
+    Prerequest: - ffmpeg
+		- Python 3
+   
+
+  Linux:
+
+
+
+  Licensing
+  ---------
+
+  Please see the file called LICENSE.
+
+
+  Contacts
+  --------
+
+     o If you want freely available support for running GodiRec see the
+       resources at <http://github>
+
+     o If you have a concrete bug report please see the instructions
+       for bug reporting at <http://github>
+
+     o If you want to participate in actively developing GodiRec please
+       mail us over <http://github>
