@@ -20,7 +20,7 @@ import os
 import traceback
 import multiprocessing
 from datetime import datetime
-from PyQt4 import QtCore, QtGui, uic
+from PyQt5 import QtCore, QtGui, uic, QtWidgets
 import logging
 import queue
 import godirec
@@ -79,10 +79,10 @@ class RecorderListModel(QtCore.QAbstractListModel):
         return self.index(len(self.rec_manager.tracklist)-1)
 
 
-class SettingsDialog(QtGui.QDialog):
+class SettingsDialog(QtWidgets.QDialog):
 
     def __init__(self, settings, parent):
-        QtGui.QDialog.__init__(self, parent=parent)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.settings = settings
         self._settings_dict = {}
         settings_ui_file = godirec.resource_stream(__name__,
@@ -189,14 +189,14 @@ class SettingsDialog(QtGui.QDialog):
         return self._settings_dict
 
 
-class PathDialog(QtGui.QDialog):
+class PathDialog(QtWidgets.QDialog):
     """Path Dialog will ask for workspace path and project name.
 
     If path doesn't exist it will be created
     """
 
     def __init__(self, path=""):
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         dialog_ui_file = godirec.resource_stream(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
         self.cur_path = ""
@@ -243,7 +243,7 @@ RECORDING = "currently recording"
 STREAM_PAUSING = "currently pausing"
 
 
-class GodiRecWindow(QtGui.QMainWindow):
+class GodiRecWindow(QtWidgets.QMainWindow):
 
     statusSet = QtCore.pyqtSignal()
     statusClear = QtCore.pyqtSignal()
@@ -251,7 +251,7 @@ class GodiRecWindow(QtGui.QMainWindow):
     progressUpdate = QtCore.pyqtSignal(float)
 
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         godi_rec_ui = godirec.resource_stream(__name__, 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
         self.signals = SignalThread(self)
@@ -275,7 +275,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
         self.current_track = core.Track("", "")
         self.cur_path = ""
-        self.ProgressBar = QtGui.QProgressBar()
+        self.ProgressBar = QtWidgets.QProgressBar()
         self.statusbar.addWidget(self.ProgressBar, 1)
         self.ProgressBar.hide()
         # connect status for statusbar
@@ -294,7 +294,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         if 'tags' in self.settings.allKeys():
             tags = self.settings.value('tags', type='QVariantMap')
             for key in tags:
-                completer = QtGui.QCompleter(tags[key], self)
+                completer = QtWidgets.QCompleter(tags[key], self)
                 completer.setCaseSensitivity(False)
                 if key == 'Titel':
                     getattr(self, 'LineEditTitle').setCompleter(completer)
@@ -489,7 +489,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             return
         if self.status is NO_STREAM_RUNNING:
             self.rec.stop()
-        QtGui.QMainWindow.closeEvent(self, event)
+        QtWidgets.QMainWindow.closeEvent(self, event)
 
 
 def createIcon(pixmap):
@@ -543,15 +543,15 @@ def run():
     """
     sys.excepthook = handle_exception
     multiprocessing.freeze_support()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     # set translation language
     locale = QtCore.QLocale.system().name()
     translator = QtCore.QTranslator()
     folder = godirec.resource_filename(__name__, 'data/language')
     if translator.load("godirec_{}".format(locale), folder):
         app.installTranslator(translator)
-    QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
-                           QtCore.SLOT("quit()"))
+    # QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
+                           # QtCore.SLOT("quit()"))
     window = GodiRecWindow()
     window.show()
     sys.exit(app.exec_())

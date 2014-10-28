@@ -17,7 +17,7 @@
 import logging
 import logging.config
 import sys
-from PyQt4 import QtGui
+from PyQt5 import QtGui
 import os
 import os.path
 import pkg_resources
