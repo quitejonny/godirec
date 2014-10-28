@@ -134,7 +134,6 @@ setup(
         'gui_scripts': ['godirec=godirec.gui:run'],
     },
     install_requires=[
-        'pydub',
         'setuptools',
         'mutagen',
     ],
