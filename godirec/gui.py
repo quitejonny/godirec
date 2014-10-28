@@ -295,6 +295,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             tags = self.settings.value('tags', type='QVariantMap')
             for key in tags:
                 completer = QtGui.QCompleter(tags[key], self)
+                completer.setCaseSensitivity(False)
                 if key == 'Titel':
                     getattr(self, 'LineEditTitle').setCompleter(completer)
                 else:
@@ -319,6 +320,10 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.status = NO_STREAM_RUNNING
 
     def onButtonRecClicked(self):
+        if self.status == NO_STREAM_RUNNING:
+            edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
+            for edit in edits:
+                getattr(self, 'LineEdit'+edit).setEnabled(True)
         if self.status in (NO_STREAM_RUNNING, STREAM_PAUSING):
             self.ButtonRec.setIcon(self.iconPause)
             self.ButtonCut.setEnabled(True)
@@ -439,6 +444,9 @@ class GodiRecWindow(QtGui.QMainWindow):
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setEnabled(True)
             self.LabelTime.setText("-- / --")
+        edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
+        for edit in edits:
+            getattr(self, 'LineEdit'+edit).setEnabled(False)
 
     def openSettings(self):
         """opens the settings dialog"""

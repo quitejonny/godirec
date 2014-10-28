@@ -136,7 +136,11 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QLineEdit" name="LineEditTitle"/>
+         <widget class="QLineEdit" name="LineEditTitle">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="1" column="0">
          <widget class="QLabel" name="LabelArtist">
@@ -146,7 +150,11 @@
          </widget>
         </item>
         <item row="1" column="1">
-         <widget class="QLineEdit" name="LineEditArtist"/>
+         <widget class="QLineEdit" name="LineEditArtist">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="2" column="0">
          <widget class="QLabel" name="LabelComment">
@@ -156,7 +164,11 @@
          </widget>
         </item>
         <item row="2" column="1">
-         <widget class="QLineEdit" name="LineEditComment"/>
+         <widget class="QLineEdit" name="LineEditComment">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="3" column="0">
          <widget class="QLabel" name="LabelAlbum">
@@ -166,7 +178,11 @@
          </widget>
         </item>
         <item row="3" column="1">
-         <widget class="QLineEdit" name="LineEditAlbum"/>
+         <widget class="QLineEdit" name="LineEditAlbum">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="4" column="0">
          <widget class="QLabel" name="LabelGenre">
@@ -176,7 +192,11 @@
          </widget>
         </item>
         <item row="4" column="1">
-         <widget class="QLineEdit" name="LineEditGenre"/>
+         <widget class="QLineEdit" name="LineEditGenre">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+         </widget>
         </item>
         <item row="5" column="0">
          <widget class="QLabel" name="LabelDate">
@@ -187,6 +207,9 @@
         </item>
         <item row="5" column="1">
          <widget class="QDateEdit" name="LineEditDate">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
           <property name="locale">
            <locale language="German" country="Germany"/>
           </property>
