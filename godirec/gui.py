@@ -90,7 +90,7 @@ class SettingsDialog(QtWidgets.QDialog):
         uic.loadUi(settings_ui_file, self)
         self.supported_filetypes = sorted(audio.codec_dict.keys())
         for filetype in self.supported_filetypes:
-            checkbox = QtGui.QCheckBox(filetype.upper())
+            checkbox = QtWidgets.QCheckBox(filetype.upper())
             setattr(self, "CheckBox"+filetype.title(), checkbox)
             self.VLayoutFiletypes.addWidget(checkbox)
         self.VLayoutFiletypes.addStretch()
@@ -135,7 +135,7 @@ class SettingsDialog(QtWidgets.QDialog):
         
     def onButtonDirClicked(self):
         """opens log FileDialog"""
-        temp_path = QtGui.QFileDialog.getExistingDirectory(
+        temp_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, self.tr("Logfile erzeugen in:"), self.labelPath.text())
         if temp_path:
             self.labelPath.setText(temp_path)
@@ -219,7 +219,7 @@ class PathDialog(QtWidgets.QDialog):
 
     def onButtonDirClicked(self):
         """opens project FileDialog"""
-        temp_path = QtGui.QFileDialog.getExistingDirectory(
+        temp_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, self.tr("Neues Projekt erzeugen in:"), ".")
         self.LineEditPath.setText(temp_path)
 
@@ -471,14 +471,14 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             title = self.tr("Stream beenden")
             message = self.tr("Um das Projekt zu schließen,\n"
                               "müssen sie zuerst den Stream beenden")
-            QtGui.QMessageBox.information(self, title, message)
+            QtWidgets.QMessageBox.information(self, title, message)
             return True
         elif core.future_pool.has_running_processes():
             title = "Bitte warten"
             message = self.tr("Die Tracks müssen erst fertig konvertiert "
                               "sein, bevor das Projekt geschlossen werden "
                               "kann!")
-            QtGui.QMessageBox.information(self, title, message)
+            QtWidgets.QMessageBox.information(self, title, message)
             return True
         return False
 
@@ -521,7 +521,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     filename, line, _, _ = traceback.extract_tb(exc_traceback).pop()
     filename = os.path.basename(filename)
     error = "{}: {}".format(exc_type.__name__, exc_value)
-    QtGui.QMessageBox.critical(
+    QtWidgets.QMessageBox.critical(
         None, "Error",
         ("<html>A critical error has occured.<br/> "
             "<b>{:s}</b><br/><br/>"
