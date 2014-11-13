@@ -1,5 +1,6 @@
 
                           GodiRec
+						  =======
 
   What is it?
   -----------
@@ -12,7 +13,7 @@
   ------------------
 
   Details of the latest version can be found on the Github
-  project page under <link>.
+  project page under https://github.com/quitejonny/godirec/releases.
 
   Documentation
   -------------
@@ -51,7 +52,7 @@
        resources at <http://github>
 
      o If you have a concrete bug report please see the instructions
-       for bug reporting at <http://github>
+       for bug reporting at <https://github.com/quitejonny/godirec/issues>
 
      o If you want to participate in actively developing GodiRec please
        mail us over <http://github>
