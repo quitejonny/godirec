@@ -23,20 +23,20 @@ up-to-date documentation can be found at
 ## Installation
 
 #### Windows:
-´´´´
+
 Prerequest: - ffmpeg
 			- Python 3
-´´´´
+
 Use on Commandline: 'py setup.py install' for installing Godirec.
 When you like to create a excecutable exe File use 'py setup.py py2exe'
 and when you like to create an installer use 'py setup.py build_windows_installer'
 
 
 #### Linux:
-´´´´
+
 Prerequest: - avconf
 			- Python 3
-´´´´
+
 
 ## Licensing
 
