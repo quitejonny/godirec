@@ -46,14 +46,17 @@ class SignalThread(QtCore.QThread):
 
 class RecorderListModel(QtCore.QAbstractListModel):
 
+    layoutUpdate = QtCore.pyqtSignal()
+
     def __init__(self, rec_manager=core.Manager(""), parent=None):
         QtCore.QAbstractListModel.__init__(self, parent)
         self.signals = SignalThread(self)
         self.set_rec_manager(rec_manager)
+        self.layoutUpdate.connect(self.update)
 
     def set_rec_manager(self, rec_manager):
         self.rec_manager = rec_manager
-        self.rec_manager.set_callback(self.signals.signal(), "layoutChanged")
+        self.rec_manager.set_callback(self.signals.signal(), "layoutUpdate")
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.rec_manager.tracklist)

@@ -29,11 +29,11 @@ __version__ = '0.1'
 
 class Callback(object):
 
-    def __init__(self, func=lambda:None, *args):
+    def __init__(self, func=lambda x: None, *args):
         self.set_func(func, *args)
 
     def __nonzero__(self):
-        zero_func = lambda: None
+        zero_func = lambda x: None
         if self._func == zero_func:
             return False
         else:
