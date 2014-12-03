@@ -553,8 +553,12 @@ def run():
     folder = godirec.resource_filename(__name__, 'data/language')
     if translator.load("godirec_{}".format(locale), folder):
         app.installTranslator(translator)
-    # QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
-                           # QtCore.SLOT("quit()"))
     window = GodiRecWindow()
     window.show()
+    title = window.tr("Projekt anlegen")
+    message = window.tr("Wollen Sie ein neues Projekt anlegen?")
+    reply = QtWidgets.QMessageBox.question(
+        window, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
+    if reply == QtWidgets.QMessageBox.Yes:
+        window.createNewProject()
     sys.exit(app.exec_())
