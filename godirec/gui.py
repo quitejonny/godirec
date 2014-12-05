@@ -20,7 +20,7 @@ import os
 import traceback
 import multiprocessing
 from datetime import datetime
-from PyQt4 import QtCore, QtGui, uic
+from PyQt5 import QtCore, QtGui, uic, QtWidgets
 import logging
 import queue
 import godirec
@@ -46,14 +46,17 @@ class SignalThread(QtCore.QThread):
 
 class RecorderListModel(QtCore.QAbstractListModel):
 
+    layoutUpdate = QtCore.pyqtSignal()
+
     def __init__(self, rec_manager=core.Manager(""), parent=None):
         QtCore.QAbstractListModel.__init__(self, parent)
         self.signals = SignalThread(self)
         self.set_rec_manager(rec_manager)
+        self.layoutUpdate.connect(self.update)
 
     def set_rec_manager(self, rec_manager):
         self.rec_manager = rec_manager
-        self.rec_manager.set_callback(self.signals.signal(), "layoutChanged")
+        self.rec_manager.set_callback(self.signals.signal(), "layoutUpdate")
 
     def rowCount(self, parent=QtCore.QModelIndex()):
         return len(self.rec_manager.tracklist)
@@ -79,10 +82,10 @@ class RecorderListModel(QtCore.QAbstractListModel):
         return self.index(len(self.rec_manager.tracklist)-1)
 
 
-class SettingsDialog(QtGui.QDialog):
+class SettingsDialog(QtWidgets.QDialog):
 
     def __init__(self, settings, parent):
-        QtGui.QDialog.__init__(self, parent=parent)
+        QtWidgets.QDialog.__init__(self, parent=parent)
         self.settings = settings
         self._settings_dict = {}
         settings_ui_file = godirec.resource_stream(__name__,
@@ -90,7 +93,7 @@ class SettingsDialog(QtGui.QDialog):
         uic.loadUi(settings_ui_file, self)
         self.supported_filetypes = sorted(audio.codec_dict.keys())
         for filetype in self.supported_filetypes:
-            checkbox = QtGui.QCheckBox(filetype.upper())
+            checkbox = QtWidgets.QCheckBox(filetype.upper())
             setattr(self, "CheckBox"+filetype.title(), checkbox)
             self.VLayoutFiletypes.addWidget(checkbox)
         self.VLayoutFiletypes.addStretch()
@@ -135,7 +138,7 @@ class SettingsDialog(QtGui.QDialog):
         
     def onButtonDirClicked(self):
         """opens log FileDialog"""
-        temp_path = QtGui.QFileDialog.getExistingDirectory(
+        temp_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, self.tr("Logfile erzeugen in:"), self.labelPath.text())
         if temp_path:
             self.labelPath.setText(temp_path)
@@ -189,14 +192,14 @@ class SettingsDialog(QtGui.QDialog):
         return self._settings_dict
 
 
-class PathDialog(QtGui.QDialog):
+class PathDialog(QtWidgets.QDialog):
     """Path Dialog will ask for workspace path and project name.
 
     If path doesn't exist it will be created
     """
 
     def __init__(self, path=""):
-        QtGui.QDialog.__init__(self)
+        QtWidgets.QDialog.__init__(self)
         dialog_ui_file = godirec.resource_stream(__name__, 'data/ui/dialog.ui')
         uic.loadUi(dialog_ui_file, self)
         self.cur_path = ""
@@ -219,7 +222,7 @@ class PathDialog(QtGui.QDialog):
 
     def onButtonDirClicked(self):
         """opens project FileDialog"""
-        temp_path = QtGui.QFileDialog.getExistingDirectory(
+        temp_path = QtWidgets.QFileDialog.getExistingDirectory(
             self, self.tr("Neues Projekt erzeugen in:"), ".")
         self.LineEditPath.setText(temp_path)
 
@@ -243,7 +246,7 @@ RECORDING = "currently recording"
 STREAM_PAUSING = "currently pausing"
 
 
-class GodiRecWindow(QtGui.QMainWindow):
+class GodiRecWindow(QtWidgets.QMainWindow):
 
     statusSet = QtCore.pyqtSignal()
     statusClear = QtCore.pyqtSignal()
@@ -251,7 +254,7 @@ class GodiRecWindow(QtGui.QMainWindow):
     progressUpdate = QtCore.pyqtSignal(float)
 
     def __init__(self):
-        QtGui.QMainWindow.__init__(self)
+        QtWidgets.QMainWindow.__init__(self)
         godi_rec_ui = godirec.resource_stream(__name__, 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
         self.signals = SignalThread(self)
@@ -275,7 +278,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
         self.current_track = core.Track("", "")
         self.cur_path = ""
-        self.ProgressBar = QtGui.QProgressBar()
+        self.ProgressBar = QtWidgets.QProgressBar()
         self.statusbar.addWidget(self.ProgressBar, 1)
         self.ProgressBar.hide()
         # connect status for statusbar
@@ -294,7 +297,7 @@ class GodiRecWindow(QtGui.QMainWindow):
         if 'tags' in self.settings.allKeys():
             tags = self.settings.value('tags', type='QVariantMap')
             for key in tags:
-                completer = QtGui.QCompleter(tags[key], self)
+                completer = QtWidgets.QCompleter(tags[key], self)
                 completer.setCaseSensitivity(False)
                 if key == 'Titel':
                     getattr(self, 'LineEditTitle').setCompleter(completer)
@@ -471,14 +474,14 @@ class GodiRecWindow(QtGui.QMainWindow):
             title = self.tr("Stream beenden")
             message = self.tr("Um das Projekt zu schließen,\n"
                               "müssen sie zuerst den Stream beenden")
-            QtGui.QMessageBox.information(self, title, message)
+            QtWidgets.QMessageBox.information(self, title, message)
             return True
         elif core.future_pool.has_running_processes():
             title = "Bitte warten"
             message = self.tr("Die Tracks müssen erst fertig konvertiert "
                               "sein, bevor das Projekt geschlossen werden "
                               "kann!")
-            QtGui.QMessageBox.information(self, title, message)
+            QtWidgets.QMessageBox.information(self, title, message)
             return True
         return False
 
@@ -489,7 +492,7 @@ class GodiRecWindow(QtGui.QMainWindow):
             return
         if self.status is NO_STREAM_RUNNING:
             self.rec.stop()
-        QtGui.QMainWindow.closeEvent(self, event)
+        QtWidgets.QMainWindow.closeEvent(self, event)
 
 
 def createIcon(pixmap):
@@ -521,7 +524,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     filename, line, _, _ = traceback.extract_tb(exc_traceback).pop()
     filename = os.path.basename(filename)
     error = "{}: {}".format(exc_type.__name__, exc_value)
-    QtGui.QMessageBox.critical(
+    QtWidgets.QMessageBox.critical(
         None, "Error",
         ("<html>A critical error has occured.<br/> "
             "<b>{:s}</b><br/><br/>"
@@ -543,15 +546,19 @@ def run():
     """
     sys.excepthook = handle_exception
     multiprocessing.freeze_support()
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     # set translation language
     locale = QtCore.QLocale.system().name()
     translator = QtCore.QTranslator()
     folder = godirec.resource_filename(__name__, 'data/language')
     if translator.load("godirec_{}".format(locale), folder):
         app.installTranslator(translator)
-    QtCore.QObject.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app,
-                           QtCore.SLOT("quit()"))
     window = GodiRecWindow()
     window.show()
+    title = window.tr("Projekt anlegen")
+    message = window.tr("Wollen Sie ein neues Projekt anlegen?")
+    reply = QtWidgets.QMessageBox.question(
+        window, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
+    if reply == QtWidgets.QMessageBox.Yes:
+        window.createNewProject()
     sys.exit(app.exec_())

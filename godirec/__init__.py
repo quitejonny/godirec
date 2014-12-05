@@ -17,23 +17,22 @@
 import logging
 import logging.config
 import sys
-from PyQt4 import QtGui
 import os
 import os.path
 import pkg_resources
 import json
 
 
-__version__ = '0.1'
+__version__ = '0.4'
 
 
 class Callback(object):
 
-    def __init__(self, func=lambda:None, *args):
+    def __init__(self, func=lambda x: None, *args):
         self.set_func(func, *args)
 
     def __nonzero__(self):
-        zero_func = lambda: None
+        zero_func = lambda x: None
         if self._func == zero_func:
             return False
         else:

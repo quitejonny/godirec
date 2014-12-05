@@ -42,12 +42,12 @@ if has_py2exe_module:
                 "win32api",
                 "win32con",
                 "ElementTree",
-                "PyQt4.elementtree",
+                "PyQt5.elementtree",
                 "pyaudioop",
                 "sets",
                 "multiprocessing.SimpleQueue",
                 "elementtree",
-                "PyQt4.uic.port_v2",
+                "PyQt5.uic.port_v2",
             ],
             "includes": [
                 "sip",
@@ -76,10 +76,14 @@ if has_py2exe_module:
     python_sub = subprocess.Popen(["where", "python"], stdout=subprocess.PIPE)
     python_dir, _ = python_sub.communicate()
     python_dir = os.path.dirname(python_dir.decode("utf-8").strip("\r\n"))
-    qico_path = os.path.join(python_dir, "Lib", "site-packages", "PyQt4",
-                             "plugins", "imageformats", "qico4.dll")
+    def create_dirs(lib_file, *folders):
+        pyqt_dir = os.path.join(python_dir, "Lib", "site-packages", "PyQt5")
+        return (folders[-1],
+        [os.path.join(python_dir, pyqt_dir, *folders + (lib_file,))])
     extra_setup['data_files'].extend([
-        ('imageformats', [qico_path])
+        create_dirs("qico.dll", "plugins", "imageformats"),
+        create_dirs("qwindows.dll", "plugins", "platforms"),
+        create_dirs("libEGL.dll", "")
     ])
 
 
