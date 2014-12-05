@@ -79,11 +79,11 @@ if has_py2exe_module:
     def create_dirs(lib_file, *folders):
         pyqt_dir = os.path.join(python_dir, "Lib", "site-packages", "PyQt5")
         return (folders[-1],
-                [os.path.join(python_dir, pyqt_dir, *folders, lib_file)])
+        [os.path.join(python_dir, pyqt_dir, *folders + (lib_file,))])
     extra_setup['data_files'].extend([
-        create_plugin_dirs("qico.dll", "plugins", "imageformats"),
-        create_plugin_dirs("qwindows.dll", "plugins", "platforms"),
-        create_plugin_dirs("libEGL.dll")
+        create_dirs("qico.dll", "plugins", "imageformats"),
+        create_dirs("qwindows.dll", "plugins", "platforms"),
+        create_dirs("libEGL.dll", "")
     ])
 
 

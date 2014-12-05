@@ -17,14 +17,13 @@
 import logging
 import logging.config
 import sys
-from PyQt5 import QtGui
 import os
 import os.path
 import pkg_resources
 import json
 
 
-__version__ = '0.1'
+__version__ = '0.4'
 
 
 class Callback(object):
