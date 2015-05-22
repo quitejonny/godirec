@@ -93,9 +93,6 @@ def create_codec_dict():
     return {str(i): i for i in codecs}
 
 
-codec_dict = create_codec_dict()
-
-
 class _MetaWaveConverter(type):
     """Metaclass for WaveConverter
 
@@ -127,9 +124,9 @@ class _MetaWaveConverter(type):
         elif cls._which("ffmpeg"):
             return "ffmpeg"
         else:
-            raise NoEncoderError("Couldn't find ffmpeg or avconv. If you have"
-                                 " one of this programs please specify the"
-                                 " path")
+            raise godirec.NoEncoderError("Couldn't find ffmpeg or avconv. If"
+                                         " you have one of this programs"
+                                         " please specify the path")
 
     @classmethod
     def _which(cls, program):
@@ -177,7 +174,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
                 with self.lock:
                     self._duration[id(self)] = frames / float(rate)
         else:
-            raise NoWaveError("Given file is not a wav file!")
+            raise godirec.NoWaveError("Given file is not a wav file!")
 
     @classmethod
     def get_progress(cls):
@@ -245,7 +242,6 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
             logging.error(error, exc_info=True)
             logging.error(log)
             raise error
-            # raise NoDecoderError("Decoding failed. ffmpeg error")
 
     def __del__(self):
         if len(self._instances) <= 1:
@@ -254,34 +250,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
                 self._duration.clear()
 
 
-class WaveConverterError(Exception):
-    """Base error for the WaveConverter class"""
-    pass
-
-
-class NoWaveError(WaveConverterError):
-    """Error for WaveConverter class
-
-    No wav at initialization is specified
-    """
-    pass
-
-
-class NoDecoderError(WaveConverterError):
-    """Error for WaveConverter class
-
-    Is raised when somewithing went wrong with the external converter
-    """
-    pass
-
-
-class NoEncoderError(WaveConverterError):
-    """Error for WaveConverter class
-
-    the class could not find the location of the converter. The
-    converter path may be specified manually in the converter property.
-    """
-    pass
+codec_dict = create_codec_dict()
 
 
 if hasattr(sys, "frozen"):

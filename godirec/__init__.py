@@ -19,8 +19,11 @@ import logging.config
 import sys
 import os
 import os.path
-import pkg_resources
+if not hasattr(sys, "frozen"):
+    import pkg_resources
 import json
+# for convenience all error class can be accessed from godirec module directly
+from godirec.errors import *
 
 
 __version__ = '0.4'

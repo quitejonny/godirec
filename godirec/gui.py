@@ -24,7 +24,13 @@ from PyQt5 import QtCore, QtGui, uic, QtWidgets
 import logging
 import queue
 import godirec
-from godirec import core, audio
+try:
+    from godirec import core, audio
+except godirec.NoEncoderError as error:
+    app = QtWidgets.QApplication(sys.argv)
+    logging.error(error, exc_info=True)
+    QtWidgets.QMessageBox.critical(None, "Error", str(error))
+    sys.exit(1)
 
 
 class SignalThread(QtCore.QThread):
