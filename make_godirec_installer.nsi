@@ -5,7 +5,11 @@
 ; prompts the user asking them where to install, and drops a copy of example1.nsi
 ; there. 
   !define MUI_PRODUCT "GodiRec"
+  
 ;--------------------------------
+; Branding Text
+
+BrandingText "${MUI_PRODUCT}"
 
 ; The name of the installer
 Name "${MUI_PRODUCT}"
@@ -32,6 +36,7 @@ Page directory
 Page instfiles
 
 UninstPage uninstConfirm
+UninstPage components
 UninstPage instfiles
 
 ;--------------------------------
@@ -80,6 +85,8 @@ SectionEnd
 ; Uninstaller
 
 Section "Uninstall"
+    
+  SectionIn RO
   
   ; Remove registry keys
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${MUI_PRODUCT}"
@@ -95,5 +102,13 @@ Section "Uninstall"
   ; Remove directories used
   RMDir "$SMPROGRAMS\${MUI_PRODUCT}"
   RMDir "$INSTDIR"
+
+SectionEnd
+
+Section "un.User Data (Settings)"
+
+  ; Remove files and uninstaller
+  RMDir  /r "$APPDATA\${MUI_PRODUCT}"
+
 
 SectionEnd

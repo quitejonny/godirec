@@ -35,7 +35,7 @@ extra_setup = dict()
 if has_py2exe_module:
     extra_setup['options'] = {
         'py2exe': {
-            'bundle_files': 1,
+            'bundle_files': 3,
             'compressed': True,
             "excludes": [
                 "readline",
