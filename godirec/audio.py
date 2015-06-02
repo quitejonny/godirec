@@ -100,7 +100,7 @@ class _MetaWaveConverter(type):
     """
 
     def __init__(cls, name, base, dct):
-        cls._converter = cls._get_encoder_name()
+        cls.converter = cls._get_encoder_name()
         type.__init__(cls, name, base, dct)
 
     @property
@@ -124,9 +124,7 @@ class _MetaWaveConverter(type):
         elif cls._which("ffmpeg"):
             return "ffmpeg"
         else:
-            raise godirec.NoEncoderError("Couldn't find ffmpeg or avconv. If"
-                                         " you have one of this programs"
-                                         " please specify the path")
+            return None
 
     @classmethod
     def _which(cls, program):
@@ -165,6 +163,11 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
         cls._progress_callback.set_func(func, *args)
 
     def __init__(self, wav_file):
+        # if no converter is set, raise an error
+        if WaveConverter.converter is None:
+            raise godirec.NoEncoderError("Couldn't find ffmpeg or avconv. If"
+                                         " you have one of this programs"
+                                         " please specify the path")
         WaveConverter._instances.add(self)
         if wav_file.endswith(".wav"):
             self.wav_file = wav_file
