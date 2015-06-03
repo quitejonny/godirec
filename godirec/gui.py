@@ -118,7 +118,7 @@ class SettingsDialog(QtWidgets.QDialog):
         if 'formats' in self.settings.allKeys():
             self.formats = self.settings.value('formats', type=str)
         else:
-            self.formats = list()
+            self.formats = list(audio.codec_dict.keys())
         for filetype in self.supported_filetypes:
             checkbox = getattr(self, 'CheckBox'+filetype.title())
             checkbox.clicked.connect(self.checkBoxesChanged)
