@@ -35,7 +35,7 @@ Page components
 Page directory
 Page instfiles
 
-UninstPage uninstConfirm
+;UninstPage uninstConfirm
 UninstPage components
 UninstPage instfiles
 
@@ -84,7 +84,7 @@ SectionEnd
 
 ; Uninstaller
 
-Section "Uninstall"
+Section "un.GodiRec"
     
   SectionIn RO
   
@@ -105,10 +105,13 @@ Section "Uninstall"
 
 SectionEnd
 
-Section "un.User Data (Settings)"
+; is unselected
+Section /o "un.User Data (Settings)"
 
   ; Remove files and uninstaller
   RMDir  /r "$APPDATA\${MUI_PRODUCT}"
 
+  ; Remove settings registry keys
+  DeleteRegKey HKCU "Software\EFG Aachen\${MUI_PRODUCT}"
 
 SectionEnd
