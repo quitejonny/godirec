@@ -24,13 +24,7 @@ from PyQt5 import QtCore, QtGui, uic, QtWidgets
 import logging
 import queue
 import godirec
-try:
-    from godirec import core, audio
-except godirec.NoEncoderError as error:
-    app = QtWidgets.QApplication(sys.argv)
-    logging.error(error, exc_info=True)
-    QtWidgets.QMessageBox.critical(None, "Error", str(error))
-    sys.exit(1)
+from godirec import core, audio
 
 
 class SignalThread(QtCore.QThread):
@@ -561,6 +555,7 @@ def run():
         app.installTranslator(translator)
     window = GodiRecWindow()
     window.show()
+    audio.WaveConverter.confirm_converter_backend()
     title = window.tr("Projekt anlegen")
     message = window.tr("Wollen Sie ein neues Projekt anlegen?")
     reply = QtWidgets.QMessageBox.question(

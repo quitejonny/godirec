@@ -162,12 +162,20 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
     def set_progress_callback(cls, func, *args):
         cls._progress_callback.set_func(func, *args)
 
-    def __init__(self, wav_file):
-        # if no converter is set, raise an error
-        if WaveConverter.converter is None:
+    @classmethod
+    def confirm_converter_backend(cls):
+        """check if a converter backend was set or found
+
+        if no backend was found, this method will raise a NoEncoderError
+        """
+        if cls.converter is None:
             raise godirec.NoEncoderError("Couldn't find ffmpeg or avconv. If"
                                          " you have one of this programs"
                                          " please specify the path")
+
+    def __init__(self, wav_file):
+        # if no converter is set, raise an error
+        self.confirm_converter_backend()
         WaveConverter._instances.add(self)
         if wav_file.endswith(".wav"):
             self.wav_file = wav_file
