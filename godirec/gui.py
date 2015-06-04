@@ -250,7 +250,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     statusSet = QtCore.pyqtSignal()
     statusClear = QtCore.pyqtSignal()
-    timeUpdate = QtCore.pyqtSignal(core.Timer)
     progressUpdate = QtCore.pyqtSignal(float)
 
     def __init__(self):
@@ -284,7 +283,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         # connect status for statusbar
         self.statusSet.connect(self.setStatus)
         self.statusClear.connect(self.clearStatus)
-        self.timeUpdate.connect(self.updateTime)
         self.progressUpdate.connect(self.updateProgressBar)
         core.future_pool.set_start_callback(self.signals.signal(), "statusSet")
         core.future_pool.set_done_callback(self.signals.signal(),
@@ -372,10 +370,10 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     def updateProgressBar(self, value):
         self.ProgressBar.setValue(value)
 
-    def updateTime(self, timer):
+    def updateTime(self):
         if self.rec is not None:
-            track_time = timer.get_track_time()
-            rec_time = timer.get_recording_time()
+            track_time = self.rec.timer.get_track_time()
+            rec_time = self.rec.timer.get_recording_time()
             self.LabelTime.setText(track_time+"/"+rec_time)
 
     def onListTracksIndexChanged(self):
@@ -441,7 +439,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
-            self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
+            self.rec.timer.timeout.connect(self.updateTime)
             self.RecListModel.set_rec_manager(self.rec_manager)
             self.RecListModel.update()
             self.status = NO_STREAM_RUNNING

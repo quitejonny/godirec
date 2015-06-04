@@ -16,6 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyaudio
+from PyQt5.QtMultimedia import (QAudioEncoderSettings, QMultimedia,
+        QAudioRecorder)
+from PyQt5.QtCore import QUrl, QTimer
 import os
 import shutil
 import wave
@@ -393,45 +396,41 @@ class Recorder(object):
         self.stop()
 
 
-class Timer(object):
+class Timer(QTimer):
 
-    def __init__(self, callback=lambda:None, *callback_args):
+    def __init__(self):
+        QTimer.__init__(self)
+        self.setInterval(1000)
         self._start_time = 0.0
         self._previous_track_time = 0.0
         self._previous_rec_time = 0.0
-        self._callback = godirec.Callback(callback, *callback_args)
-        self.is_running = False
-
-    def set_callback(self, callback_func, *callback_args):
-        self._callback.set_func(callback_func, *callback_args)
 
     def start(self):
-        if not self.is_running:
-            self._start_time = time.time()
-            self.is_running = True
-            if self._callback:
-                self.timer = threading.Timer(1.0, self._run_timer)
-                self.timer.start()
+        if not self.isActive():
+            self._start_time_count()
+        QTimer.start(self)
 
     def stop(self):
-        if self.is_running:
-            time_delta = time.time() - self._start_time
-            self._previous_track_time += time_delta
-            self._previous_rec_time += time_delta
-            self.is_running = False
-            if self._callback:
-                self.timer.cancel()
+        if self.isActive():
+            self._stop_time_count()
+        QTimer.stop(self)
+
+    def _stop_time_count(self):
+        time_delta = time.time() - self._start_time
+        self._previous_track_time += time_delta
+        self._previous_rec_time += time_delta
+
+    def _start_time_count(self):
+        self._start_time = time.time()
 
     def cut(self):
-        if self.is_running:
-            self.stop()
-            self._previous_track_time = 0.0
-            self.start()
-        else:
-            self._previous_track_time = 0.0
+        if self.isActive():
+            self._stop_time_count()
+            self._start_time_count()
+        self._previous_track_time = 0.0
 
     def get_track_time(self):
-        if self.is_running:
+        if self.isActive():
             time_delta = time.time() - self._start_time
         else:
             time_delta = 0.0
@@ -439,17 +438,12 @@ class Timer(object):
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
     def get_recording_time(self):
-        if self.is_running:
+        if self.isActive():
             time_delta = time.time() - self._start_time
         else:
             time_delta = 0.0
         seconds = self._previous_rec_time + time_delta
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
-
-    def _run_timer(self):
-        self._callback.emit(self)
-        self.timer = threading.Timer(1.0, self._run_timer)
-        self.timer.start()
 
 
 def _run_convert_process(origin_file, path, filetype):
