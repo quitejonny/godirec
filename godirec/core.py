@@ -15,13 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import pyaudio
 from PyQt5.QtMultimedia import (QAudioEncoderSettings, QMultimedia,
         QAudioRecorder)
 from PyQt5.QtCore import QUrl, QTimer
 import os
 import shutil
-import wave
+import sys
 import time
 import tempfile
 import concurrent.futures
@@ -302,9 +301,9 @@ class Track(object):
 class Recorder(object):
     """A recorder class for recording audio."""
 
-    RECORDING = "RECORDING"
-    STOPPED = "STOPPED"
-    PAUSING = "PAUSING"
+    RECORDING = QAudioRecorder.RecordingState
+    STOPPED = QAudioRecorder.StoppedState
+    PAUSING = QAudioRecorder.PausedState
 
     def __init__(self, manager=Manager(""), channels=2, rate=44100,
                  frames_per_buffer=1024):
@@ -316,6 +315,9 @@ class Recorder(object):
         self._state = self.STOPPED
         self.timer = Timer()
         self.format_list = audio.codec_dict.values()
+        self._settings = QAudioEncoderSettings()
+        self._settings.setCodec("audio/PCM")
+        self._settings.setQuality(QMultimedia.HighQuality)
 
     @property
     def state(self):
@@ -333,38 +335,34 @@ class Recorder(object):
             return
         self.timer.start()
         if self.state != self.PAUSING:
-            self._p = pyaudio.PyAudio()
+            self._recorder = QAudioRecorder()
+            if sys.platform == "linux":
+                self._recorder.setAudioInput("alsa:default")
+            self._recorder.setEncodingSettings(self._settings)
+            self._recorder.setContainerFormat("wav")
+            # self._recorder.statusChanged.connect(self.statusHasChanged)
             self._current_track = self._manager.create_new_track()
-            self._wavefile = wave.open(self._current_track.origin_file, 'wb')
-            self._wavefile.setnchannels(self._channels)
-            self._wavefile.setsampwidth(self._p.get_sample_size(
-                                        pyaudio.paInt16))
-            self._wavefile.setframerate(self._rate)
-        self._stream = self._p.open(format=pyaudio.paInt16,
-                                    channels=self._channels,
-                                    rate=self._rate,
-                                    input=True,
-                                    stream_callback=self._get_callback())
-        self._stream.start_stream()
+            url = QUrl.fromLocalFile(self._current_track.origin_file)
+            self._recorder.setOutputLocation(url)
+        self._recorder.record()
         self.state = self.RECORDING
 
     def pause(self):
-        if self.RECORDING:
-            self._stream.close()
+        if self.state == self.RECORDING:
+            self.recorder.pause()
             self.state = self.PAUSING
             self.timer.stop()
 
     def cut(self):
-        if self.RECORDING:
+        if self.state == self.RECORDING:
             self.stop()
             self.timer.cut()
             self.play()
 
     def stop(self):
-        if self.RECORDING:
-            self._stream.close()
-            self._p.terminate()
-            self._wavefile.close()
+        if self.state == self.RECORDING:
+            self._recorder.stop()
+            del self._recorder
             self.state = self.STOPPED
             self.timer.stop()
             self.timer.cut()
@@ -388,13 +386,6 @@ class Recorder(object):
     @property
     def track_time(self):
         return self._time_info
-
-    def _get_callback(self):
-        def callback(in_data, frame_count, time_info, status):
-            self._wavefile.writeframes(in_data)
-            self._time_info = time_info
-            return in_data, pyaudio.paContinue
-        return callback
 
     def __del__(self):
         self.stop()
