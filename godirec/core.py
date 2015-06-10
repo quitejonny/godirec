@@ -16,8 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5.QtMultimedia import (QAudioEncoderSettings, QMultimedia,
-        QAudioRecorder)
+        QAudioRecorder, QAudioProbe, QAudioFormat)
 from PyQt5.QtCore import QUrl, QTimer
+import numpy as np
 import os
 import shutil
 import sys
@@ -305,19 +306,58 @@ class Recorder(object):
     STOPPED = QAudioRecorder.StoppedState
     PAUSING = QAudioRecorder.PausedState
 
-    def __init__(self, manager=Manager(""), channels=2, rate=44100,
-                 frames_per_buffer=1024):
+    QUALITY = {
+        "veryLow": QMultimedia.VeryLowQuality,
+        "low": QMultimedia.LowQuality,
+        "normal": QMultimedia.NormalQuality,
+        "high": QMultimedia.HighQuality,
+        "veryHigh": QMultimedia.VeryHighQuality
+    }
+
+    def __init__(self, manager=Manager(""), quality="high"):
         self._manager = manager
-        self._channels = channels
-        self._rate = rate
-        self._frames_per_buffer = frames_per_buffer
+        if quality not in self.QUALITY:
+            raise ValueError("Quality has not a valid value")
         self._time_info = 0
         self._state = self.STOPPED
         self.timer = Timer()
         self.format_list = audio.codec_dict.values()
         self._settings = QAudioEncoderSettings()
         self._settings.setCodec("audio/PCM")
-        self._settings.setQuality(QMultimedia.HighQuality)
+        self._settings.setQuality(self.QUALITY[quality])
+        self._probe = QAudioProbe()
+        # channel attribute for convenience
+        self._channels = self._settings.channelCount()
+
+    def calc_max_audio_level(self, audio_buffer):
+        """calculate the maximum audiolevel from given audio buffer
+
+        returns a one dimensional numpy array with a length of channel count.
+        Each value holds the maximum audio level of one channel.
+        """
+        # the audio format is PCM, we assume:
+        # sample size: 32, sample type: SignedInt, endian: LittleEndian
+        fmt = audio_buffer.format()
+        # error handling is badly needed here. Because this function is called
+        # multiple times a second, multiple error windows are raised which may
+        # even shutdown the system.
+        # Before raising the error, stop recording.
+        try:
+            np_max = np.iinfo(np.int32).max
+            frame_count = audio_buffer.frameCount()
+            vptr = audio_buffer.constData()
+            vptr.setsize(audio_buffer.byteCount())
+            arr = np.frombuffer(memoryview(vptr), dtype=np.int32)
+            arr = arr.reshape((frame_count, self._channels))
+            values = np.max(np.abs(arr), axis=0)/np_max
+            return values
+        except Exception as e:
+            self.stop()
+            raise e
+
+    @property
+    def audio_probe(self):
+        return self._probe
 
     @property
     def state(self):
@@ -336,11 +376,13 @@ class Recorder(object):
         self.timer.start()
         if self.state != self.PAUSING:
             self._recorder = QAudioRecorder()
+            # FIXME: Workaround under linux for pulseaudio: stop recording
+            # casually let crash the program
             if sys.platform == "linux":
                 self._recorder.setAudioInput("alsa:default")
             self._recorder.setEncodingSettings(self._settings)
             self._recorder.setContainerFormat("wav")
-            # self._recorder.statusChanged.connect(self.statusHasChanged)
+            self._probe.setSource(self._recorder)
             self._current_track = self._manager.create_new_track()
             url = QUrl.fromLocalFile(self._current_track.origin_file)
             self._recorder.setOutputLocation(url)
