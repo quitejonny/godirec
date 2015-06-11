@@ -319,6 +319,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.rec.stop()
             self.onListTracksIndexChanged()
             self.status = NO_STREAM_RUNNING
+            self.LeftLevelBar.setValue(0)
+            self.RightLevelBar.setValue(0)
 
     def onButtonRecClicked(self):
         if self.status == NO_STREAM_RUNNING:
@@ -339,6 +341,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.status = STREAM_PAUSING
             self.ButtonRec.setIcon(self.iconRec)
             self.rec.pause()
+            self.LeftLevelBar.setValue(0)
+            self.RightLevelBar.setValue(0)
 
     def onButtonCutClicked(self):
         """stops recording, creates new file and starts recording again"""
@@ -440,6 +444,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
             self.rec.timer.timeout.connect(self.updateTime)
+            self.rec.audio_probe.audioBufferProbed.connect(self.updateLevel)
             self.RecListModel.set_rec_manager(self.rec_manager)
             self.RecListModel.update()
             self.status = NO_STREAM_RUNNING
@@ -448,6 +453,15 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
         for edit in edits:
             getattr(self, 'LineEdit'+edit).setEnabled(False)
+
+    def updateLevel(self, audioBuffer):
+        try:
+            levels = self.rec.calc_max_audio_level(audioBuffer)
+            self.LeftLevelBar.setValue(levels[0]*100)
+            self.RightLevelBar.setValue(levels[1]*100)
+        except Exception as e:
+            self.rec.audio_probe.audioBufferProbed.disconnect()
+            raise e
 
     def openSettings(self):
         """opens the settings dialog"""
