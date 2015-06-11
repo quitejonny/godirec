@@ -391,18 +391,18 @@ class Recorder(object):
 
     def pause(self):
         if self.state == self.RECORDING:
-            self.recorder.pause()
+            self._recorder.pause()
             self.state = self.PAUSING
             self.timer.stop()
 
     def cut(self):
-        if self.state == self.RECORDING:
+        if self.state != self.STOPPED:
             self.stop()
             self.timer.cut()
             self.play()
 
     def stop(self):
-        if self.state == self.RECORDING:
+        if self.state != self.STOPPED:
             self._recorder.stop()
             del self._recorder
             self.state = self.STOPPED
