@@ -252,6 +252,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     statusClear = QtCore.pyqtSignal()
     timeUpdate = QtCore.pyqtSignal(core.Timer)
     progressUpdate = QtCore.pyqtSignal(float)
+    levelUpdate = QtCore.pyqtSignal(list) #TODO: type correct? nupy?
 
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
@@ -286,11 +287,14 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.statusClear.connect(self.clearStatus)
         self.timeUpdate.connect(self.updateTime)
         self.progressUpdate.connect(self.updateProgressBar)
+        self.levelUpdate.connect(self.updateLevel)
         core.future_pool.set_start_callback(self.signals.signal(), "statusSet")
         core.future_pool.set_done_callback(self.signals.signal(),
                                            "statusClear")
         audio.WaveConverter.set_progress_callback(self.signals.signal(),
                                                   "progressUpdate")
+        core.Recorder.set_level_callback(self.signals.signal(),
+                                           "levelUpdate")
         logging.info('GUI loaded')
 
     def updateWordList(self):
@@ -451,6 +455,13 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         for edit in edits:
             getattr(self, 'LineEdit'+edit).setEnabled(False)
 
+    def updateLevel(self, levels):
+        try:
+            self.LeftLevelBar.setValue(levels*100)
+            self.RightLevelBar.setValue(levels*100)
+        except Exception as e:
+            raise e
+            
     def openSettings(self):
         """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)
