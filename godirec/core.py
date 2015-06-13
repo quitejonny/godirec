@@ -20,6 +20,7 @@ import os
 import shutil
 import wave
 import numpy as np
+from PyQt5.QtCore import QObject, pyqtSignal
 import time
 import tempfile
 import concurrent.futures
@@ -297,16 +298,14 @@ class Track(object):
                 audio.save()
 
 
-class Recorder(object):
+class Recorder(QObject):
     """A recorder class for recording audio."""
-    _level_callback = godirec.Callback()
+
+    levelUpdated = pyqtSignal(list)
     
-    @classmethod
-    def set_level_callback(cls, func, *args):
-        cls._level_callback.set_func(func, *args)
-        
     def __init__(self, manager=Manager(""), channels=2, rate=44100,
                  frames_per_buffer=1024):
+        QObject.__init__(self)
         self._manager = manager
         self._channels = channels
         self._rate = rate
@@ -392,13 +391,12 @@ class Recorder(object):
         def callback(in_data, frame_count, time_info, status):
             self._wavefile.writeframes(in_data)
             self._time_info = time_info
-            data = self._wavefile.readframes(frame_count)
             np_max = np.iinfo(np.int32).max
-            arr = np.frombuffer(memoryview(data), dtype=np.int32)
+            arr = np.frombuffer(memoryview(in_data), dtype=np.int32)
             arr = arr.reshape((len(arr)/2, 2))
             values = np.max(np.abs(arr), axis=0)/np_max
-            self._level_callback.emit(values)
-            return in_data, pyaudio.paContinue
+            self.levelUpdated.emit(list(values))
+            return (in_data, pyaudio.paContinue)
         return callback
 
     def __del__(self):

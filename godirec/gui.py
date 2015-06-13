@@ -252,7 +252,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     statusClear = QtCore.pyqtSignal()
     timeUpdate = QtCore.pyqtSignal(core.Timer)
     progressUpdate = QtCore.pyqtSignal(float)
-    levelUpdate = QtCore.pyqtSignal(list) #TODO: type correct? nupy?
 
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
@@ -287,14 +286,11 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.statusClear.connect(self.clearStatus)
         self.timeUpdate.connect(self.updateTime)
         self.progressUpdate.connect(self.updateProgressBar)
-        self.levelUpdate.connect(self.updateLevel)
         core.future_pool.set_start_callback(self.signals.signal(), "statusSet")
         core.future_pool.set_done_callback(self.signals.signal(),
                                            "statusClear")
         audio.WaveConverter.set_progress_callback(self.signals.signal(),
                                                   "progressUpdate")
-        core.Recorder.set_level_callback(self.signals.signal(),
-                                           "levelUpdate")
         logging.info('GUI loaded')
 
     def updateWordList(self):
@@ -446,6 +442,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
             self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
+            self.rec.levelUpdated.connect(self.updateLevel)
             self.RecListModel.set_rec_manager(self.rec_manager)
             self.RecListModel.update()
             self.status = NO_STREAM_RUNNING
@@ -457,8 +454,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def updateLevel(self, levels):
         try:
-            self.LeftLevelBar.setValue(levels*100)
-            self.RightLevelBar.setValue(levels*100)
+            self.LeftLevelBar.setValue(levels[0]*100)
+            self.RightLevelBar.setValue(levels[1]*100)
         except Exception as e:
             raise e
             
