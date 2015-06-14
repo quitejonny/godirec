@@ -391,8 +391,8 @@ class Recorder(QObject):
         def callback(in_data, frame_count, time_info, status):
             self._wavefile.writeframes(in_data)
             self._time_info = time_info
-            np_max = np.iinfo(np.int32).max
-            arr = np.frombuffer(memoryview(in_data), dtype=np.int32)
+            np_max = np.iinfo(np.int16).max
+            arr = np.frombuffer(memoryview(in_data), dtype=np.int16)
             arr = arr.reshape((len(arr)/2, 2))
             values = np.max(np.abs(arr), axis=0)/np_max
             self.levelUpdated.emit(list(values))
