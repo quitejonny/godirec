@@ -306,6 +306,10 @@ class Recorder(QObject):
 
     levelUpdated = pyqtSignal(list)
     
+    RECORDING = "RECORDING"
+    STOPPED = "STOPPED"
+    PAUSING = "PAUSING"
+
     def __init__(self, manager=Manager(""), channels=2, rate=44100,
                  frames_per_buffer=1024):
         QObject.__init__(self)
@@ -314,8 +318,7 @@ class Recorder(QObject):
         self._rate = rate
         self._frames_per_buffer = frames_per_buffer
         self._time_info = 0
-        self._is_recording = False
-        self._is_pausing = False
+        self._state = self.STOPPED
         self.timer = Timer()
         self.format_list = audio.codec_dict.values()
         # set some values for sample width
@@ -324,12 +327,22 @@ class Recorder(QObject):
         self._int_max = 2**self._int_bit/2
         self._sample_width = int(self._int_bit/8)
         
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        if value not in (self.RECORDING, self.STOPPED, self.PAUSING):
+            raise ValueError("State value not not valid!")
+        self._state = value
+
     def play(self):
-        if self._is_recording and not self._is_pausing:
+        if self.state == self.RECORDING:
             # Recorder is already playing, so no need for this function
             return
         self.timer.start()
-        if not self._is_recording:
+        if self.state != self.PAUSING:
             self._p = pyaudio.PyAudio()
             self._current_track = self._manager.create_new_track()
             self._wavefile = wave.open(self._current_track.origin_file, 'wb')
@@ -343,27 +356,26 @@ class Recorder(QObject):
                                     input=True,
                                     stream_callback=self._get_callback())
         self._stream.start_stream()
-        self._is_recording = True
-        self._is_pausing = False
+        self.state = self.RECORDING
 
     def pause(self):
-        if self._is_recording:
+        if self.state == self.RECORDING:
             self._stream.close()
-            self._is_pausing = True
+            self.state = self.PAUSING
             self.timer.stop()
 
     def cut(self):
-        if self._is_recording:
+        if self.state != self.STOPPED:
             self.stop()
             self.timer.cut()
             self.play()
 
     def stop(self):
-        if self._is_recording:
+        if self.state != self.STOPPED:
             self._stream.close()
             self._p.terminate()
             self._wavefile.close()
-            self._is_recording = False
+            self.state = self.STOPPED
             self.timer.stop()
             self.timer.cut()
             self.save_current_track()
@@ -378,14 +390,6 @@ class Recorder(QObject):
             track.save(format_list)
         except AttributeError:
             pass
-
-    @property
-    def is_recording(self):
-        return self._is_recording
-
-    @property
-    def is_pausing(self):
-        return self._is_pausing
 
     @property
     def manager(self):
