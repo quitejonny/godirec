@@ -19,7 +19,7 @@ import pyaudio
 import os
 import shutil
 import wave
-import numpy as np
+import audioop
 from PyQt5.QtCore import QObject, pyqtSignal
 import time
 import tempfile
@@ -315,6 +315,11 @@ class Recorder(QObject):
         self._is_pausing = False
         self.timer = Timer()
         self.format_list = audio.codec_dict.values()
+        # set some values for sample width
+        self._int_bit = 16
+        self._pyaudio_int = getattr(pyaudio, "paInt{}".format(self._int_bit))
+        self._int_max = 2**self._int_bit/2
+        self._sample_width = int(self._int_bit/8)
         
     def play(self):
         if self._is_recording and not self._is_pausing:
@@ -327,9 +332,9 @@ class Recorder(QObject):
             self._wavefile = wave.open(self._current_track.origin_file, 'wb')
             self._wavefile.setnchannels(self._channels)
             self._wavefile.setsampwidth(self._p.get_sample_size(
-                                        pyaudio.paInt16))
+                                        self._pyaudio_int))
             self._wavefile.setframerate(self._rate)
-        self._stream = self._p.open(format=pyaudio.paInt16,
+        self._stream = self._p.open(format=self._pyaudio_int,
                                     channels=self._channels,
                                     rate=self._rate,
                                     input=True,
@@ -391,11 +396,11 @@ class Recorder(QObject):
         def callback(in_data, frame_count, time_info, status):
             self._wavefile.writeframes(in_data)
             self._time_info = time_info
-            np_max = np.iinfo(np.int16).max
-            arr = np.frombuffer(memoryview(in_data), dtype=np.int16)
-            arr = arr.reshape((len(arr)/2, 2))
-            values = np.max(np.abs(arr), axis=0)/np_max
-            self.levelUpdated.emit(list(values))
+            lsample = audioop.tomono(in_data, self._sample_width, 1, 0)
+            rsample = audioop.tomono(in_data, self._sample_width, 0, 1)
+            l_max = audioop.max(lsample, self._sample_width)/self._int_max
+            r_max = audioop.max(rsample, self._sample_width)/self._int_max
+            self.levelUpdated.emit([l_max, r_max])
             return (in_data, pyaudio.paContinue)
         return callback
 
