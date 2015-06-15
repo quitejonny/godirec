@@ -91,6 +91,7 @@ class SettingsDialog(QtWidgets.QDialog):
         settings_ui_file = godirec.resource_stream(__name__,
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
+        self.setWindowIcon(createIcon('data/ui/settings.png')) 
         self.supported_filetypes = sorted(audio.codec_dict.keys())
         for filetype in self.supported_filetypes:
             checkbox = QtWidgets.QCheckBox(filetype.upper())
@@ -124,6 +125,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.comboBoxChanged(str(self.comboBox.currentText()))
         # Load log filename
         self.labelPath.setText(godirec.get_log_dir())
+        self.pushButtonDir.setIcon(createIcon('data/ui/folder-yellow.png'))
 
     def comboBoxChanged(self, key):
         self.model = QtGui.QStandardItemModel(self.listView)
@@ -239,7 +241,20 @@ class PathDialog(QtWidgets.QDialog):
         """returns project folder"""
         return str(self.cur_path)
 
+class AboutDialog(QtWidgets.QDialog):
+    def __init__(self):
+        QtWidgets.QDialog.__init__(self)
+        about_ui_file = godirec.resource_stream(__name__, 'data/ui/about.ui')
+        uic.loadUi(about_ui_file, self)
+        self.setWindowIcon(createIcon('data/ui/microphone2.ico')) 
 
+class HelpDialog(QtWidgets.QDialog):
+    def __init__(self):
+        QtWidgets.QDialog.__init__(self)
+        help_ui_file = godirec.resource_stream(__name__, 'data/ui/help.ui')
+        uic.loadUi(help_ui_file, self)
+        self.setWindowIcon(createIcon('data/ui/microphone2.ico'))        
+        
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
 RECORDING = "currently recording"
@@ -270,6 +285,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.ActionExit.triggered.connect(self.close)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
+        self.ActionAbout.triggered.connect(self.openAbout)
+        self.ActionHelp.triggered.connect(self.openHelp)
         # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
         self.status = NO_PROJECT
         self.setIcons()
@@ -477,6 +494,16 @@ class GodiRecWindow(QtWidgets.QMainWindow):
                 godirec.change_log_dir(settings["log_dir"],
                                        godirec.config_file)
         self.updateWordList()
+        
+    def openAbout(self):
+        """opens the About dialog"""
+        self.about_dialog = AboutDialog()
+        self.about_dialog.show()
+        
+    def openHelp(self):
+        """opens the Help dialog"""
+        self.help_dialog = HelpDialog()
+        self.help_dialog.show()
 
     def isRunning(self):
         if self.RecListModel.rowCount():

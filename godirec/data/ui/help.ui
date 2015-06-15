@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Help</class>
+ <widget class="QDialog" name="Help">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>409</width>
+    <height>249</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Help</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>microphone2.ico</normaloff>microphone2.ico</iconset>
+  </property>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>20</y>
+     <width>161</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>12</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>GodiRec - Kurzhilfe</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>40</y>
+     <width>371</width>
+     <height>211</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>GodiRec biete ihnen die Möglichkeit Aufnahmen zu machen. Diese können bequem in einzelne Tracks unterteilt werden und diese mit Media-Tags versehen werden. 
+ Um zu Starten kann über das Menü &quot;File&quot; ein neues Projekt angelegt werden. Über die Bottons im oberen Bereich kann die Aufnahme gesteuert werden. Von Links nach Rechts sind es: Beenden, Aufnehmen/Pause, Schnitt. &quot;Beenden&quot; beendet den Track, es kann aber wieder ein neuer gestartet werden. &quot;Aufname/Pause&quot; startet die Aufname, bzw. bei einer Laufenden aufnahme, kann diese Pausiert werden. Hierbei wird kein neuer Track angelegt. Mit &quot;Schnitt&quot; kann ein neuer Track erzeugt werden ohne das eine Pause entsteht. Die Tracks können jeweils im unterem Teil des Fensters benannt werden. Um dies zu erlleichtern kann man Autovervollständigungslisten in den Einstellungen ausfüllen. Diese werden dann beim Eintragen angeboten.</string>
+   </property>
+   <property name="scaledContents">
+    <bool>false</bool>
+   </property>
+   <property name="wordWrap">
+    <bool>true</bool>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
