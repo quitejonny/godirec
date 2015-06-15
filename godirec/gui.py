@@ -435,7 +435,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.settings.setValue('path', os.path.dirname(current_path))
             self.setWindowTitle(os.path.basename(current_path))
             self.rec_manager = core.Manager(current_path)
-            self.rec = core.Recorder(self.rec_manager)
+            self.rec = core.Recorder(self.rec_manager, parent=self)
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]

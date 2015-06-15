@@ -311,15 +311,15 @@ class Recorder(QObject):
     PAUSING = "PAUSING"
 
     def __init__(self, manager=Manager(""), channels=2, rate=44100,
-                 frames_per_buffer=1024):
-        QObject.__init__(self)
+                 frames_per_buffer=1024, parent=None):
+        QObject.__init__(self, parent=parent)
         self._manager = manager
         self._channels = channels
         self._rate = rate
         self._frames_per_buffer = frames_per_buffer
         self._time_info = 0
         self._state = self.STOPPED
-        self.timer = Timer()
+        self.timer = Timer(parent=self)
         self.format_list = audio.codec_dict.values()
         # set some values for sample width
         self._int_bit = 16
@@ -417,8 +417,8 @@ class Recorder(QObject):
 
 class Timer(QTimer):
 
-    def __init__(self):
-        QTimer.__init__(self)
+    def __init__(self, parent=None):
+        QTimer.__init__(self, parent=parent)
         self.setInterval(1000)
         self._start_time = 0.0
         self._previous_track_time = 0.0
