@@ -326,6 +326,14 @@ class Recorder(QObject):
         self._pyaudio_int = getattr(pyaudio, "paInt{}".format(self._int_bit))
         self._int_max = 2**self._int_bit/2
         self._sample_width = int(self._int_bit/8)
+        #initialize stream
+        self._p = pyaudio.PyAudio()
+        self._stream = self._p.open(format=self._pyaudio_int,
+                                    channels=self._channels,
+                                    rate=self._rate,
+                                    input=True,
+                                    stream_callback=self._get_callback())
+        self._stream.start_stream()
         
     @property
     def state(self):
@@ -342,25 +350,17 @@ class Recorder(QObject):
             # Recorder is already playing, so no need for this function
             return
         self.timer.start()
-        if self.state != self.PAUSING:
-            self._p = pyaudio.PyAudio()
+        if self.state == self.STOPPED:
             self._current_track = self._manager.create_new_track()
             self._wavefile = wave.open(self._current_track.origin_file, 'wb')
             self._wavefile.setnchannels(self._channels)
             self._wavefile.setsampwidth(self._p.get_sample_size(
                                         self._pyaudio_int))
             self._wavefile.setframerate(self._rate)
-        self._stream = self._p.open(format=self._pyaudio_int,
-                                    channels=self._channels,
-                                    rate=self._rate,
-                                    input=True,
-                                    stream_callback=self._get_callback())
-        self._stream.start_stream()
         self.state = self.RECORDING
 
     def pause(self):
         if self.state == self.RECORDING:
-            self._stream.close()
             self.state = self.PAUSING
             self.timer.stop()
 
@@ -372,13 +372,16 @@ class Recorder(QObject):
 
     def stop(self):
         if self.state != self.STOPPED:
-            self._stream.close()
-            self._p.terminate()
             self._wavefile.close()
             self.state = self.STOPPED
             self.timer.stop()
             self.timer.cut()
             self.save_current_track()
+
+    def close(self):
+        self.stop()
+        self._stream.close()
+        self._p.terminate()
 
     def save_current_track(self, filetype=''):
         if filetype == '':
@@ -401,7 +404,8 @@ class Recorder(QObject):
 
     def _get_callback(self):
         def callback(in_data, frame_count, time_info, status):
-            self._wavefile.writeframes(in_data)
+            if self.state == self.RECORDING:
+                self._wavefile.writeframes(in_data)
             self._time_info = time_info
             lsample = audioop.tomono(in_data, self._sample_width, 1, 0)
             rsample = audioop.tomono(in_data, self._sample_width, 0, 1)
@@ -410,9 +414,6 @@ class Recorder(QObject):
             self.levelUpdated.emit([l_max, r_max])
             return (in_data, pyaudio.paContinue)
         return callback
-
-    def __del__(self):
-        self.stop()
 
 
 class Timer(QTimer):

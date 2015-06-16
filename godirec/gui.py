@@ -434,6 +434,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.cur_path = self.path_dialog.values()
             self.settings.setValue('path', os.path.dirname(current_path))
             self.setWindowTitle(os.path.basename(current_path))
+            if hasattr(self, "rec"):
+                self.rec.close()
             self.rec_manager = core.Manager(current_path)
             self.rec = core.Recorder(self.rec_manager, parent=self)
             if 'formats' in self.settings.allKeys():
