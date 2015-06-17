@@ -16,8 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyaudio
-from PyQt5.QtMultimedia import (QAudioEncoderSettings, QMultimedia,
-        QAudioRecorder)
 from PyQt5.QtCore import QUrl, QTimer
 import os
 import shutil
