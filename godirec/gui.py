@@ -241,19 +241,20 @@ class PathDialog(QtWidgets.QDialog):
         """returns project folder"""
         return str(self.cur_path)
 
-class AboutDialog(QtWidgets.QDialog):
-    def __init__(self):
-        QtWidgets.QDialog.__init__(self)
-        about_ui_file = godirec.resource_stream(__name__, 'data/ui/about.ui')
-        uic.loadUi(about_ui_file, self)
-        self.setWindowIcon(createIcon('data/ui/microphone2.ico')) 
+class DialogOpener(QtWidgets.QDialog):
 
-class HelpDialog(QtWidgets.QDialog):
-    def __init__(self):
-        QtWidgets.QDialog.__init__(self)
-        help_ui_file = godirec.resource_stream(__name__, 'data/ui/help.ui')
-        uic.loadUi(help_ui_file, self)
-        self.setWindowIcon(createIcon('data/ui/microphone2.ico'))        
+    @staticmethod
+    def open(ui_file, parent=None):
+        dialog_opener = DialogOpener(ui_file, parent=parent)
+        dialog_opener.show()
+        
+        
+    def __init__(self, ui_file, parent=None):
+        QtWidgets.QDialog.__init__(self, parent=parent)
+        about_ui_file = godirec.resource_stream(__name__, ui_file)
+        uic.loadUi(about_ui_file, self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowIcon(createIcon('data/ui/microphone2.ico'))    
         
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
@@ -267,7 +268,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     statusClear = QtCore.pyqtSignal()
     timeUpdate = QtCore.pyqtSignal(core.Timer)
     progressUpdate = QtCore.pyqtSignal(float)
-    levelUpdate = QtCore.pyqtSignal(list) #TODO: type correct? nupy?
+    levelUpdate = QtCore.pyqtSignal(list)
 
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
@@ -285,8 +286,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.ActionExit.triggered.connect(self.close)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
-        self.ActionAbout.triggered.connect(self.openAbout)
-        self.ActionHelp.triggered.connect(self.openHelp)
+        self.ActionAbout.triggered.connect(lambda: DialogOpener.open("data/ui/about.ui", self))
+        self.ActionHelp.triggered.connect(lambda: DialogOpener.open("data/ui/help.ui", self))
         # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
         self.status = NO_PROJECT
         self.setIcons()
@@ -497,12 +498,12 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         
     def openAbout(self):
         """opens the About dialog"""
-        self.about_dialog = AboutDialog()
+        self.about_dialog = AboutDialog(parent=self)
         self.about_dialog.show()
         
     def openHelp(self):
         """opens the Help dialog"""
-        self.help_dialog = HelpDialog()
+        self.help_dialog = HelpDialog(parent=self)
         self.help_dialog.show()
 
     def isRunning(self):
