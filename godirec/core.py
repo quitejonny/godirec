@@ -27,6 +27,7 @@ import re
 import mutagen
 import logging
 from mutagen import id3
+import json
 import godirec
 from godirec import audio
 
@@ -61,6 +62,17 @@ class Tags(object):
         except AttributeError as e:
             raise KeyError("The specified keyword {} is not supported by the"
                            " Tags class".format(arg))
+
+    @staticmethod
+    def load(json_str):
+        """creates a Tags object from a json-string and returns it"""
+        tags_dict = json.loads(json_str)
+        return Tags(**tags_dict)
+
+    def dump(self):
+        """converts a Tags object into a dict and returns it"""
+        tags_dict = {key: self[key] for key in self.keys()}
+        return tags_dict
 
     def keys(self):
         """return a list of available tag names"""
@@ -101,6 +113,31 @@ class Manager(object):
         self._track_count = 1
         self._callback = godirec.Callback()
         self._wav_folder = ""
+
+    @staticmethod
+    def load_from_file(filename):
+        with open(filename, 'r') as f:
+            manager_dict = json.load(f)
+        start = os.path.abspath(os.path.dirname(filename))
+        abs_path = lambda p: os.path.join(start, p)
+        folder = abs_path(manager_dict.pop("folder"))
+        project_name = manager_dict.pop("project_name")
+        manager = Manager(folder, project_name)
+        for track_dict in manager_dict.pop("tracks"):
+            manager._tracks.append(Track.load(track_dict, start=start))
+        return manager
+
+    def dump(self, filename):
+        start = os.path.dirname(filename)
+        manager_dict = {
+            "folder": os.path.relpath(self._folder, start=start),
+            "project_name": self._project_name,
+            "tracks": list()
+        }
+        for track in self._tracks:
+            manager_dict["tracks"].append(track.dump(start=start))
+        with open(filename, 'w') as f:
+            json.dump(manager_dict, f, indent="  ")
 
     def create_new_track(self):
         """create new track and add it to the manager's track list
@@ -183,13 +220,39 @@ class Track(object):
         self._files = list()
         self._futures = Futures()
 
+    @staticmethod
+    def load(track_dict, start=os.curdir):
+        """load track object from Track class with python dict"""
+        start_dir = os.path.abspath(start)
+        abs_path = lambda p: os.path.join(start_dir, p)
+        track = Track("", "", tags=Tags(**track_dict.pop("tags")))
+        attrs = ["basename", "origin_basename", "project_name", "folder",
+                 "old_title", "has_file_changed", "files"]
+        for attr in attrs:
+            setattr(track, "_" + attr, track_dict[attr])
+        track._files = [abs_path(f) for f in track._files]
+        track._folder = abs_path(track._folder)
+        return track
+
+    def dump(self, start=os.curdir):
+        """dump track data in a python dict and return it"""
+        track_dict = {"tags": self.tags.dump()}
+        attrs = ["basename", "origin_basename", "project_name", "folder",
+                 "old_title", "has_file_changed", "files"]
+        for attr in attrs:
+            track_dict[attr] = getattr(self, "_" + attr)
+        rel_path = lambda p: os.path.relpath(p, start=start)
+        track_dict["files"] = [rel_path(p) for p in track_dict["files"]]
+        track_dict["folder"] = rel_path(track_dict["folder"])
+        return track_dict
+
     def save(self, filetypes=[], folder=None):
         """will save the track with specified filetype.
         
         If no filetype is given, the function will write the metadata
         in the already exported files
         """
-        if not filetypes:
+        if (not filetypes) or (not self.has_origin):
             self.save_tags()
         else:
             folder = folder if folder else self._folder
@@ -230,6 +293,10 @@ class Track(object):
             self.save_tags()
         if not self._futures.all_futures:
             future_pool.done_callback()
+
+    @property
+    def has_origin(self):
+        return self._origin_file != ""
 
     @property
     def basename(self):
