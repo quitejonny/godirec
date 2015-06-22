@@ -192,54 +192,6 @@ class SettingsDialog(QtWidgets.QDialog):
         return self._settings_dict
 
 
-class PathDialog(QtWidgets.QDialog):
-    """Path Dialog will ask for workspace path and project name.
-
-    If path doesn't exist it will be created
-    """
-
-    def __init__(self, path=""):
-        QtWidgets.QDialog.__init__(self)
-        dialog_ui_file = godirec.resource_stream(__name__, 'data/ui/dialog.ui')
-        uic.loadUi(dialog_ui_file, self)
-        self.cur_path = ""
-        for i in ("Dir", "Create"):
-            getattr(self, "Button"+i).clicked.connect(
-                getattr(self, "onButton{}Clicked".format(i)))
-        projectName = "{:%Y_%m_%d}-Godi".format(datetime.today())
-        # create new project directory if default directory already exists
-        i = 0
-        projectPath = os.path.join(path, projectName)
-        while os.path.exists(projectPath):
-            i += 1
-            projectName = "{:%Y_%m_%d}-Godi-{}".format(datetime.today(), i)
-            projectPath = os.path.join(path, projectName)
-        self.LineEditProjekt.setText(projectName)
-        self.LineEditPath.setText(path)
-        self.iconDir = createIcon('data/ui/folder-yellow.png')
-        self.ButtonDir.setIcon(self.iconDir)
-        self.ButtonCreate.setFocus()
-
-    def onButtonDirClicked(self):
-        """opens project FileDialog"""
-        temp_path = QtWidgets.QFileDialog.getExistingDirectory(
-            self, self.tr("Neues Projekt erzeugen in:"), ".")
-        self.LineEditPath.setText(temp_path)
-
-    def onButtonCreateClicked(self):
-        """closes PathDialog window and creates necessery directories"""
-        temp_path = str(self.LineEditPath.text())
-        projectName = str(self.LineEditProjekt.text())
-        self.cur_path = os.path.join(temp_path, projectName)
-        if not os.path.exists(self.cur_path):
-            os.makedirs(self.cur_path)
-        self.close()
-
-    def values(self):
-        """returns project folder"""
-        return str(self.cur_path)
-
-
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
 RECORDING = "currently recording"
@@ -265,10 +217,12 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         for i in ("Stop", "Rec", "Cut"):
             getattr(self, "Button"+i).clicked.connect(
                 getattr(self, "onButton{}Clicked".format(i)))
-            getattr(self, "Button"+i).setEnabled(False)
+        self.enableRecButtons(False)
+        self.enableTagEdits(False)
         self.ActionExit.triggered.connect(self.close)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
+        self.ActionOpenProject.triggered.connect(self.openProject)
         # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
         self.status = NO_PROJECT
         self.setIcons()
@@ -292,6 +246,15 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         audio.WaveConverter.set_progress_callback(self.signals.signal(),
                                                   "progressUpdate")
         logging.info('GUI loaded')
+
+    def enableRecButtons(self, isEnabled):
+        for i in ("Stop", "Rec", "Cut"):
+            getattr(self, "Button"+i).setEnabled(isEnabled)
+
+    def enableTagEdits(self, isEnabled):
+        edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
+        for edit in edits:
+            getattr(self, 'LineEdit'+edit).setEnabled(isEnabled)
 
     def updateWordList(self):
         if 'tags' in self.settings.allKeys():
@@ -395,6 +358,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
                 self.rec_manager.save_tracks()
             else:
                 self.current_track.save()
+        self.rec_manager.dump(self.proj_file)
         index = self.ListTracks.selectedIndexes()[0]
         self.current_track = self.RecListModel.itemFromIndex(index)
         self.setTags(self.current_track)
@@ -420,6 +384,35 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         tags['date'] = str(self.LineEditDate.date().toPyDate().year)
         return tags
 
+    def openProject(self):
+        """open an old project. Recording is not possible"""
+        path = "."
+        if 'path' in self.settings.allKeys():
+            path = self.settings.value('path', type=str)
+        caption = self.tr("Projekt öffnen:")
+        file_filter = self.tr("Godirec Datei (*.gdr)")
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, caption, path, file_filter)[0]
+        if filename != "":
+            self.proj_file = filename
+            self.rec_manager = core.Manager.load_from_file(self.proj_file)
+            self.RecListModel.set_rec_manager(self.rec_manager)
+            self.RecListModel.update()
+            self.status = NO_STREAM_RUNNING
+            self.enableRecButtons(False)
+            self.enableTagEdits(True)
+
+    def getSaveFileName(self, path=""):
+        basename = "{:%Y_%m_%d}-Godi".format(datetime.today())
+        caption = self.tr("Neues Projekt erzeugen in:")
+        file_filter = self.tr("Godirec Datei (*.gdr)")
+        # create new project directory if default directory already exists
+        for i in range(1000):
+            projectName = "{}{}.gdr".format(basename, "-"+str(i) if i > 0 else "")
+            projectPath = os.path.join(path, projectName)
+            if not os.path.exists(projectPath):
+                return QtWidgets.QFileDialog.getSaveFileName(self, caption,
+                        projectPath, file_filter)[0]
+
     def createNewProject(self):
         # path_dialog muss eine Variable von self sein. Andernfalls wird das
         # Fenster nach Ausfuehrung direkt wieder zerstoert.
@@ -428,15 +421,16 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         path = ""
         if 'path' in self.settings.allKeys():
             path = self.settings.value('path', type=str)
-        self.path_dialog = PathDialog(path)
-        self.path_dialog.show()
-        self.path_dialog.exec_()
-        current_path = self.path_dialog.values()
+        proj_file = self.getSaveFileName(path)
+        current_path = os.path.splitext(proj_file)[0]
         if current_path != "":
-            self.cur_path = self.path_dialog.values()
+            self.cur_path = current_path
+            if not os.path.exists(self.cur_path):
+                os.makedirs(self.cur_path)
             self.settings.setValue('path', os.path.dirname(current_path))
             self.setWindowTitle(os.path.basename(current_path))
             self.rec_manager = core.Manager(current_path)
+            self.proj_file = proj_file
             self.rec = core.Recorder(self.rec_manager)
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
@@ -447,9 +441,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.status = NO_STREAM_RUNNING
             self.ButtonRec.setEnabled(True)
             self.LabelTime.setText("-- / --")
-        edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
-        for edit in edits:
-            getattr(self, 'LineEdit'+edit).setEnabled(False)
+            self.enableTagEdits(False)
 
     def openSettings(self):
         """opens the settings dialog"""
@@ -490,7 +482,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         if self.isRunning():
             event.ignore()
             return
-        if self.status is NO_STREAM_RUNNING:
+        if self.status is NO_STREAM_RUNNING and hasattr(self, "rec"):
             self.rec.stop()
         QtWidgets.QMainWindow.closeEvent(self, event)
 
