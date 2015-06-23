@@ -1,9 +1,10 @@
-; example1.nsi
-;
 ; This script is perhaps one of the simplest NSIs you can make. All of the
 ; optional settings are left to their default settings. The installer simply 
 ; prompts the user asking them where to install, and drops a copy of example1.nsi
 ; there. 
+
+  !include "FileAssociation.nsh"
+
   !define MUI_PRODUCT "GodiRec"
   
 ;--------------------------------
@@ -80,6 +81,13 @@ Section "Desktop Shortcut"
   
 SectionEnd
 
+Section "FileAssociation *.gdr"
+
+;create FileAssociation
+  ${registerExtension} "$INSTDIR\${MUI_PRODUCT}.exe" ".gdr" "GodiRec Project"
+  
+SectionEnd
+
 ;--------------------------------
 
 ; Uninstaller
@@ -113,5 +121,12 @@ Section /o "un.User Data (Settings)"
 
   ; Remove settings registry keys
   DeleteRegKey HKCU "Software\EFG Aachen\${MUI_PRODUCT}"
+
+SectionEnd
+
+Section "un.Delete File Association *.gdr"
+
+  ; Remove FileAssociation
+    ${unregisterExtension} ".gdr" "GodiRec Project"
 
 SectionEnd
