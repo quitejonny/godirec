@@ -203,7 +203,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     statusSet = QtCore.pyqtSignal()
     statusClear = QtCore.pyqtSignal()
-    timeUpdate = QtCore.pyqtSignal(core.Timer)
     progressUpdate = QtCore.pyqtSignal(float)
 
     def __init__(self):
@@ -239,7 +238,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         # connect status for statusbar
         self.statusSet.connect(self.setStatus)
         self.statusClear.connect(self.clearStatus)
-        self.timeUpdate.connect(self.updateTime)
         self.progressUpdate.connect(self.updateProgressBar)
         core.future_pool.set_start_callback(self.signals.signal(),
                                             "statusSet")
@@ -337,10 +335,10 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     def updateProgressBar(self, value):
         self.ProgressBar.setValue(value)
 
-    def updateTime(self, timer):
+    def updateTime(self):
         if self.rec is not None:
-            track_time = timer.get_track_time()
-            rec_time = timer.get_recording_time()
+            track_time = self.rec.timer.get_track_time()
+            rec_time = self.rec.timer.get_recording_time()
             self.LabelTime.setText(track_time+"/"+rec_time)
 
     def onListTracksIndexChanged(self):
@@ -422,17 +420,20 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.setupProject(proj_file)
 
     def setupProject(self, filename, isForRecording=True):
+        if hasattr(self, "rec"):
+            self.rec.close()
         if isForRecording:
             current_path = os.path.splitext(filename)[0]
             if not os.path.exists(current_path):
                 os.makedirs(current_path)
             self.settings.setValue('path', os.path.dirname(current_path))
             self.rec_manager = core.Manager(current_path)
-            self.rec = core.Recorder(self.rec_manager)
+            self.rec = core.Recorder(self.rec_manager, parent=self)
+            self.rec.timer.timeout.connect(self.updateTime)
+            self.rec.levelUpdated.connect(self.updateLevel)
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
-            self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
         else:
             self.rec_manager = core.Manager.load_from_file(filename)
             removed_files = self.rec_manager.removed_files
@@ -454,6 +455,13 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.LabelTime.setText("-- / --")
         self.setWindowTitle(self.rec_manager.project_name)
 
+    def updateLevel(self, levels):
+        try:
+            self.LeftLevelBar.setValue(levels[0]*100)
+            self.RightLevelBar.setValue(levels[1]*100)
+        except Exception as e:
+            raise e
+            
     def openSettings(self):
         """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)

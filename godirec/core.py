@@ -16,9 +16,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import pyaudio
+from PyQt5.QtCore import QUrl, QTimer
 import os
 import shutil
 import wave
+import audioop
+from PyQt5.QtCore import QObject, pyqtSignal
 import time
 import tempfile
 import concurrent.futures
@@ -382,64 +385,87 @@ class Track(object):
                 audio.save()
 
 
-class Recorder(object):
+class Recorder(QObject):
     """A recorder class for recording audio."""
 
+    levelUpdated = pyqtSignal(list)
+    
+    RECORDING = "RECORDING"
+    STOPPED = "STOPPED"
+    PAUSING = "PAUSING"
+
     def __init__(self, manager=Manager(""), channels=2, rate=44100,
-                 frames_per_buffer=1024):
+                 frames_per_buffer=1024, parent=None):
+        QObject.__init__(self, parent=parent)
         self._manager = manager
         self._channels = channels
         self._rate = rate
         self._frames_per_buffer = frames_per_buffer
         self._time_info = 0
-        self._is_recording = False
-        self._is_pausing = False
-        self.timer = Timer()
+        self._state = self.STOPPED
+        self.timer = Timer(parent=self)
         self.format_list = audio.codec_dict.values()
-
-    def play(self):
-        if self._is_recording and not self._is_pausing:
-            # Recorder is already playing, so no need for this function
-            return
-        self.timer.start()
-        if not self._is_recording:
-            self._p = pyaudio.PyAudio()
-            self._current_track = self._manager.create_new_track()
-            self._wavefile = wave.open(self._current_track.origin_file, 'wb')
-            self._wavefile.setnchannels(self._channels)
-            self._wavefile.setsampwidth(self._p.get_sample_size(
-                                        pyaudio.paInt16))
-            self._wavefile.setframerate(self._rate)
-        self._stream = self._p.open(format=pyaudio.paInt16,
+        # set some values for sample width
+        self._int_bit = 16
+        self._pyaudio_int = getattr(pyaudio, "paInt{}".format(self._int_bit))
+        self._int_max = 2**self._int_bit/2
+        self._sample_width = int(self._int_bit/8)
+        #initialize stream
+        self._p = pyaudio.PyAudio()
+        self._stream = self._p.open(format=self._pyaudio_int,
                                     channels=self._channels,
                                     rate=self._rate,
                                     input=True,
                                     stream_callback=self._get_callback())
         self._stream.start_stream()
-        self._is_recording = True
-        self._is_pausing = False
+        
+    @property
+    def state(self):
+        return self._state
+
+    @state.setter
+    def state(self, value):
+        if value not in (self.RECORDING, self.STOPPED, self.PAUSING):
+            raise ValueError("State value not not valid!")
+        self._state = value
+
+    def play(self):
+        if self.state == self.RECORDING:
+            # Recorder is already playing, so no need for this function
+            return
+        self.timer.start()
+        if self.state == self.STOPPED:
+            self._current_track = self._manager.create_new_track()
+            self._wavefile = wave.open(self._current_track.origin_file, 'wb')
+            self._wavefile.setnchannels(self._channels)
+            self._wavefile.setsampwidth(self._p.get_sample_size(
+                                        self._pyaudio_int))
+            self._wavefile.setframerate(self._rate)
+        self.state = self.RECORDING
 
     def pause(self):
-        if self._is_recording:
-            self._stream.close()
-            self._is_pausing = True
+        if self.state == self.RECORDING:
+            self.state = self.PAUSING
             self.timer.stop()
 
     def cut(self):
-        if self._is_recording:
+        if self.state != self.STOPPED:
             self.stop()
             self.timer.cut()
             self.play()
 
     def stop(self):
-        if self._is_recording:
-            self._stream.close()
-            self._p.terminate()
+        if self.state != self.STOPPED:
             self._wavefile.close()
-            self._is_recording = False
+            self.state = self.STOPPED
             self.timer.stop()
             self.timer.cut()
             self.save_current_track()
+
+    def close(self):
+        self.stop()
+        self._stream.close()
+        self._p.terminate()
 
     def save_current_track(self, filetype=''):
         if filetype == '':
@@ -453,14 +479,6 @@ class Recorder(object):
             pass
 
     @property
-    def is_recording(self):
-        return self._is_recording
-
-    @property
-    def is_pausing(self):
-        return self._is_pausing
-
-    @property
     def manager(self):
         return self._manager
 
@@ -470,54 +488,53 @@ class Recorder(object):
 
     def _get_callback(self):
         def callback(in_data, frame_count, time_info, status):
-            self._wavefile.writeframes(in_data)
+            if self.state == self.RECORDING:
+                self._wavefile.writeframes(in_data)
             self._time_info = time_info
-            return in_data, pyaudio.paContinue
+            lsample = audioop.tomono(in_data, self._sample_width, 1, 0)
+            rsample = audioop.tomono(in_data, self._sample_width, 0, 1)
+            l_max = audioop.max(lsample, self._sample_width)/self._int_max
+            r_max = audioop.max(rsample, self._sample_width)/self._int_max
+            self.levelUpdated.emit([l_max, r_max])
+            return (in_data, pyaudio.paContinue)
         return callback
 
-    def __del__(self):
-        self.stop()
 
+class Timer(QTimer):
 
-class Timer(object):
-
-    def __init__(self, callback=lambda:None, *callback_args):
+    def __init__(self, parent=None):
+        QTimer.__init__(self, parent=parent)
+        self.setInterval(1000)
         self._start_time = 0.0
         self._previous_track_time = 0.0
         self._previous_rec_time = 0.0
-        self._callback = godirec.Callback(callback, *callback_args)
-        self.is_running = False
-
-    def set_callback(self, callback_func, *callback_args):
-        self._callback.set_func(callback_func, *callback_args)
 
     def start(self):
-        if not self.is_running:
-            self._start_time = time.time()
-            self.is_running = True
-            if self._callback:
-                self.timer = threading.Timer(1.0, self._run_timer)
-                self.timer.start()
+        if not self.isActive():
+            self._start_time_count()
+        QTimer.start(self)
 
     def stop(self):
-        if self.is_running:
-            time_delta = time.time() - self._start_time
-            self._previous_track_time += time_delta
-            self._previous_rec_time += time_delta
-            self.is_running = False
-            if self._callback:
-                self.timer.cancel()
+        if self.isActive():
+            self._stop_time_count()
+        QTimer.stop(self)
+
+    def _stop_time_count(self):
+        time_delta = time.time() - self._start_time
+        self._previous_track_time += time_delta
+        self._previous_rec_time += time_delta
+
+    def _start_time_count(self):
+        self._start_time = time.time()
 
     def cut(self):
-        if self.is_running:
-            self.stop()
-            self._previous_track_time = 0.0
-            self.start()
-        else:
-            self._previous_track_time = 0.0
+        if self.isActive():
+            self._stop_time_count()
+            self._start_time_count()
+        self._previous_track_time = 0.0
 
     def get_track_time(self):
-        if self.is_running:
+        if self.isActive():
             time_delta = time.time() - self._start_time
         else:
             time_delta = 0.0
@@ -525,17 +542,12 @@ class Timer(object):
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
     def get_recording_time(self):
-        if self.is_running:
+        if self.isActive():
             time_delta = time.time() - self._start_time
         else:
             time_delta = 0.0
         seconds = self._previous_rec_time + time_delta
         return time.strftime("%H:%M:%S", time.gmtime(seconds))
-
-    def _run_timer(self):
-        self._callback.emit(self)
-        self.timer = threading.Timer(1.0, self._run_timer)
-        self.timer.start()
 
 
 def _run_convert_process(origin_file, path, filetype):
