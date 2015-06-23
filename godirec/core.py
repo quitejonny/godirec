@@ -192,6 +192,10 @@ class Manager(object):
         for track in self._tracks:
             track.save(filetypes)
 
+    @property
+    def project_name(self):
+        return self._project_name
+
     def __del__(self):
         if os.path.exists(self.wav_folder):
             shutil.rmtree(self.wav_folder)

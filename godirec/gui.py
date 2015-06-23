@@ -212,7 +212,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.signals = SignalThread(self)
         self.RecListModel = RecorderListModel(parent=self)
         self.ListTracks.setModel(self.RecListModel)
-        self.ListTracks.clicked.connect(self.onListTracksIndexChanged)
+        self.selection = self.ListTracks.selectionModel()
+        self.selection.selectionChanged.connect(self.onListTracksIndexChanged)
         self.settings = QtCore.QSettings("EFG Aachen", "GodiRec")
         for i in ("Stop", "Rec", "Cut"):
             getattr(self, "Button"+i).clicked.connect(
@@ -400,6 +401,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.status = NO_STREAM_RUNNING
             self.enableRecButtons(False)
             self.enableTagEdits(True)
+            self.ListTracks.setCurrentIndex(self.RecListModel.index(0))
+            self.setWindowTitle(self.rec_manager.project_name)
 
     def getSaveFileName(self, path=""):
         basename = "{:%Y_%m_%d}-Godi".format(datetime.today())
@@ -428,8 +431,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             if not os.path.exists(self.cur_path):
                 os.makedirs(self.cur_path)
             self.settings.setValue('path', os.path.dirname(current_path))
-            self.setWindowTitle(os.path.basename(current_path))
             self.rec_manager = core.Manager(current_path)
+            self.setWindowTitle(self.rec_manager.project_name)
             self.proj_file = proj_file
             self.rec = core.Recorder(self.rec_manager)
             if 'formats' in self.settings.allKeys():
