@@ -21,6 +21,7 @@ import traceback
 import multiprocessing
 from datetime import datetime
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
+from PyQt5.QtCore import QLibraryInfo
 import logging
 import queue
 import argparse
@@ -142,7 +143,7 @@ class SettingsDialog(QtWidgets.QDialog):
     def onButtonDirClicked(self):
         """opens log FileDialog"""
         temp_path = QtWidgets.QFileDialog.getExistingDirectory(
-            self, self.tr("Logfile erzeugen in:"), self.labelPath.text())
+            self, self.tr("Create Logfile In"), self.labelPath.text())
         if temp_path:
             self.labelPath.setText(temp_path)
             self._settings_dict["log_dir"] = temp_path
@@ -418,8 +419,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         path = "."
         if 'path' in self.settings.allKeys():
             path = self.settings.value('path', type=str)
-        caption = self.tr("Projekt öffnen:")
-        file_filter = self.tr("Godirec Datei (*.gdr)")
+        caption = self.tr("Open Project")
+        file_filter = self.tr("Godirec File (*.gdr)")
         filename = QtWidgets.QFileDialog.getOpenFileName(self, caption, path,
                                                          file_filter)[0]
         if filename != "":
@@ -427,8 +428,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def getSaveFilename(self, path=""):
         basename = "{:%Y_%m_%d}-Godi".format(datetime.today())
-        caption = self.tr("Neues Projekt erzeugen in:")
-        file_filter = self.tr("Godirec Datei (*.gdr)")
+        caption = self.tr("Create new project:")
+        file_filter = self.tr("Godirec File (*.gdr)")
         # create new project directory if default directory already exists
         for i in range(1000):
             ending = "-" + str(i) if i > 0 else ""
@@ -473,10 +474,10 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             removed_files = self.rec_manager.removed_files
             if len(removed_files) > 0:
                 files = set([os.path.dirname(f) for f in removed_files])
-                msg = self.tr("Datei(en) aus folgenden Ordnern konnten nicht"
-                              " gefunden werden:\n{}")
+                msg = self.tr("File(s) from the following folders could not"
+                              " be found:\n{}")
                 msg = msg.format("\n".join(files))
-                title = self.tr("Dateien nicht gefunden")
+                title = self.tr("Files Not Found")
                 QtWidgets.QMessageBox.information(self, title, msg)
         self.proj_file = filename
         self.RecListModel.set_rec_manager(self.rec_manager)
@@ -524,16 +525,15 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         if self.RecListModel.rowCount():
             self.onListTracksIndexChanged()
         if self.status in (RECORDING, STREAM_PAUSING):
-            title = self.tr("Stream beenden")
-            message = self.tr("Um das Projekt zu schließen,\n"
-                              "müssen sie zuerst den Stream beenden")
+            title = self.tr("Stream Closed")
+            message = self.tr("To close the program,\n"
+                              "you have to close the stream first.")
             QtWidgets.QMessageBox.information(self, title, message)
             return True
         elif core.future_pool.has_running_processes():
-            title = "Bitte warten"
-            message = self.tr("Die Tracks müssen erst fertig konvertiert "
-                              "sein, bevor das Projekt geschlossen werden "
-                              "kann!")
+            title = self.tr("Please Wait")
+            message = self.tr("To close the program, you have to close the"
+                              " stream first!")
             QtWidgets.QMessageBox.information(self, title, message)
             return True
         return False
@@ -546,6 +546,13 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         if self.status is NO_STREAM_RUNNING and hasattr(self, "rec"):
             self.rec.stop()
         QtWidgets.QMainWindow.closeEvent(self, event)
+
+    def isNewProjectCreatedDialog(self):
+        title = self.tr("Create Project")
+        message = self.tr("Do you want to create a new project?")
+        reply = QtWidgets.QMessageBox.question(
+            self, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
+        return reply == QtWidgets.QMessageBox.Yes
 
 
 def createIcon(pixmap):
@@ -592,6 +599,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     )
     sys.exit(1)
 
+
 def handle_cli_args():
     args_dict = {}
     description = ("GodiRec is a Program for recording church services."
@@ -610,32 +618,34 @@ def handle_cli_args():
             args_dict["gdr_file"] = gdr_file
     return args_dict
 
+
 def run():
     """start GUI
 
     The function will create the main thread for Qt Gui. It will set the
     language to system locals an start an instance of the main window.
     """
+    def install_translator(filename, folder, app):
+        locale = QtCore.QLocale.system().name()
+        translator = QtCore.QTranslator()
+        if translator.load(filename.format(locale), folder):
+            app.installTranslator(translator)
+        return translator
     args = handle_cli_args()
     sys.excepthook = handle_exception
     multiprocessing.freeze_support()
     app = QtWidgets.QApplication(sys.argv)
     # set translation language
-    locale = QtCore.QLocale.system().name()
-    translator = QtCore.QTranslator()
     folder = godirec.resource_filename(__name__, 'data/language')
-    if translator.load("godirec_{}".format(locale), folder):
-        app.installTranslator(translator)
+    translator1 = install_translator("godirec_{}", folder, app)
+    qt_folder = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+    translator2 = install_translator("qtbase_{}", qt_folder, app)
     window = GodiRecWindow()
     window.show()
     if "gdr_file" in args:
         window.setupProject(args["gdr_file"], False)
     else:
         audio.WaveConverter.confirm_converter_backend()
-        title = window.tr("Projekt anlegen")
-        message = window.tr("Wollen Sie ein neues Projekt anlegen?")
-        reply = QtWidgets.QMessageBox.question(
-            window, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
-        if reply == QtWidgets.QMessageBox.Yes:
+        if window.isNewProjectCreatedDialog():
             window.createNewProject()
     sys.exit(app.exec_())
