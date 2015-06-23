@@ -127,6 +127,9 @@
         </property>
         <item>
          <widget class="QProgressBar" name="LeftLevelBar">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="minimumSize">
            <size>
             <width>0</width>
@@ -288,7 +291,7 @@
      <x>0</x>
      <y>0</y>
      <width>331</width>
-     <height>25</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGodiRec">
@@ -300,7 +303,15 @@
     <addaction name="ActionSettings"/>
     <addaction name="ActionExit"/>
    </widget>
+   <widget class="QMenu" name="menuHilfe">
+    <property name="title">
+     <string>Hilfe</string>
+    </property>
+    <addaction name="ActionAbout"/>
+    <addaction name="ActionHelp"/>
+   </widget>
    <addaction name="menuGodiRec"/>
+   <addaction name="menuHilfe"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="sizeGripEnabled">
@@ -344,6 +355,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
+   </property>
+  </action>
+  <action name="ActionAbout">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="ActionHelp">
+   <property name="text">
+    <string>Help</string>
    </property>
   </action>
  </widget>
