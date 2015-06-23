@@ -127,6 +127,13 @@ class Manager(object):
             manager._tracks.append(Track.load(track_dict, start=start))
         return manager
 
+    @property
+    def removed_files(self):
+        removed_files = list()
+        for track in self.tracklist:
+            removed_files.extend(track.removed_files)
+        return removed_files
+
     def dump(self, filename):
         start = os.path.dirname(filename)
         manager_dict = {
@@ -223,6 +230,7 @@ class Track(object):
         self.tags = tags
         self._files = list()
         self._futures = Futures()
+        self._removed_files = list()
 
     @staticmethod
     def load(track_dict, start=os.curdir):
@@ -235,8 +243,15 @@ class Track(object):
         for attr in attrs:
             setattr(track, "_" + attr, track_dict[attr])
         track._files = [abs_path(f) for f in track._files]
+        track._removed_files = [f for f in track._files
+                                if not os.path.exists(f)]
+        track._files = [f for f in track._files if os.path.exists(f)]
         track._folder = abs_path(track._folder)
         return track
+
+    @property
+    def removed_files(self):
+        return self._removed_files
 
     def dump(self, start=os.curdir):
         """dump track data in a python dict and return it"""

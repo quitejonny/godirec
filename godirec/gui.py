@@ -433,6 +433,14 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
         else:
             self.rec_manager = core.Manager.load_from_file(filename)
+            removed_files = self.rec_manager.removed_files
+            if len(removed_files) > 0:
+                files = set([os.path.dirname(f) for f in removed_files])
+                msg = self.tr("Datei(en) aus folgenden Ordnern konnten nicht"
+                              " gefunden werden:\n{}")
+                msg = msg.format("\n".join(files))
+                title = self.tr("Dateien nicht gefunden")
+                QtWidgets.QMessageBox.information(self, title, msg)
         self.proj_file = filename
         self.RecListModel.set_rec_manager(self.rec_manager)
         self.RecListModel.update()
