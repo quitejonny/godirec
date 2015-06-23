@@ -403,6 +403,14 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.enableTagEdits(True)
             self.ListTracks.setCurrentIndex(self.RecListModel.index(0))
             self.setWindowTitle(self.rec_manager.project_name)
+            removed_files = self.rec_manager.removed_files
+            if len(removed_files) > 0:
+                files = set([os.path.dirname(f) for f in removed_files])
+                msg = self.tr("Datei(en) aus folgenden Ordnern konnten nicht"
+                              " gefunden werden:\n{}")
+                msg = msg.format("\n".join(files))
+                title = self.tr("Dateien nicht gefunden")
+                QtWidgets.QMessageBox.information(self, title, msg)
 
     def getSaveFileName(self, path=""):
         basename = "{:%Y_%m_%d}-Godi".format(datetime.today())
