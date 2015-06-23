@@ -450,7 +450,11 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def setupProject(self, filename, isForRecording=True):
         if hasattr(self, "rec"):
+            self.rec.levelUpdated.disconnect()
             self.rec.close()
+        self.enableRecButtons(False)
+        self.enableTagEdits(not isForRecording)
+        self.updateLevel([0,0])
         if isForRecording:
             current_path = os.path.splitext(filename)[0]
             if not os.path.exists(current_path):
@@ -463,6 +467,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
+            self.ButtonRec.setEnabled(True)
         else:
             self.rec_manager = core.Manager.load_from_file(filename)
             removed_files = self.rec_manager.removed_files
@@ -479,8 +484,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         if not isForRecording:
             self.ListTracks.setCurrentIndex(self.RecListModel.index(0))
         self.status = NO_STREAM_RUNNING
-        self.enableRecButtons(isForRecording)
-        self.enableTagEdits(not isForRecording)
         self.LabelTime.setText("-- / --")
         self.setWindowTitle(self.rec_manager.project_name)
 

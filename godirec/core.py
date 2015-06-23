@@ -456,8 +456,10 @@ class Recorder(QObject):
 
     def stop(self):
         if self.state != self.STOPPED:
-            self._wavefile.close()
+            # setting the STOPPED state HAS to be done BEFORE closing the
+            # wave file.
             self.state = self.STOPPED
+            self._wavefile.close()
             self.timer.stop()
             self.timer.cut()
             self.save_current_track()
