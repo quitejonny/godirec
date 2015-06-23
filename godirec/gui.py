@@ -232,7 +232,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.iconRec = createIcon('data/ui/record6.png')
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
         self.current_track = core.Track("", "")
-        self.cur_path = ""
         self.ProgressBar = QtWidgets.QProgressBar()
         self.statusbar.addWidget(self.ProgressBar, 1)
         self.ProgressBar.hide()
@@ -392,59 +391,58 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             path = self.settings.value('path', type=str)
         caption = self.tr("Projekt öffnen:")
         file_filter = self.tr("Godirec Datei (*.gdr)")
-        filename = QtWidgets.QFileDialog.getOpenFileName(self, caption, path, file_filter)[0]
+        filename = QtWidgets.QFileDialog.getOpenFileName(self, caption, path,
+                                                         file_filter)[0]
         if filename != "":
-            self.proj_file = filename
-            self.rec_manager = core.Manager.load_from_file(self.proj_file)
-            self.RecListModel.set_rec_manager(self.rec_manager)
-            self.RecListModel.update()
-            self.status = NO_STREAM_RUNNING
-            self.enableRecButtons(False)
-            self.enableTagEdits(True)
-            self.ListTracks.setCurrentIndex(self.RecListModel.index(0))
-            self.setWindowTitle(self.rec_manager.project_name)
+            self.setupProject(filename, False)
 
-    def getSaveFileName(self, path=""):
+    def getSaveFilename(self, path=""):
         basename = "{:%Y_%m_%d}-Godi".format(datetime.today())
         caption = self.tr("Neues Projekt erzeugen in:")
         file_filter = self.tr("Godirec Datei (*.gdr)")
         # create new project directory if default directory already exists
         for i in range(1000):
-            projectName = "{}{}.gdr".format(basename, "-"+str(i) if i > 0 else "")
+            ending = "-" + str(i) if i > 0 else ""
+            projectName = "{}{}.gdr".format(basename, ending)
             projectPath = os.path.join(path, projectName)
             if not os.path.exists(projectPath):
                 return QtWidgets.QFileDialog.getSaveFileName(self, caption,
                         projectPath, file_filter)[0]
 
     def createNewProject(self):
-        # path_dialog muss eine Variable von self sein. Andernfalls wird das
-        # Fenster nach Ausfuehrung direkt wieder zerstoert.
         if self.isRunning():
             return
         path = ""
         if 'path' in self.settings.allKeys():
             path = self.settings.value('path', type=str)
-        proj_file = self.getSaveFileName(path)
-        current_path = os.path.splitext(proj_file)[0]
-        if current_path != "":
-            self.cur_path = current_path
-            if not os.path.exists(self.cur_path):
-                os.makedirs(self.cur_path)
+        proj_file = self.getSaveFilename(path)
+        if proj_file != "":
+            self.setupProject(proj_file)
+
+    def setupProject(self, filename, isForRecording=True):
+        if isForRecording:
+            current_path = os.path.splitext(filename)[0]
+            if not os.path.exists(current_path):
+                os.makedirs(current_path)
             self.settings.setValue('path', os.path.dirname(current_path))
             self.rec_manager = core.Manager(current_path)
-            self.setWindowTitle(self.rec_manager.project_name)
-            self.proj_file = proj_file
             self.rec = core.Recorder(self.rec_manager)
             if 'formats' in self.settings.allKeys():
                 f_list = self.settings.value('formats', type=str)
                 self.rec.format_list = [audio.codec_dict[f] for f in f_list]
             self.rec.timer.set_callback(self.signals.signal(), "timeUpdate")
-            self.RecListModel.set_rec_manager(self.rec_manager)
-            self.RecListModel.update()
-            self.status = NO_STREAM_RUNNING
-            self.ButtonRec.setEnabled(True)
-            self.LabelTime.setText("-- / --")
-            self.enableTagEdits(False)
+        else:
+            self.rec_manager = core.Manager.load_from_file(filename)
+        self.proj_file = filename
+        self.RecListModel.set_rec_manager(self.rec_manager)
+        self.RecListModel.update()
+        if not isForRecording:
+            self.ListTracks.setCurrentIndex(self.RecListModel.index(0))
+        self.status = NO_STREAM_RUNNING
+        self.enableRecButtons(isForRecording)
+        self.enableTagEdits(not isForRecording)
+        self.LabelTime.setText("-- / --")
+        self.setWindowTitle(self.rec_manager.project_name)
 
     def openSettings(self):
         """opens the settings dialog"""
