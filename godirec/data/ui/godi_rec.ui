@@ -300,7 +300,6 @@
     </property>
     <addaction name="ActionNewProject"/>
     <addaction name="ActionOpenProject"/>
-    <addaction name="ActionSettings"/>
     <addaction name="ActionExit"/>
    </widget>
    <widget class="QMenu" name="menuHilfe">
@@ -310,7 +309,14 @@
     <addaction name="ActionAbout"/>
     <addaction name="ActionHelp"/>
    </widget>
+   <widget class="QMenu" name="menuBearbeiten">
+    <property name="title">
+     <string>Bearbeiten</string>
+    </property>
+    <addaction name="ActionSettings"/>
+   </widget>
    <addaction name="menuGodiRec"/>
+   <addaction name="menuBearbeiten"/>
    <addaction name="menuHilfe"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">

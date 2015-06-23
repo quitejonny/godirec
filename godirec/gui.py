@@ -210,11 +210,11 @@ class DialogOpener(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
         
+
 class AboutDialog(DialogOpener):
     
     def __init__(self, ui_file, parent=None):
         DialogOpener.__init__(self, ui_file, parent=parent)
-        print(godirec.__version__)
         self.label_ver.setText("v"+godirec.__version__)
 
 
