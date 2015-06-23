@@ -23,6 +23,7 @@ from datetime import datetime
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 import logging
 import queue
+import argparse
 import godirec
 from godirec import core, audio
 
@@ -240,7 +241,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.statusClear.connect(self.clearStatus)
         self.timeUpdate.connect(self.updateTime)
         self.progressUpdate.connect(self.updateProgressBar)
-        core.future_pool.set_start_callback(self.signals.signal(), "statusSet")
+        core.future_pool.set_start_callback(self.signals.signal(),
+                                            "statusSet")
         core.future_pool.set_done_callback(self.signals.signal(),
                                            "statusClear")
         audio.WaveConverter.set_progress_callback(self.signals.signal(),
@@ -534,10 +536,29 @@ def handle_exception(exc_type, exc_value, exc_traceback):
             "</html>").format(error, line, filename)
     )
     logging.error(
-        "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        "".join(
+            traceback.format_exception(exc_type, exc_value, exc_traceback)
+        )
     )
     sys.exit(1)
 
+def handle_cli_args():
+    args_dict = {}
+    description = ("GodiRec is a Program for recording church services."
+                   " It is optimized for recording every part in one single"
+                   " file. You can add Tags and choose many export types.")
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('gdr_file', help='Path to gdr-file to open Project',
+                        nargs='?', default="")
+    parser.add_argument('--version', action="version",
+                        version="v"+godirec.__version__)
+    args = parser.parse_args()
+    gdr_file = args.gdr_file
+    if gdr_file != "":
+        extension = os.path.splitext(gdr_file)[1]
+        if os.path.exists(gdr_file) and extension == ".gdr":
+            args_dict["gdr_file"] = gdr_file
+    return args_dict
 
 def run():
     """start GUI
@@ -545,6 +566,7 @@ def run():
     The function will create the main thread for Qt Gui. It will set the
     language to system locals an start an instance of the main window.
     """
+    args = handle_cli_args()
     sys.excepthook = handle_exception
     multiprocessing.freeze_support()
     app = QtWidgets.QApplication(sys.argv)
@@ -556,11 +578,14 @@ def run():
         app.installTranslator(translator)
     window = GodiRecWindow()
     window.show()
-    audio.WaveConverter.confirm_converter_backend()
-    title = window.tr("Projekt anlegen")
-    message = window.tr("Wollen Sie ein neues Projekt anlegen?")
-    reply = QtWidgets.QMessageBox.question(
-        window, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
-    if reply == QtWidgets.QMessageBox.Yes:
-        window.createNewProject()
+    if "gdr_file" in args:
+        window.setupProject(args["gdr_file"], False)
+    else:
+        audio.WaveConverter.confirm_converter_backend()
+        title = window.tr("Projekt anlegen")
+        message = window.tr("Wollen Sie ein neues Projekt anlegen?")
+        reply = QtWidgets.QMessageBox.question(
+            window, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
+        if reply == QtWidgets.QMessageBox.Yes:
+            window.createNewProject()
     sys.exit(app.exec_())
