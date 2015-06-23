@@ -243,9 +243,9 @@ class PathDialog(QtWidgets.QDialog):
 
 class DialogOpener(QtWidgets.QDialog):
 
-    @staticmethod
-    def open(ui_file, parent=None):
-        dialog_opener = DialogOpener(ui_file, parent=parent)
+    @classmethod
+    def open(cls, ui_file, parent=None):
+        dialog_opener = cls(ui_file, parent=parent)
         dialog_opener.show()
         
         
@@ -254,7 +254,14 @@ class DialogOpener(QtWidgets.QDialog):
         about_ui_file = godirec.resource_stream(__name__, ui_file)
         uic.loadUi(about_ui_file, self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.setWindowIcon(createIcon('data/ui/microphone2.ico'))    
+        self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
+        
+class AboutDialog(DialogOpener):
+    
+    def __init__(self, ui_file, parent=None):
+        DialogOpener.__init__(self, ui_file, parent=parent)
+        print(godirec.__version__)
+        self.label_ver.setText("v"+godirec.__version__)
         
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
@@ -286,7 +293,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.ActionExit.triggered.connect(self.close)
         self.ActionNewProject.triggered.connect(self.createNewProject)
         self.ActionSettings.triggered.connect(self.openSettings)
-        self.ActionAbout.triggered.connect(lambda: DialogOpener.open("data/ui/about.ui", self))
+        self.ActionAbout.triggered.connect(lambda: AboutDialog.open("data/ui/about.ui", self))
         self.ActionHelp.triggered.connect(lambda: DialogOpener.open("data/ui/help.ui", self))
         # Status: NO_STREAM_RUNNING, NO_PROJECT, RECORDING
         self.status = NO_PROJECT
