@@ -416,6 +416,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def openProject(self):
         """open an old project. Recording is not possible"""
+        if self.isRunning():
+            return
         path = "."
         if 'path' in self.settings.allKeys():
             path = self.settings.value('path', type=str)
@@ -453,6 +455,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         if hasattr(self, "rec"):
             self.rec.levelUpdated.disconnect()
             self.rec.close()
+            delattr(self, "rec")
         self.enableRecButtons(False)
         self.enableTagEdits(not isForRecording)
         self.updateLevel([0,0])
