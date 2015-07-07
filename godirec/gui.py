@@ -57,6 +57,8 @@ class RecorderListModel(QtCore.QAbstractListModel):
         self.layoutUpdate.connect(self.update)
 
     def set_rec_manager(self, rec_manager):
+        if hasattr(self, "rec_manager"):
+            delattr(self, "rec_manager")
         self.rec_manager = rec_manager
         self.rec_manager.set_callback(self.signals.signal(), "layoutUpdate")
 
@@ -65,7 +67,10 @@ class RecorderListModel(QtCore.QAbstractListModel):
 
     def data(self, index, role):
         if index.isValid() and role == QtCore.Qt.DisplayRole:
-            track = self.rec_manager.get_track(index.row())
+            row = index.row()
+            if row > self.getLastItemIndex().row():
+                row = self.getLastItemIndex().row()
+            track = self.rec_manager.get_track(row)
             if track.tags.title:
                 return "{:02d} - {}".format(int(track.tags.tracknumber),
                                             track.tags.title)
