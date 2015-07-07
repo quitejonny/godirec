@@ -641,7 +641,10 @@ def run():
     # set translation language
     folder = godirec.resource_filename(__name__, 'data/language')
     translator1 = install_translator("godirec_{}", folder, app)
-    qt_folder = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+    if hasattr(sys, "frozen"):
+        qt_folder = godirec.resource_filename(__name__, "translations")
+    else:
+        qt_folder = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
     translator2 = install_translator("qtbase_{}", qt_folder, app)
     window = GodiRecWindow()
     window.show()

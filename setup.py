@@ -20,6 +20,8 @@ import os
 import glob
 import godirec
 import subprocess
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QLibraryInfo
 from setuptools import setup, find_packages
 try:
     from py2exe.distutils_buildexe import py2exe as ExeCommand
@@ -27,7 +29,6 @@ try:
 except ImportError:
     from setuptools import Command as ExeCommand
     has_py2exe_module = False
-
 
 extra_setup = dict()
 
@@ -84,6 +85,13 @@ if has_py2exe_module:
         create_dirs("qico.dll", "plugins", "imageformats"),
         create_dirs("qwindows.dll", "plugins", "platforms"),
         create_dirs("libEGL.dll", "")
+    ])
+    # Need to get right Qt translatiopn path
+    app = QtWidgets.QApplication(sys.argv)
+    qt_folder = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
+    qt_glob = os.path.join(qt_folder, "qtbase_??.qm")
+    extra_setup['data_files'].extend([
+        ("godirec/translations", [f]) for f in glob.glob(qt_glob)
     ])
 
 
