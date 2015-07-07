@@ -27,7 +27,7 @@ import queue
 import argparse
 import godirec
 from godirec import core, audio
-
+from godirec import uploader
 
 class SignalThread(QtCore.QThread):
 
@@ -633,6 +633,7 @@ def run():
     The function will create the main thread for Qt Gui. It will set the
     language to system locals an start an instance of the main window.
     """
+    uploader.test_uploader()
     def install_translator(filename, folder, app):
         locale = QtCore.QLocale.system().name()
         translator = QtCore.QTranslator()
