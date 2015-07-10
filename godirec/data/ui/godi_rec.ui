@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>331</width>
-    <height>420</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -291,7 +291,7 @@
      <x>0</x>
      <y>0</y>
      <width>331</width>
-     <height>21</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuGodiRec">
@@ -315,8 +315,18 @@
     </property>
     <addaction name="ActionSettings"/>
    </widget>
+   <widget class="QMenu" name="menuUpload">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="title">
+     <string>Upload</string>
+    </property>
+    <addaction name="ActionSermon"/>
+   </widget>
    <addaction name="menuGodiRec"/>
    <addaction name="menuBearbeiten"/>
+   <addaction name="menuUpload"/>
    <addaction name="menuHilfe"/>
   </widget>
   <widget class="QStatusBar" name="statusbar">
@@ -371,6 +381,14 @@
   <action name="ActionHelp">
    <property name="text">
     <string>Help</string>
+   </property>
+  </action>
+  <action name="ActionSermon">
+   <property name="text">
+    <string>Sermon</string>
+   </property>
+   <property name="visible">
+    <bool>true</bool>
    </property>
   </action>
  </widget>

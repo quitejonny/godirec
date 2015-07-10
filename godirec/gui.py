@@ -26,8 +26,10 @@ import logging
 import queue
 import argparse
 import godirec
-from godirec import core, audio
-from godirec import uploader
+from godirec import core, audio, uploader
+import pysftp
+import json
+
 
 class SignalThread(QtCore.QThread):
 
@@ -253,6 +255,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.enableTagEdits(False)
         self.ActionExit.triggered.connect(self.close)
         self.ActionNewProject.triggered.connect(self.createNewProject)
+        self.ActionSermon.triggered.connect(self.uploadSermon)
         self.ActionSettings.triggered.connect(self.openSettings)
         self.ActionOpenProject.triggered.connect(self.openProject)
         self.ActionAbout.triggered.connect(lambda: AboutDialog.open
@@ -281,6 +284,19 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         audio.WaveConverter.set_progress_callback(self.signals.signal(),
                                                   "progressUpdate")
         logging.info('GUI loaded')
+        self.menuUpload.menuAction().setVisible(True)
+
+    def uploadSermon(self):
+        tracks = self.rec_manager.find_tracks("Predigt")
+        trackFile = uploader.TrackFile(tracks[0], "ogg", "Predigten EFG-Aachen")
+        with open(godirec.resource_filename(__name__, "conf.json")) as f:
+            conf = json.load(f)
+        host = conf["host"]
+        user = conf["user"]
+        key_file = conf["key_file"]
+        host_dir = conf["host_dir"]
+        with pysftp.Connection(host, user, key_file) as sftp:
+            trackFile.upload(sftp, host_dir)
 
     def enableRecButtons(self, isEnabled):
         for i in ("Stop", "Rec", "Cut"):
@@ -633,7 +649,6 @@ def run():
     The function will create the main thread for Qt Gui. It will set the
     language to system locals an start an instance of the main window.
     """
-    uploader.test_uploader()
     def install_translator(filename, folder, app):
         locale = QtCore.QLocale.system().name()
         translator = QtCore.QTranslator()
