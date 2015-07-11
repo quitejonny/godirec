@@ -100,7 +100,7 @@ class SettingsDialog(QtWidgets.QDialog):
         settings_ui_file = godirec.resource_stream(__name__,
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
-        self.setWindowIcon(createIcon('data/ui/settings.png')) 
+        self.setWindowIcon(createIcon('data/ui/settings.png'))
         self.supported_filetypes = sorted(audio.codec_dict.keys())
         for filetype in self.supported_filetypes:
             checkbox = QtWidgets.QCheckBox(filetype.upper())
@@ -135,6 +135,14 @@ class SettingsDialog(QtWidgets.QDialog):
         # Load log filename
         self.labelPath.setText(godirec.get_log_dir())
         self.pushButtonDir.setIcon(createIcon('data/ui/folder-yellow.png'))
+        # Load Upload data
+        if 'upload' in self.settings.allKeys():
+            self.upload = self.settings.value('upload', type='QVariantMap')
+        else:
+            self.upload = {'Host' : '', 'Keyfile' : '', 'User' : '', 'UploadDir' : ''}
+        for entry, value in self.upload.items():
+            getattr(self, 'lineEdit'+entry).setText(value)
+            getattr(self, 'lineEdit'+entry).textChanged.connect(self.updateUpload)
 
     def comboBoxChanged(self, key):
         self.model = QtGui.QStandardItemModel(self.listView)
@@ -146,7 +154,13 @@ class SettingsDialog(QtWidgets.QDialog):
             self.model.appendRow(item)
         self.listView.setModel(self.model)
         self.pushButtonDelete.setEnabled(bool(values))
-        
+
+    def updateUpload(self):
+        for entry in self.upload:
+            value = getattr(self, 'lineEdit'+entry).text()
+            self.upload[entry] = value
+        self._settings_dict["upload"] = self.upload
+
     def onButtonDirClicked(self):
         """opens log FileDialog"""
         temp_path = QtWidgets.QFileDialog.getExistingDirectory(
@@ -209,18 +223,18 @@ class DialogOpener(QtWidgets.QDialog):
     def open(cls, ui_file, parent=None):
         dialog_opener = cls(ui_file, parent=parent)
         dialog_opener.show()
-        
-        
+
+
     def __init__(self, ui_file, parent=None):
         QtWidgets.QDialog.__init__(self, parent=parent)
         about_ui_file = godirec.resource_stream(__name__, ui_file)
         uic.loadUi(about_ui_file, self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
-        
+
 
 class AboutDialog(DialogOpener):
-    
+
     def __init__(self, ui_file, parent=None):
         DialogOpener.__init__(self, ui_file, parent=parent)
         self.label_ver.setText("v"+godirec.__version__)
@@ -288,13 +302,12 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def uploadSermon(self):
         tracks = self.rec_manager.find_tracks("Predigt")
-        trackFile = uploader.TrackFile(tracks[0], "ogg", "Predigten EFG-Aachen")
-        with open(godirec.resource_filename(__name__, "conf.json")) as f:
-            conf = json.load(f)
-        host = conf["host"]
-        user = conf["user"]
-        key_file = conf["key_file"]
-        host_dir = conf["host_dir"]
+        trackFile = uploader.TrackFile(tracks[0], "mp3", "Predigten EFG-Aachen")
+        upload_data = self.settings.value('upload', type='QVariantMap')
+        host = upload_data["Host"]
+        user = upload_data["User"]
+        key_file = upload_data["Keyfile"]
+        host_dir = upload_data["UploadDir"]
         with pysftp.Connection(host, user, key_file) as sftp:
             trackFile.upload(sftp, host_dir)
 
@@ -518,7 +531,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.RightLevelBar.setValue(levels[1]*100)
         except Exception as e:
             raise e
-            
+
     def openSettings(self):
         """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)
@@ -533,13 +546,15 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             if "log_dir" in settings:
                 godirec.change_log_dir(settings["log_dir"],
                                        godirec.config_file)
+            if "upload" in settings:
+                self.settings.setValue("upload", settings["upload"])
         self.updateWordList()
-        
+
     def openAbout(self):
         """opens the About dialog"""
         self.about_dialog = AboutDialog(parent=self)
         self.about_dialog.show()
-        
+
     def openHelp(self):
         """opens the Help dialog"""
         self.help_dialog = HelpDialog(parent=self)
