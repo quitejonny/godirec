@@ -41,7 +41,7 @@
         <enum>QTabWidget::North</enum>
        </property>
        <property name="currentIndex">
-        <number>3</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="export">
         <attribute name="title">
@@ -53,7 +53,7 @@
            <item>
             <widget class="QLabel" name="label">
              <property name="text">
-              <string>Standart ausgabe Formate:</string>
+              <string>Standard Output Formats:</string>
              </property>
             </widget>
            </item>
@@ -63,7 +63,7 @@
        </widget>
        <widget class="QWidget" name="autoCom">
         <attribute name="title">
-         <string>Autovervollständigung</string>
+         <string>Autocompletion</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_3">
          <item>
@@ -80,14 +80,17 @@
            <item>
             <widget class="QPushButton" name="pushButtonAdd">
              <property name="text">
-              <string>Hinzufügen</string>
+              <string>Add</string>
+             </property>
+             <property name="flat">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
            <item>
             <widget class="QPushButton" name="pushButtonDelete">
              <property name="text">
-              <string>Entfernen</string>
+              <string>Remove</string>
              </property>
             </widget>
            </item>
@@ -139,7 +142,7 @@
           </rect>
          </property>
          <property name="text">
-          <string>Wählen sie den Speicherort der Logdatein:</string>
+          <string>Choose export folder for Logfile</string>
          </property>
         </widget>
        </widget>
@@ -149,6 +152,9 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout">
          <item row="5" column="2">
+          <widget class="QLineEdit" name="lineEditAlbumTitle"/>
+         </item>
+         <item row="8" column="2">
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -178,7 +184,7 @@
          <item row="0" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
-            <string>Host:</string>
+            <string>Host</string>
            </property>
           </widget>
          </item>
@@ -188,7 +194,7 @@
          <item row="1" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>User:</string>
+            <string>User</string>
            </property>
           </widget>
          </item>
@@ -202,20 +208,44 @@
            </property>
           </widget>
          </item>
-         <item row="4" column="2">
+         <item row="7" column="2">
           <widget class="QPushButton" name="pushButtonTest">
            <property name="text">
             <string>Test Connection</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="2">
+         <item row="4" column="2">
           <widget class="QLineEdit" name="lineEditUploadDir"/>
          </item>
-         <item row="3" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
-            <string>upload Location</string>
+            <string>Upload Location</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="2">
+          <widget class="QComboBox" name="comboBoxFiletype"/>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Filetype</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>New Album Ttitel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="3">
+          <widget class="QCheckBox" name="checkBoxAlbumTitle">
+           <property name="text">
+            <string/>
            </property>
           </widget>
          </item>
@@ -237,6 +267,24 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>lineEditHost</tabstop>
+  <tabstop>lineEditUser</tabstop>
+  <tabstop>lineEditKeyfile</tabstop>
+  <tabstop>pushButtonDirKey</tabstop>
+  <tabstop>lineEditUploadDir</tabstop>
+  <tabstop>lineEditAlbumTitle</tabstop>
+  <tabstop>checkBoxAlbumTitle</tabstop>
+  <tabstop>comboBoxFiletype</tabstop>
+  <tabstop>pushButtonTest</tabstop>
+  <tabstop>listView</tabstop>
+  <tabstop>pushButtonAdd</tabstop>
+  <tabstop>pushButtonDir</tabstop>
+  <tabstop>pushButtonDelete</tabstop>
+  <tabstop>comboBox</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>lineEditAdd</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
@@ -246,8 +294,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
+     <x>257</x>
+     <y>334</y>
     </hint>
     <hint type="destinationlabel">
      <x>157</x>
@@ -262,8 +310,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
+     <x>325</x>
+     <y>334</y>
     </hint>
     <hint type="destinationlabel">
      <x>286</x>
