@@ -361,8 +361,10 @@ class Track(object):
         return self._project_name
 
     @staticmethod
-    def save_tags_for_file(filename, tags):
-        if filename.endswith('.mp3'):
+    def save_tags_for_file(filename, tags, filetype=""):
+        if filetype == "":
+            filetype = os.path.splitext(filename)[1][1:]
+        if filetype == "mp3":
             mp3_tags = mutagen.id3.ID3()
             mp3_tags['TIT2'] = id3.TIT2(encoding=3, text=tags['title'])
             mp3_tags['TPE1'] = id3.TPE1(encoding=3, text=tags['artist'])
@@ -375,7 +377,7 @@ class Track(object):
                                     text=tags['tracknumber'])
             mp3_tags.update_to_v23()
             mp3_tags.save(filename, v2_version=3)
-        elif filename.endswith('.wav'):
+        elif filetype == "wav":
             pass
         else:
             # save tags in every track file

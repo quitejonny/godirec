@@ -10,7 +10,71 @@ from contextlib import contextmanager
 import tempfile
 import shutil
 from godirec import core
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject, pyqtSignal, QThread
+from paramiko import ssh_exception
+
+
+class SftpThread(QThread):
+
+    uploadUpdated = pyqtSignal(int, int)
+    errorExcepted = pyqtSignal(Exception)
+    timerStopped = pyqtSignal()
+    timerStarted = pyqtSignal(float)
+
+    def __init__(self, host, user, key_file, parent=None):
+        QThread.__init__(self, parent=parent)
+        self._conn_params = {
+            "username": user,
+            "host": host,
+            "private_key": key_file
+        }
+        self.timeout = 1.0
+        self.timerStopped.connect(self._stopTimer)
+        self.timerStarted.connect(self._startTimer)
+        self._timerId = None
+
+    def _stopTimer(self):
+        timerId = self._timerId
+        if timerId is not None:
+            self._timerId = None
+            self.killTimer(timerId)
+
+    def _startTimer(self, timeout):
+        self._timerId = self.startTimer(timeout*1000)
+
+    def upload(self, track_file, host_folder):
+        self._host_folder = host_folder
+        self._host_path = os.path.join(host_folder, track_file.basename)
+        self._track_file = track_file
+        self.start()
+
+    def _put(self, src_file, host_path):
+        self.timerStarted.emit(self.timeout)
+        with pysftp.Connection(**self._conn_params) as sftp:
+            self.timerStopped.emit()
+            if not sftp.exists(self._host_folder):
+                err_msg = self.tr("Folder does not exist on host!")
+                raise UploadFolderError(err_msg)
+            if sftp.exists(self._host_path):
+                raise UploadFileExistsError(self.tr("File exists on host!"))
+            sftp.put(src_file, host_path, callback=self.uploadUpdated.emit)
+
+    def timerEvent(self, event):
+        self.killTimer(self._timerId)
+        self.terminate()
+        err_msg = self.tr("Connection could not be established")
+        self.errorExcepted.emit(UploadConnectionError(err_msg))
+
+    def run(self):
+        try:
+            with self._track_file.filename() as src_file:
+                self._put(src_file, self._host_path)
+        except (UploadError, FileNotFoundError,
+                ssh_exception.SSHException) as e:
+            self.errorExcepted.emit(e)
+            self.timerStopped.emit()
+            return
+        self.finished.emit()
 
 
 class TrackFile(QObject):
@@ -67,22 +131,10 @@ class TrackFile(QObject):
         album = album if album is not None else self.album
         if album is not None:
             tags.album = album
-            core.Track.save_tags_for_file(tmp_file, tags)
+            core.Track.save_tags_for_file(tmp_file, tags, self._filetype)
         yield tmp_file
         # delete temporary file
         os.remove(tmp_file)
-
-    def upload(self, sftp_conn, host_folder, slot=None):
-        host_path = os.path.join(host_folder, self.basename)
-        if sftp_conn.exists(host_path):
-            raise UploadFileExistsError(self.tr("File exists on host!"))
-        if slot is not None:
-            self.uploadUpdated.connect(slot)
-        with self.filename() as src_file:
-            signal = self.uploadUpdated.emit if slot is not None else None
-            sftp_conn.put(src_file, host_path, callback=signal)
-        if slot is not None:
-            self.uploadUpdated.disconnect(slot)
 
 
 class UploadError(Exception):
@@ -94,4 +146,12 @@ class UploadCommentError(UploadError):
 
 
 class UploadFileExistsError(UploadError):
+    pass
+
+
+class UploadConnectionError(UploadError):
+    pass
+
+
+class UploadFolderError(UploadError):
     pass

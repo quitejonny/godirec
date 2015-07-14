@@ -29,7 +29,7 @@ import argparse
 import godirec
 from godirec import core, audio, uploader
 import pysftp
-import paramiko
+from paramiko import ssh_exception
 import json
 
 
@@ -263,7 +263,6 @@ class ProgressDialog(QtWidgets.QDialog):
             self.setFinished(True)
 
     def setFinished(self, isFinished):
-        # self.okButton.enabled(isFinished)
         self.okButtonBox.setEnabled(True)
 
 
@@ -327,6 +326,19 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         logging.info('GUI loaded')
         self.menuUpload.menuAction().setVisible(False)
 
+    def showErrorMessage(self, error):
+        if isinstance(error, uploader.UploadError):
+            msg = str(error)
+        elif isinstance(error, ssh_exception.AuthenticationException):
+            msg = self.tr("Authentification failed.")
+        elif isinstance(error, FileNotFoundError):
+            msg = self.tr("Keyfile not found.")
+        else:
+            raise error
+        self.progressDialog.hide()
+        err_msg = lambda m: QMessageBox.critical(self, self.tr("Error"), m)
+        err_msg(msg)
+
     def uploadSermon(self):
         tracks = self.rec_manager.find_tracks("Predigt")
         if len(tracks) != 1:
@@ -340,26 +352,13 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         user = upload_data["User"]
         key_file = upload_data["Keyfile"]
         host_dir = upload_data["UploadDir"]
-        err_msg = lambda m: QMessageBox.critical(self, self.tr("Error"), m)
         self.progressDialog = ProgressDialog(parent=self)
+        sftp = uploader.SftpThread(host, user, key_file, parent=self)
+        sftp.uploadUpdated.connect(self.progressDialog.update)
+        sftp.errorExcepted.connect(self.showErrorMessage)
+        sftp.finished.connect(self.progressDialog.hide)
         self.progressDialog.show()
-        try:
-            with pysftp.Connection(host, user, key_file) as sftp:
-                updater = self.progressDialog.update
-                trackFile.upload(sftp, host_dir, slot=updater)
-        except(uploader.UploadFileExistsError,
-                uploader.UploadCommentError) as e:
-            self.progressDialog.hide()
-            err_msg(str(e))
-            return
-        except(paramiko.ssh_exception.AuthenticationException) as e:
-            self.progressDialog.hide()
-            err_msg(self.tr("Authentification failed."))
-            return
-        except(FileNotFoundError) as e:
-            self.progressDialog.hide()
-            err_msg(self.tr("Keyfile not found."))
-            return
+        sftp.upload(trackFile, host_dir)
 
     def enableRecButtons(self, isEnabled):
         for i in ("Stop", "Rec", "Cut"):
