@@ -22,12 +22,14 @@ import multiprocessing
 from datetime import datetime
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from PyQt5.QtCore import QLibraryInfo
+from PyQt5.QtWidgets import QMessageBox
 import logging
 import queue
 import argparse
 import godirec
 from godirec import core, audio, uploader
 import pysftp
+import paramiko
 import json
 
 
@@ -240,6 +242,31 @@ class AboutDialog(DialogOpener):
         self.label_ver.setText("v"+godirec.__version__)
 
 
+class ProgressDialog(QtWidgets.QDialog):
+
+    def __init__(self, parent=None):
+        QtWidgets.QDialog.__init__(self, parent=parent)
+        ui = godirec.resource_stream(__name__, 'data/ui/progressDialog.ui')
+        uic.loadUi(ui, self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.message.setText(self.tr("The sermon gets uploaded"))
+        self.okButton = self.okButtonBox.button(QtWidgets.QDialogButtonBox.Ok)
+        self.okButton.pressed.connect(self.okButtonPressed)
+
+    def okButtonPressed(self):
+        self.close()
+
+    def update(self, value, total):
+        progress = value/total*100
+        self.progressBar.setValue(progress)
+        if round(progress, 2) == 100.00:
+            self.setFinished(True)
+
+    def setFinished(self, isFinished):
+        # self.okButton.enabled(isFinished)
+        self.okButtonBox.setEnabled(True)
+
+
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
 RECORDING = "currently recording"
@@ -298,18 +325,41 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         audio.WaveConverter.set_progress_callback(self.signals.signal(),
                                                   "progressUpdate")
         logging.info('GUI loaded')
-        self.menuUpload.menuAction().setVisible(True)
+        self.menuUpload.menuAction().setVisible(False)
 
     def uploadSermon(self):
         tracks = self.rec_manager.find_tracks("Predigt")
-        trackFile = uploader.TrackFile(tracks[0], "mp3", "Predigten EFG-Aachen")
+        if len(tracks) != 1:
+            QMessageBox.information(self, self.tr("Problem Upload"),
+                    self.tr("Zero or more than one sermon were found"))
+            return
+        trackFile = uploader.TrackFile(tracks[0], "ogg",
+                                       "Predigten EFG-Aachen", self)
         upload_data = self.settings.value('upload', type='QVariantMap')
         host = upload_data["Host"]
         user = upload_data["User"]
         key_file = upload_data["Keyfile"]
         host_dir = upload_data["UploadDir"]
-        with pysftp.Connection(host, user, key_file) as sftp:
-            trackFile.upload(sftp, host_dir)
+        err_msg = lambda m: QMessageBox.critical(self, self.tr("Error"), m)
+        self.progressDialog = ProgressDialog(parent=self)
+        self.progressDialog.show()
+        try:
+            with pysftp.Connection(host, user, key_file) as sftp:
+                updater = self.progressDialog.update
+                trackFile.upload(sftp, host_dir, slot=updater)
+        except(uploader.UploadFileExistsError,
+                uploader.UploadCommentError) as e:
+            self.progressDialog.hide()
+            err_msg(str(e))
+            return
+        except(paramiko.ssh_exception.AuthenticationException) as e:
+            self.progressDialog.hide()
+            err_msg(self.tr("Authentification failed."))
+            return
+        except(FileNotFoundError) as e:
+            self.progressDialog.hide()
+            err_msg(self.tr("Keyfile not found."))
+            return
 
     def enableRecButtons(self, isEnabled):
         for i in ("Stop", "Rec", "Cut"):
@@ -490,6 +540,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             self.rec.levelUpdated.disconnect()
             self.rec.close()
             delattr(self, "rec")
+        self.menuUpload.menuAction().setVisible(True)
         self.enableRecButtons(False)
         self.enableTagEdits(not isForRecording)
         self.updateLevel([0,0])
@@ -515,7 +566,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
                               " be found:\n{}")
                 msg = msg.format("\n".join(files))
                 title = self.tr("Files Not Found")
-                QtWidgets.QMessageBox.information(self, title, msg)
+                QMessageBox.information(self, title, msg)
         self.proj_file = filename
         self.RecListModel.set_rec_manager(self.rec_manager)
         self.RecListModel.update()
@@ -567,13 +618,13 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             title = self.tr("Stream Closed")
             message = self.tr("To close the program,\n"
                               "you have to close the stream first.")
-            QtWidgets.QMessageBox.information(self, title, message)
+            QMessageBox.information(self, title, message)
             return True
         elif core.future_pool.has_running_processes():
             title = self.tr("Please Wait")
             message = self.tr("To close the program, you have to close the"
                               " stream first!")
-            QtWidgets.QMessageBox.information(self, title, message)
+            QMessageBox.information(self, title, message)
             return True
         return False
 
@@ -589,9 +640,9 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     def isNewProjectCreatedDialog(self):
         title = self.tr("Create Project")
         message = self.tr("Do you want to create a new project?")
-        reply = QtWidgets.QMessageBox.question(
-            self, title, message, defaultButton=QtWidgets.QMessageBox.Yes)
-        return reply == QtWidgets.QMessageBox.Yes
+        reply = QMessageBox.question(
+            self, title, message, defaultButton=QMessageBox.Yes)
+        return reply == QMessageBox.Yes
 
 
 def createIcon(pixmap):
@@ -623,7 +674,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
     filename, line, _, _ = traceback.extract_tb(exc_traceback).pop()
     filename = os.path.basename(filename)
     error = "{}: {}".format(exc_type.__name__, exc_value)
-    QtWidgets.QMessageBox.critical(
+    QMessageBox.critical(
         None, "Error",
         ("<html>A critical error has occured.<br/> "
             "<b>{:s}</b><br/><br/>"
