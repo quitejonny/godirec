@@ -327,15 +327,17 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.menuUpload.menuAction().setVisible(False)
 
     def showErrorMessage(self, error):
+        self.progressDialog.close()
         if isinstance(error, uploader.UploadError):
             msg = str(error)
         elif isinstance(error, ssh_exception.AuthenticationException):
             msg = self.tr("Authentification failed.")
+        elif isinstance(error, ssh_exception.SSHException):
+            msg = str(error)
         elif isinstance(error, FileNotFoundError):
             msg = self.tr("Keyfile not found.")
         else:
             raise error
-        self.progressDialog.hide()
         err_msg = lambda m: QMessageBox.critical(self, self.tr("Error"), m)
         err_msg(msg)
 
@@ -356,7 +358,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         sftp = uploader.SftpThread(host, user, key_file, parent=self)
         sftp.uploadUpdated.connect(self.progressDialog.update)
         sftp.errorExcepted.connect(self.showErrorMessage)
-        sftp.finished.connect(self.progressDialog.hide)
         self.progressDialog.show()
         sftp.upload(trackFile, host_dir)
 

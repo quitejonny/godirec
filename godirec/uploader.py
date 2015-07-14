@@ -12,6 +12,7 @@ import shutil
 from godirec import core
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
 from paramiko import ssh_exception
+import time
 
 
 class SftpThread(QThread):
@@ -71,8 +72,10 @@ class SftpThread(QThread):
                 self._put(src_file, self._host_path)
         except (UploadError, FileNotFoundError,
                 ssh_exception.SSHException) as e:
-            self.errorExcepted.emit(e)
             self.timerStopped.emit()
+            # short time for other msg_box to fully build
+            time.sleep(0.05)
+            self.errorExcepted.emit(e)
             return
         self.finished.emit()
 
