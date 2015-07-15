@@ -10,24 +10,15 @@ from contextlib import contextmanager
 import tempfile
 import shutil
 from godirec import core
-
-# we have to specify the filetype somewere
-# recorder manager instance needed
-
-# workflow:
-
-# * get certificate, host, user and hostfolder -> init Uploader
-# * find file (keyword: sermon) -> return matches
-# * return all files
-# * generate new filename (with regex?)
-# * prepare file for upload (copy to temporary; change album tag)
-# * check if file already exists on server
-# * do the actual upload
+from PyQt5.QtCore import QObject, pyqtSignal
 
 
-class TrackFile(object):
+class TrackFile(QObject):
 
-    def __init__(self, track, filetype, album=None):
+    uploadUpdated = pyqtSignal(int, int)
+
+    def __init__(self, track, filetype, album=None, parent=None):
+        QObject.__init__(self, parent=parent)
         self._tags = track.tags
         self._filetype = filetype
         self._file = self._get_file(track)
@@ -38,8 +29,8 @@ class TrackFile(object):
             if filename.endswith(self._filetype):
                 return filename
         else:
-            err_msg = 'filetype "{}" not in track'.format(self._filetype)
-            raise AttributeError(err_msg)
+            err_msg = self.tr('filetype "{}" not in track')
+            raise AttributeError(err_msg.format(self._filetype))
 
     @property
     def album(self):
@@ -68,7 +59,7 @@ class TrackFile(object):
     @contextmanager
     def filename(self, album=None):
         if not self.is_ready:
-            raise UploadCommentError("Track has no comment!")
+            raise UploadCommentError(self.tr("Track has no comment!"))
         # create temporary file
         tmp_file = tempfile.mkstemp()[1]
         shutil.copyfile(self._file, tmp_file)
@@ -81,12 +72,17 @@ class TrackFile(object):
         # delete temporary file
         os.remove(tmp_file)
 
-    def upload(self, sftp_conn, host_folder):
+    def upload(self, sftp_conn, host_folder, slot=None):
         host_path = os.path.join(host_folder, self.basename)
         if sftp_conn.exists(host_path):
-            raise UploadFileExistsError("File exists on host!")
+            raise UploadFileExistsError(self.tr("File exists on host!"))
+        if slot is not None:
+            self.uploadUpdated.connect(slot)
         with self.filename() as src_file:
-            sftp_conn.put(src_file, host_path)
+            signal = self.uploadUpdated.emit if slot is not None else None
+            sftp_conn.put(src_file, host_path, callback=signal)
+        if slot is not None:
+            self.uploadUpdated.disconnect(slot)
 
 
 class UploadError(Exception):
