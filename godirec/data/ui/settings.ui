@@ -152,7 +152,14 @@
         </attribute>
         <layout class="QGridLayout" name="gridLayout">
          <item row="5" column="2">
-          <widget class="QLineEdit" name="lineEditAlbumTitle"/>
+          <widget class="QLineEdit" name="lineEditAlbumTitle">
+           <property name="placeholderText">
+            <string>If you leave it empty, tag wouldn't be changed</string>
+           </property>
+           <property name="clearButtonEnabled">
+            <bool>false</bool>
+           </property>
+          </widget>
          </item>
          <item row="8" column="2">
           <spacer name="verticalSpacer">
@@ -242,13 +249,6 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="3">
-          <widget class="QCheckBox" name="checkBoxAlbumTitle">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
         </layout>
        </widget>
       </widget>
@@ -274,7 +274,6 @@
   <tabstop>pushButtonDirKey</tabstop>
   <tabstop>lineEditUploadDir</tabstop>
   <tabstop>lineEditAlbumTitle</tabstop>
-  <tabstop>checkBoxAlbumTitle</tabstop>
   <tabstop>comboBoxFiletype</tabstop>
   <tabstop>pushButtonTest</tabstop>
   <tabstop>listView</tabstop>

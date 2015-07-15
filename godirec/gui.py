@@ -387,6 +387,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         host_dir = upload_data["UploadDir"]
         track_type = upload_data["Filetype"].split("-")[0]
         album_titel = upload_data["AlbumTitle"]
+        if(album_titel == ''):
+            album_titel = None
         trackFile = uploader.TrackFile(tracks[0], track_type, album_titel, self)
         self.progressDialog = ProgressDialog(parent=self)
         sftp = uploader.SftpThread(host, user, key_file, parent=self)

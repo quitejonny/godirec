@@ -137,7 +137,10 @@ class TrackFile(QObject):
             core.Track.save_tags_for_file(tmp_file, tags, self._filetype)
         yield tmp_file
         # delete temporary file
-        os.remove(tmp_file)
+        try:
+            os.remove(tmp_file)
+        except PermissionError as e:
+            print("Kann datei nicht loeschen: "+tmp_file)
 
 
 class UploadError(Exception):
