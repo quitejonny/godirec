@@ -17,20 +17,15 @@
 
 import sys
 import os
-import traceback
-import multiprocessing
 from datetime import datetime
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
-from PyQt5.QtCore import QLibraryInfo
 from PyQt5.QtWidgets import QMessageBox
 import logging
 import queue
-import argparse
 import godirec
-from godirec import core, audio, uploader
-import pysftp
-from paramiko import ssh_exception
-import json
+import godirec.gui
+from godirec import core, audio
+
 
 class SignalThread(QtCore.QThread):
 
@@ -101,7 +96,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.parent = parent
         self.settings = settings
         self._settings_dict = {}
-        settings_ui_file = godirec.resource_stream(__name__,
+        settings_ui_file = godirec.resource_stream("godirec",
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         self.setWindowIcon(createIcon('data/ui/settings.png'))
@@ -275,7 +270,7 @@ class DialogOpener(QtWidgets.QDialog):
 
     def __init__(self, ui_file, parent=None):
         QtWidgets.QDialog.__init__(self, parent=parent)
-        about_ui_file = godirec.resource_stream(__name__, ui_file)
+        about_ui_file = godirec.resource_stream("godirec", ui_file)
         uic.loadUi(about_ui_file, self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.setWindowIcon(createIcon('data/ui/microphone2.ico'))
@@ -286,71 +281,6 @@ class AboutDialog(DialogOpener):
     def __init__(self, ui_file, parent=None):
         DialogOpener.__init__(self, ui_file, parent=parent)
         self.label_ver.setText("v"+godirec.__version__)
-
-
-class ProgressDialog(QtWidgets.QDialog):
-
-    def __init__(self, parent=None):
-        QtWidgets.QDialog.__init__(self, parent=parent)
-        ui = godirec.resource_stream(__name__, 'data/ui/progressDialog.ui')
-        uic.loadUi(ui, self)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.message.setText(self.tr("The sermon gets uploaded"))
-        self.okButton = self.okButtonBox.button(QtWidgets.QDialogButtonBox.Ok)
-        self.okButton.pressed.connect(self.okButtonPressed)
-
-    def okButtonPressed(self):
-        self.close()
-
-    def update(self, value, total):
-        progress = value/total*100
-        self.progressBar.setValue(progress)
-        if round(progress, 2) == 100.00:
-            self.setFinished(True)
-
-    def setFinished(self, isFinished):
-        self.okButtonBox.setEnabled(True)
-
-
-class TrackChooserDialog(QtWidgets.QDialog):
-
-    def __init__(self, text, tracks, parent=None):
-        QtWidgets.QDialog.__init__(self, parent=parent)
-        ui = godirec.resource_stream(__name__, "data/ui/listDialog.ui")
-        uic.loadUi(ui, self)
-        self._current_track = None
-        self._tracklist = TrackListModel(tracks, parent=self)
-        self.listView.setModel(self._tracklist)
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.message.setText(text)
-        self.selection = self.listView.selectionModel()
-        self.selection.selectionChanged.connect(self._indexChanged)
-        self.listView.setCurrentIndex(self._tracklist.index(0))
-
-    def _indexChanged(self):
-        index = self.listView.selectedIndexes()[0]
-        self._current_track = self._tracklist.itemFromIndex(index)
-
-    def selectedTrack(self):
-        return self._current_track
-
-
-class TrackListModel(QtCore.QAbstractListModel):
-
-    def __init__(self, tracks, parent=None):
-        QtCore.QAbstractListModel.__init__(self, parent)
-        self._tracks = tracks
-
-    def rowCount(self, parent=QtCore.QModelIndex()):
-        return len(self._tracks)
-
-    def data(self, index, role):
-        if role == QtCore.Qt.DisplayRole:
-            row = index.row()
-            return self._tracks[row].tags.title
-
-    def itemFromIndex(self, index):
-        return self._tracks[index.row()]
 
 
 NO_STREAM_RUNNING = "no stream is running"
@@ -367,7 +297,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def __init__(self):
         QtWidgets.QMainWindow.__init__(self)
-        godi_rec_ui = godirec.resource_stream(__name__, 'data/ui/godi_rec.ui')
+        godi_rec_ui = godirec.resource_stream("godirec", 'data/ui/godi_rec.ui')
         uic.loadUi(godi_rec_ui, self)
         self.signals = SignalThread(self)
         self.RecListModel = RecorderListModel(parent=self)
@@ -413,64 +343,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         logging.info('GUI loaded')
         self.menuUpload.menuAction().setVisible(False)
 
-    def showErrorMessage(self, error):
-        if hasattr(self, "progressDialog"):
-            self.progressDialog.close()
-        if isinstance(error, uploader.UploadError):
-            msg = str(error)
-        elif isinstance(error, ssh_exception.AuthenticationException):
-            msg = self.tr("Authentification failed.")
-        elif isinstance(error, ssh_exception.SSHException):
-            msg = str(error)
-        elif isinstance(error, FileNotFoundError):
-            msg = self.tr("Keyfile not found.")
-        else:
-            raise error
-        err_msg = lambda m: QMessageBox.critical(self, self.tr("Error"), m)
-        err_msg(msg)
-
     def uploadSermon(self):
-        upload_data = self.settings.value('upload', type='QVariantMap')
-        host = upload_data["Host"]
-        user = upload_data["User"]
-        key_file = upload_data["Keyfile"]
-        host_dir = upload_data["UploadDir"]
-        track_type = upload_data["Filetype"].split("-")[0]
-        search = upload_data["Search"]
-        album_titel = upload_data["AlbumTitle"]
-        if(album_titel == ''):
-            album_titel = None
-        tracks = self.rec_manager.find_tracks(search)
-        if len(tracks) > 1:
-            text = self.tr("More than one {} was found.")
-            text = text.format(search)
-            trackChooser = TrackChooserDialog(text, tracks, self)
-            if trackChooser.exec_():
-                track = trackChooser.selectedTrack()
-            else:
-                return
-        elif len(tracks) == 0:
-            text = self.tr("No {} was found. Please choose the file.")
-            text = text.format(search)
-            tracks = self.rec_manager.tracklist
-            trackChooser = TrackChooserDialog(text, tracks, self)
-            if trackChooser.exec_():
-                track = trackChooser.selectedTrack()
-            else:
-                return
-        else:
-            track = tracks[0]
-        try:
-            trackFile = uploader.TrackFile(track, track_type, album_titel,
-                                           self)
-            self.progressDialog = ProgressDialog(parent=self)
-            sftp = uploader.SftpThread(host, user, key_file, parent=self)
-            sftp.uploadUpdated.connect(self.progressDialog.update)
-            sftp.errorExcepted.connect(self.showErrorMessage)
-            self.progressDialog.show()
-            sftp.upload(trackFile, host_dir)
-        except (uploader.UploadError) as error:
-            self.showErrorMessage(error)
+        godirec.gui.upload.start(self.rec_manager, self.settings, self)
 
     def enableRecButtons(self, isEnabled):
         for i in ("Stop", "Rec", "Cut"):
@@ -753,92 +627,7 @@ def createIcon(pixmap):
     """
     icon = QtGui.QIcon()
     pmap = QtGui.QPixmap()
-    png_str = godirec.resource_string(__name__, pixmap)
+    png_str = godirec.resource_string("godirec", pixmap)
     pmap.loadFromData(png_str)
     icon.addPixmap(pmap)
     return icon
-
-
-def handle_exception(exc_type, exc_value, exc_traceback):
-    """handle all exceptions
-
-    exceptions will be caught by this function. The error will be shown
-    in a message box to the user and logged to the configured file.
-    """
-    # KeyboardInterrupt is a special case.
-    # We don't raise the error dialog when it occurs.
-    if issubclass(exc_type, KeyboardInterrupt):
-        if QtGui.qApp:
-            QtGui.qApp.quit()
-        return
-    filename, line, _, _ = traceback.extract_tb(exc_traceback).pop()
-    filename = os.path.basename(filename)
-    error = "{}: {}".format(exc_type.__name__, exc_value)
-    QMessageBox.critical(
-        None, "Error",
-        ("<html>A critical error has occured.<br/> "
-            "<b>{:s}</b><br/><br/>"
-            "It occurred at <b>line {:d}</b> of file <b>{:s}</b>.<br/>"
-            "For more information see error log file"
-            "</html>").format(error, line, filename)
-    )
-    logging.error(
-        "".join(
-            traceback.format_exception(exc_type, exc_value, exc_traceback)
-        )
-    )
-    sys.exit(1)
-
-
-def handle_cli_args():
-    args_dict = {}
-    description = ("GodiRec is a Program for recording church services."
-                   " It is optimized for recording every part in one single"
-                   " file. You can add Tags and choose many export types.")
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('gdr_file', help='Path to gdr-file to open Project',
-                        nargs='?', default="")
-    parser.add_argument('--version', action="version",
-                        version="v"+godirec.__version__)
-    args = parser.parse_args()
-    gdr_file = args.gdr_file
-    if gdr_file != "":
-        extension = os.path.splitext(gdr_file)[1]
-        if os.path.exists(gdr_file) and extension == ".gdr":
-            args_dict["gdr_file"] = gdr_file
-    return args_dict
-
-
-def run():
-    """start GUI
-
-    The function will create the main thread for Qt Gui. It will set the
-    language to system locals an start an instance of the main window.
-    """
-    def install_translator(filename, folder, app):
-        locale = QtCore.QLocale.system().name()
-        translator = QtCore.QTranslator()
-        if translator.load(filename.format(locale), folder):
-            app.installTranslator(translator)
-        return translator
-    args = handle_cli_args()
-    sys.excepthook = handle_exception
-    multiprocessing.freeze_support()
-    app = QtWidgets.QApplication(sys.argv)
-    # set translation language
-    folder = godirec.resource_filename(__name__, 'data/language')
-    translator1 = install_translator("godirec_{}", folder, app)
-    if hasattr(sys, "frozen"):
-        qt_folder = godirec.resource_filename(__name__, "translations")
-    else:
-        qt_folder = QLibraryInfo.location(QLibraryInfo.TranslationsPath)
-    translator2 = install_translator("qtbase_{}", qt_folder, app)
-    window = GodiRecWindow()
-    window.show()
-    if "gdr_file" in args:
-        window.setupProject(args["gdr_file"], False)
-    else:
-        audio.WaveConverter.confirm_converter_backend()
-        if window.isNewProjectCreatedDialog():
-            window.createNewProject()
-    sys.exit(app.exec_())
