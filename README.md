@@ -4,9 +4,9 @@
 
 ## What is it?
 
-GodiRec is a Programm for recording church servive. It is optimized
-for recording every part in one single file. You can add Tags or
-chose many export types.
+GodiRec is a program for recording church services. It is optimized
+for recording every part in one single file. You can add tags and
+choose from different export types.
 
 
 ## The Latest Version
@@ -14,11 +14,6 @@ chose many export types.
 Details of the latest version can be found on the Github
 project page under https://github.com/quitejonny/godirec/releases.
 
-## Documentation
-
-The documentation available as of the date of this release is
-included in HTML format in the docs/manual/ directory.  The most
-up-to-date documentation can be found at
 
 ## Installation
 
@@ -27,9 +22,9 @@ up-to-date documentation can be found at
 Prerequest: - ffmpeg
 			- Python 3
 
-Use on Commandline: 'py setup.py install' for installing Godirec.
-When you like to create a excecutable exe File use 'py setup.py py2exe'
-and when you like to create an installer use 'py setup.py build_windows_installer'
+Use commandline: 'py setup.py install' to install Godirec.
+If you want to create an excecutable exe-file, use 'py setup.py build_exe',
+if you want to create an installer use 'py setup.py build_windows_installer'
 
 
 #### Linux:
@@ -40,16 +35,16 @@ Prerequest: - avconf
 
 ## Licensing
 
-Please see the file called LICENSE.
+Please see file called LICENSE.
 
 
 ## Contacts
 
-* If you want freely available support for running GodiRec see the
+* If you want free support for running GodiRec see the
 resources at <http://github>
 
 * If you have a concrete bug report please see the instructions
 for bug reporting at <https://github.com/quitejonny/godirec/issues>
 
-* If you want to participate in actively developing GodiRec please
-mail us over <http://github>
+* If you want to participate in developing GodiRec please
+send an e-mail using <http://github>
