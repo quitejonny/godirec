@@ -13,6 +13,7 @@ from godirec import core
 from PyQt5.QtCore import QObject, pyqtSignal, QThread
 from paramiko import ssh_exception
 import time
+import logging
 
 
 class SftpThread(QThread):
@@ -97,7 +98,7 @@ class TrackFile(QObject):
                 return filename
         else:
             err_msg = self.tr('filetype "{}" not in track')
-            raise AttributeError(err_msg.format(self._filetype))
+            raise UploadFiletypeError(err_msg.format(self._filetype))
 
     @property
     def album(self):
@@ -140,7 +141,7 @@ class TrackFile(QObject):
         try:
             os.remove(tmp_file)
         except PermissionError as e:
-            print("Kann datei nicht loeschen: "+tmp_file)
+            logging.info('Could not delete temp file "{}"'.format(tmp_file))
 
 
 class UploadError(Exception):
@@ -160,4 +161,8 @@ class UploadConnectionError(UploadError):
 
 
 class UploadFolderError(UploadError):
+    pass
+
+
+class UploadFiletypeError(UploadError):
     pass

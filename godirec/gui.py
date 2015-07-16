@@ -311,6 +311,47 @@ class ProgressDialog(QtWidgets.QDialog):
         self.okButtonBox.setEnabled(True)
 
 
+class TrackChooserDialog(QtWidgets.QDialog):
+
+    def __init__(self, text, tracks, parent=None):
+        QtWidgets.QDialog.__init__(self, parent=parent)
+        ui = godirec.resource_stream(__name__, "data/ui/listDialog.ui")
+        uic.loadUi(ui, self)
+        self._current_track = None
+        self._tracklist = TrackListModel(tracks, parent=self)
+        self.listView.setModel(self._tracklist)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.message.setText(text)
+        self.selection = self.listView.selectionModel()
+        self.selection.selectionChanged.connect(self._indexChanged)
+        self.listView.setCurrentIndex(self._tracklist.index(0))
+
+    def _indexChanged(self):
+        index = self.listView.selectedIndexes()[0]
+        self._current_track = self._tracklist.itemFromIndex(index)
+
+    def selectedTrack(self):
+        return self._current_track
+
+
+class TrackListModel(QtCore.QAbstractListModel):
+
+    def __init__(self, tracks, parent=None):
+        QtCore.QAbstractListModel.__init__(self, parent)
+        self._tracks = tracks
+
+    def rowCount(self, parent=QtCore.QModelIndex()):
+        return len(self._tracks)
+
+    def data(self, index, role):
+        if role == QtCore.Qt.DisplayRole:
+            row = index.row()
+            return self._tracks[row].tags.title
+
+    def itemFromIndex(self, index):
+        return self._tracks[index.row()]
+
+
 NO_STREAM_RUNNING = "no stream is running"
 NO_PROJECT = "no project opened"
 RECORDING = "currently recording"
@@ -372,7 +413,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.menuUpload.menuAction().setVisible(False)
 
     def showErrorMessage(self, error):
-        self.progressDialog.close()
+        if hasattr(self, "progressDialog"):
+            self.progressDialog.close()
         if isinstance(error, uploader.UploadError):
             msg = str(error)
         elif isinstance(error, ssh_exception.AuthenticationException):
@@ -388,10 +430,23 @@ class GodiRecWindow(QtWidgets.QMainWindow):
 
     def uploadSermon(self):
         tracks = self.rec_manager.find_tracks("Predigt")
-        if len(tracks) != 1:
-            QMessageBox.information(self, self.tr("Problem Upload"),
-                    self.tr("Zero or more than one sermon were found"))
-            return
+        if len(tracks) > 1:
+            text = self.tr("More than one sermons were found")
+            trackChooser = TrackChooserDialog(text, tracks, self)
+            if trackChooser.exec_():
+                track = trackChooser.selectedTrack()
+            else:
+                return
+        elif len(tracks) == 0:
+            text = self.tr("No sermon was found. Please choose the file.")
+            tracks = self.rec_manager.tracklist
+            trackChooser = TrackChooserDialog(text, tracks, self)
+            if trackChooser.exec_():
+                track = trackChooser.selectedTrack()
+            else:
+                return
+        else:
+            track = tracks[0]
         upload_data = self.settings.value('upload', type='QVariantMap')
         host = upload_data["Host"]
         user = upload_data["User"]
@@ -401,13 +456,17 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         album_titel = upload_data["AlbumTitle"]
         if(album_titel == ''):
             album_titel = None
-        trackFile = uploader.TrackFile(tracks[0], track_type, album_titel, self)
-        self.progressDialog = ProgressDialog(parent=self)
-        sftp = uploader.SftpThread(host, user, key_file, parent=self)
-        sftp.uploadUpdated.connect(self.progressDialog.update)
-        sftp.errorExcepted.connect(self.showErrorMessage)
-        self.progressDialog.show()
-        sftp.upload(trackFile, host_dir)
+        try:
+            trackFile = uploader.TrackFile(track, track_type, album_titel,
+                                           self)
+            self.progressDialog = ProgressDialog(parent=self)
+            sftp = uploader.SftpThread(host, user, key_file, parent=self)
+            sftp.uploadUpdated.connect(self.progressDialog.update)
+            sftp.errorExcepted.connect(self.showErrorMessage)
+            self.progressDialog.show()
+            sftp.upload(trackFile, host_dir)
+        except (uploader.UploadError) as error:
+            self.showErrorMessage(error)
 
     def enableRecButtons(self, isEnabled):
         for i in ("Stop", "Rec", "Cut"):
