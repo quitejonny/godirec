@@ -119,7 +119,8 @@ class SettingsDialog(QtWidgets.QDialog):
         # init upload settings
         self._settings_dict['upload'] = {'Host' : '', 'Keyfile' : '',
                                         'User' : '', 'UploadDir' : '',
-                                        'AlbumTitle' : '', 'Filetype' : ''}
+                                        'AlbumTitle' : '', 'Filetype' : '',
+                                        'Search': ''}
         self.fillSettings("upload")
         if 'formats' in self.settings.allKeys():
             self._settings_dict['formats'] = self.settings.value('formats',
@@ -429,16 +430,28 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         err_msg(msg)
 
     def uploadSermon(self):
-        tracks = self.rec_manager.find_tracks("Predigt")
+        upload_data = self.settings.value('upload', type='QVariantMap')
+        host = upload_data["Host"]
+        user = upload_data["User"]
+        key_file = upload_data["Keyfile"]
+        host_dir = upload_data["UploadDir"]
+        track_type = upload_data["Filetype"].split("-")[0]
+        search = upload_data["Search"]
+        album_titel = upload_data["AlbumTitle"]
+        if(album_titel == ''):
+            album_titel = None
+        tracks = self.rec_manager.find_tracks(search)
         if len(tracks) > 1:
-            text = self.tr("More than one sermons were found")
+            text = self.tr("More than one {} was found.")
+            text = text.format(search)
             trackChooser = TrackChooserDialog(text, tracks, self)
             if trackChooser.exec_():
                 track = trackChooser.selectedTrack()
             else:
                 return
         elif len(tracks) == 0:
-            text = self.tr("No sermon was found. Please choose the file.")
+            text = self.tr("No {} was found. Please choose the file.")
+            text = text.format(search)
             tracks = self.rec_manager.tracklist
             trackChooser = TrackChooserDialog(text, tracks, self)
             if trackChooser.exec_():
@@ -447,15 +460,6 @@ class GodiRecWindow(QtWidgets.QMainWindow):
                 return
         else:
             track = tracks[0]
-        upload_data = self.settings.value('upload', type='QVariantMap')
-        host = upload_data["Host"]
-        user = upload_data["User"]
-        key_file = upload_data["Keyfile"]
-        host_dir = upload_data["UploadDir"]
-        track_type = upload_data["Filetype"].split("-")[0]
-        album_titel = upload_data["AlbumTitle"]
-        if(album_titel == ''):
-            album_titel = None
         try:
             trackFile = uploader.TrackFile(track, track_type, album_titel,
                                            self)

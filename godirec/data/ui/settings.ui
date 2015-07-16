@@ -161,7 +161,7 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="2">
+         <item row="9" column="2">
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -198,16 +198,6 @@
          <item row="0" column="2">
           <widget class="QLineEdit" name="lineEditHost"/>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>User</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLineEdit" name="lineEditUser"/>
-         </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
@@ -215,7 +205,17 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="2">
+         <item row="1" column="2">
+          <widget class="QLineEdit" name="lineEditUser"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>User</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="2">
           <widget class="QPushButton" name="pushButtonTest">
            <property name="text">
             <string>Test Connection</string>
@@ -232,10 +232,10 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="2">
+         <item row="7" column="2">
           <widget class="QComboBox" name="comboBoxFiletype"/>
          </item>
-         <item row="6" column="0">
+         <item row="7" column="0">
           <widget class="QLabel" name="label_7">
            <property name="text">
             <string>Filetype</string>
@@ -245,9 +245,19 @@
          <item row="5" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
-            <string>New Album Ttitel</string>
+            <string>New Album Titel</string>
            </property>
           </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Search Word</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="2">
+          <widget class="QLineEdit" name="lineEditSearch"/>
          </item>
         </layout>
        </widget>
