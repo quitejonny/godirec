@@ -105,25 +105,22 @@ class SettingsDialog(QtWidgets.QDialog):
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         self.setWindowIcon(createIcon('data/ui/settings.png'))
+        self.accepted.connect(self.saveSettings)
         self.tabWidget.currentChanged.connect(self.tabChanged)
         self.supported_filetypes = sorted(audio.codec_dict.keys())
         #load settings
-        if 'tags' in self.settings.allKeys():
-            self._settings_dict['tags'] = self.settings.value('tags',
-                                                             type='QVariantMap')
-        else:
-            self._settings_dict["tags"] = dict()
-            exclude = set(['date', 'tracknumber'])
-            for tag in set(core.Tags().keys()).difference(exclude):
-                key = str(getattr(self.parent, 'Label'+tag.title()).text())[:-1]
-                self._settings_dict["tags"][key] = list()
-        if 'upload' in self.settings.allKeys():
-            self._settings_dict['upload'] = self.settings.value('upload',
-                                                            type='QVariantMap')
-        else:
-            self._settings_dict['upload'] = {'Host' : '', 'Keyfile' : '',
-                                            'User' : '', 'UploadDir' : '',
-                                            'AlbumTitle' : '', 'Filetype' : ''}
+        # init tags settings
+        self._settings_dict["tags"] = dict()
+        exclude = set(['date', 'tracknumber'])
+        for tag in set(core.Tags().keys()).difference(exclude):
+            key = str(getattr(self.parent, 'Label'+tag.title()).text())[:-1]
+            self._settings_dict["tags"][key] = list()
+        self.fillSettings("tags")
+        # init upload settings
+        self._settings_dict['upload'] = {'Host' : '', 'Keyfile' : '',
+                                        'User' : '', 'UploadDir' : '',
+                                        'AlbumTitle' : '', 'Filetype' : ''}
+        self.fillSettings("upload")
         if 'formats' in self.settings.allKeys():
             self._settings_dict['formats'] = self.settings.value('formats',
                                                                  type=str)
@@ -133,12 +130,10 @@ class SettingsDialog(QtWidgets.QDialog):
         # init export Settings
         for filetype in self.supported_filetypes:
             checkbox = QtWidgets.QCheckBox(filetype.upper())
+            checkbox.clicked.connect(self.checkBoxesChanged)
             setattr(self, "CheckBox"+filetype.title(), checkbox)
             self.VLayoutFiletypes.addWidget(checkbox)
         self.VLayoutFiletypes.addStretch()
-        for filetype in self.supported_filetypes:
-            checkbox = getattr(self, 'CheckBox'+filetype.title())
-            checkbox.clicked.connect(self.checkBoxesChanged)
         # init Autocompletion
         for key in self._settings_dict["tags"]:
             self.comboBox.addItem(key)
@@ -153,8 +148,19 @@ class SettingsDialog(QtWidgets.QDialog):
         self.pushButtonDirKey.setIcon(createIcon('data/ui/folder-yellow.png'))
         self.comboBoxFiletype.currentIndexChanged.connect(
                                                    self.updateUploadFiletype)
-
         self.tabChanged(0)
+
+    def fillSettings(self, key):
+        if not key in self.settings.allKeys():
+            return
+        settings = self.settings.value(key, type='QVariantMap')
+        for key_2, value in settings.items():
+            self._settings_dict[key][key_2] = value
+
+    def saveSettings(self):
+        for value in ("formats", "tags", "upload"):
+            self.settings.setValue(value, self.values()[value])
+        godirec.change_log_dir(self.values()["log_dir"], godirec.config_file)
 
     def tabChanged(self, index):
         getattr(self, "load"+self.TABS[index])()
@@ -169,13 +175,19 @@ class SettingsDialog(QtWidgets.QDialog):
         self.labelPath.setText(godirec.get_log_dir())
 
     def loadUpload(self):
-        for entry, value in self._settings_dict["upload"].items():
+        settings = self._settings_dict
+        filetype = settings["upload"]["Filetype"]
+        for entry, value in settings["upload"].items():
             if(entry != "Filetype"):
                 lineEdit = getattr(self, 'lineEdit'+entry)
                 lineEdit.setText(value)
                 lineEdit.textChanged.connect(self.updateUpload)
         self.comboBoxFiletype.clear()
-        self.comboBoxFiletype.addItems(list(self._settings_dict["formats"]))
+        self.comboBoxFiletype.addItems(settings["formats"])
+        index = self.comboBoxFiletype.findText(filetype)
+        if index < 0:
+            index = 0
+        self.comboBoxFiletype.setCurrentIndex(index)
 
     def comboBoxChanged(self, key):
         self.model = QtGui.QStandardItemModel(self.listView)
@@ -192,9 +204,9 @@ class SettingsDialog(QtWidgets.QDialog):
         value = self.comboBoxFiletype.itemText(index)
         self._settings_dict["upload"]["Filetype"] = value
 
-    def updateUpload(self, index=None):
+    def updateUpload(self):
         for entry in self._settings_dict["upload"]:
-            if(entry != "Filetype"):
+            if entry != "Filetype":
                 value = getattr(self, 'lineEdit'+entry).text()
                 self._settings_dict["upload"][entry] = value
 
@@ -624,17 +636,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.settings_dialog.show()
         # get settings and save if ok
         if self.settings_dialog.exec_():
-            settings = self.settings_dialog.values()
-            if "formats" in settings:
-                self.settings.setValue("formats", settings["formats"])
-            if "tags" in settings:
-                self.settings.setValue("tags", settings["tags"])
-            if "log_dir" in settings:
-                godirec.change_log_dir(settings["log_dir"],
-                                       godirec.config_file)
-            if "upload" in settings:
-                self.settings.setValue("upload", settings["upload"])
-        self.updateWordList()
+            self.updateWordList()
 
     def openAbout(self):
         """opens the About dialog"""
