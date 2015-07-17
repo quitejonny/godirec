@@ -21,6 +21,7 @@ from datetime import datetime
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from PyQt5.QtWidgets import QMessageBox
 import logging
+import copy
 import queue
 import godirec
 import godirec.gui
@@ -87,6 +88,95 @@ class RecorderListModel(QtCore.QAbstractListModel):
         return self.index(len(self.rec_manager.tracklist)-1)
 
 
+class Store(object):
+
+    def __init__(self, settings, dialog):
+        self._slots = ("tags", "formats", "log_dir", "upload", "path")
+        self._qtsettings = settings
+        self._dialog = dialog
+        self._tmp = dict()
+        self.load()
+        self._fill_tmp()
+
+    def _set_attr(attr):
+        def set_any(self, value):
+            self._tmp[attr] = value
+        return set_any
+
+    def _get_attr(attr):
+        def get_attr(self):
+            return self._tmp[attr]
+        return get_attr
+
+    tags = property(_get_attr("tags"), _set_attr("tags"))
+    formats = property(_get_attr("formats"), _set_attr("formats"))
+    log_dir = property(_get_attr("log_dir"), _set_attr("log_dir"))
+    upload = property(_get_attr("upload"), _set_attr("upload"))
+    path = property(_get_attr("path"), _set_attr("path"))
+
+    def _fill_tmp(self):
+        for slot in self._slots:
+            self._tmp[slot] = copy.deepcopy(getattr(self, "_"+slot))
+
+    def load(self):
+        self._tags = dict()
+        exclude = set(["date", "tracknumber"])
+        for tag in set(core.Tags().keys()).difference(exclude):
+            key = str(getattr(self._dialog, "Label"+tag.title()).text())
+            key = key.strip(":")
+            self._tags[key] = list()
+        self._fill_dict("tags")
+        self._upload = {
+            "Host" : "",
+            "Keyfile" : "",
+            "User" : "",
+            "UploadDir" : "",
+            "AlbumTitle" : "",
+            "Filetype" : "",
+            "Search": ""
+        }
+        self._fill_dict("upload")
+        if "formats" in self._qtsettings.allKeys():
+            self._formats = self._qtsettings.value("formats", type=str)
+        else:
+            self._formats = list(audio.codec_dict.keys())
+        self._log_dir = godirec.get_log_dir()
+        self._path = "."
+        if "path" in self._qtsettings.allKeys():
+            self._path = self._qtsettings.value("path", type=str)
+
+    def _fill_dict(self, attr):
+        if not attr in self._qtsettings.allKeys():
+            return
+        setting = self._qtsettings.value(attr, type="QVariantMap")
+        for key, value in setting.items():
+            getattr(self, "_"+attr)[key] = value
+
+    def commit(self):
+        for slot in self._slots:
+            setattr(self, "_"+slot, copy.deepcopy(self._tmp[slot]))
+
+    def reset(self):
+        self._fill_tmp()
+
+    def save(self):
+        self.commit()
+        for value in ("formats", "tags", "upload"):
+            self._qtsettings.setValue(value, self[value])
+        self._qtsettings.setValue("path", self.path)
+        godirec.change_log_dir(self.log_dir, godirec.config_file)
+
+    def keys(self):
+        """return a list of available tag names"""
+        return list(self.__slots__)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+
 class SettingsDialog(QtWidgets.QDialog):
 
     TABS = ["ExportSettings", "Autocompletion", "LogFile", "Upload"]
@@ -95,35 +185,15 @@ class SettingsDialog(QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent=parent)
         self.parent = parent
         self.settings = settings
-        self._settings_dict = {}
         settings_ui_file = godirec.resource_stream("godirec",
                                                    'data/ui/settings.ui')
         uic.loadUi(settings_ui_file, self)
         self.setWindowIcon(createIcon('data/ui/settings.png'))
-        self.accepted.connect(self.saveSettings)
+        self.accepted.connect(self.settings.save)
+        self.rejected.connect(self.settings.reset)
         self.tabWidget.currentChanged.connect(self.tabChanged)
         self.supported_filetypes = sorted(audio.codec_dict.keys())
-        #load settings
-        # init tags settings
-        self._settings_dict["tags"] = dict()
-        exclude = set(['date', 'tracknumber'])
-        for tag in set(core.Tags().keys()).difference(exclude):
-            key = str(getattr(self.parent, 'Label'+tag.title()).text())[:-1]
-            self._settings_dict["tags"][key] = list()
-        self.fillSettings("tags")
-        # init upload settings
-        self._settings_dict['upload'] = {'Host' : '', 'Keyfile' : '',
-                                        'User' : '', 'UploadDir' : '',
-                                        'AlbumTitle' : '', 'Filetype' : '',
-                                        'Search': ''}
-        self.fillSettings("upload")
-        if 'formats' in self.settings.allKeys():
-            self._settings_dict['formats'] = self.settings.value('formats',
-                                                                 type=str)
-        else:
-            self._settings_dict['formats'] = list(audio.codec_dict.keys())
-        self._settings_dict["log_dir"] = godirec.get_log_dir()
-        # init export Settings
+        # init ExportSettings
         for filetype in self.supported_filetypes:
             checkbox = QtWidgets.QCheckBox(filetype.upper())
             checkbox.clicked.connect(self.checkBoxesChanged)
@@ -131,7 +201,7 @@ class SettingsDialog(QtWidgets.QDialog):
             self.VLayoutFiletypes.addWidget(checkbox)
         self.VLayoutFiletypes.addStretch()
         # init Autocompletion
-        for key in self._settings_dict["tags"]:
+        for key in self.settings.tags:
             self.comboBox.addItem(key)
         self.comboBox.activated[str].connect(self.comboBoxChanged)
         self.pushButtonAdd.clicked.connect(self.addTag)
@@ -146,18 +216,6 @@ class SettingsDialog(QtWidgets.QDialog):
                                                    self.updateUploadFiletype)
         self.tabChanged(0)
 
-    def fillSettings(self, key):
-        if not key in self.settings.allKeys():
-            return
-        settings = self.settings.value(key, type='QVariantMap')
-        for key_2, value in settings.items():
-            self._settings_dict[key][key_2] = value
-
-    def saveSettings(self):
-        for value in ("formats", "tags", "upload"):
-            self.settings.setValue(value, self.values()[value])
-        godirec.change_log_dir(self.values()["log_dir"], godirec.config_file)
-
     def tabChanged(self, index):
         getattr(self, "load"+self.TABS[index])()
 
@@ -171,15 +229,14 @@ class SettingsDialog(QtWidgets.QDialog):
         self.labelPath.setText(godirec.get_log_dir())
 
     def loadUpload(self):
-        settings = self._settings_dict
-        filetype = settings["upload"]["Filetype"]
-        for entry, value in settings["upload"].items():
+        filetype = self.settings.upload["Filetype"]
+        for entry, value in self.settings.upload.items():
             if(entry != "Filetype"):
                 lineEdit = getattr(self, 'lineEdit'+entry)
                 lineEdit.setText(value)
                 lineEdit.textChanged.connect(self.updateUpload)
         self.comboBoxFiletype.clear()
-        self.comboBoxFiletype.addItems(settings["formats"])
+        self.comboBoxFiletype.addItems(self.settings.formats)
         index = self.comboBoxFiletype.findText(filetype)
         if index < 0:
             index = 0
@@ -187,7 +244,7 @@ class SettingsDialog(QtWidgets.QDialog):
 
     def comboBoxChanged(self, key):
         self.model = QtGui.QStandardItemModel(self.listView)
-        values = self._settings_dict["tags"][key]
+        values = self.settings.tags[key]
         values.sort()
         for value in values:
             item = QtGui.QStandardItem(value)
@@ -198,13 +255,13 @@ class SettingsDialog(QtWidgets.QDialog):
 
     def updateUploadFiletype(self, index):
         value = self.comboBoxFiletype.itemText(index)
-        self._settings_dict["upload"]["Filetype"] = value
+        self.settings.upload["Filetype"] = value
 
     def updateUpload(self):
-        for entry in self._settings_dict["upload"]:
+        for entry in self.settings.upload:
             if entry != "Filetype":
                 value = getattr(self, 'lineEdit'+entry).text()
-                self._settings_dict["upload"][entry] = value
+                self.settings.upload[entry] = value
 
     def onButtonDirClicked(self):
         """opens log FileDialog"""
@@ -212,13 +269,13 @@ class SettingsDialog(QtWidgets.QDialog):
             self, self.tr("Create Logfile In"), self.labelPath.text())
         if temp_path:
             self.labelPath.setText(temp_path)
-            self._settings_dict["log_dir"] = temp_path
+            self.settings.log_dir = temp_path
 
     def addTag(self):
         value = str(self.lineEditAdd.text())
         if value:
             key = str(self.comboBox.currentText())
-            self._settings_dict["tags"][key].append(value)
+            self.settings.tags[key].append(value)
             self.comboBoxChanged(key)
             self.pushButtonDelete.setEnabled(True)
             self.lineEditAdd.setText("")
@@ -231,7 +288,7 @@ class SettingsDialog(QtWidgets.QDialog):
         for row in range(model.rowCount()):
             item = model.item(row)
             if item.checkState() == QtCore.Qt.Checked:
-                value = self._settings_dict["tags"][key].pop(row-offset)
+                value = self.settings.tags[key].pop(row-offset)
                 logging.info("Delete Tag {} from {}".format(value, key))
                 offset += 1
         if model.rowCount() == 0:
@@ -241,7 +298,7 @@ class SettingsDialog(QtWidgets.QDialog):
     def updateCheckBoxes(self):
         for filetype in self.supported_filetypes:
             checkbox = getattr(self, 'CheckBox'+filetype.title())
-            if filetype in self._settings_dict['formats']:
+            if filetype in self.settings.formats:
                 checkbox.setCheckState(QtCore.Qt.Checked)
             else:
                 checkbox.setCheckState(QtCore.Qt.Unchecked)
@@ -252,12 +309,8 @@ class SettingsDialog(QtWidgets.QDialog):
             checkbox = getattr(self, 'CheckBox'+filetype.title())
             if checkbox.checkState() == QtCore.Qt.Checked:
                 self.formats.append(filetype)
-        self._settings_dict["formats"] = self.formats
+        self.settings.formats = self.formats
         logging.info("Changed Exportfile formats")
-
-    def values(self):
-        """returns dict which contains changed settings"""
-        return self._settings_dict
 
 
 class DialogOpener(QtWidgets.QDialog):
@@ -304,7 +357,8 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         self.ListTracks.setModel(self.RecListModel)
         self.selection = self.ListTracks.selectionModel()
         self.selection.selectionChanged.connect(self.onListTracksIndexChanged)
-        self.settings = QtCore.QSettings("EFG Aachen", "GodiRec")
+        self.qtSettings = QtCore.QSettings("EFG Aachen", "GodiRec")
+        self.settings = Store(self.qtSettings, self)
         for i in ("Stop", "Rec", "Cut"):
             getattr(self, "Button"+i).clicked.connect(
                 getattr(self, "onButton{}Clicked".format(i)))
@@ -356,14 +410,12 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             getattr(self, 'LineEdit'+edit).setEnabled(isEnabled)
 
     def updateWordList(self):
-        if 'tags' in self.settings.allKeys():
-            tags = self.settings.value('tags', type='QVariantMap')
-            edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
-            edit_dict = {getattr(self, "Label"+e).text()[:-1]: e for e in edits}
-            for key in tags:
-                completer = QtWidgets.QCompleter(tags[key], self)
-                completer.setCaseSensitivity(False)
-                getattr(self, 'LineEdit'+edit_dict[key]).setCompleter(completer)
+        edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
+        edit_dict = {getattr(self, "Label"+e).text()[:-1]: e for e in edits}
+        for key, completion in self.settings.tags.items():
+            completer = QtWidgets.QCompleter(completion, self)
+            completer.setCaseSensitivity(False)
+            getattr(self, 'LineEdit'+edit_dict[key]).setCompleter(completer)
 
     def setIcons(self):
         """This function is used as workaround for not loading icons in
@@ -486,9 +538,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
         """open an old project. Recording is not possible"""
         if self.isRunning():
             return
-        path = "."
-        if 'path' in self.settings.allKeys():
-            path = self.settings.value('path', type=str)
+        path = self.settings.path
         caption = self.tr("Open Project")
         file_filter = self.tr("Godirec File (*.gdr)")
         filename = QtWidgets.QFileDialog.getOpenFileName(self, caption, path,
@@ -512,10 +562,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     def createNewProject(self):
         if self.isRunning():
             return
-        path = ""
-        if 'path' in self.settings.allKeys():
-            path = self.settings.value('path', type=str)
-        proj_file = self.getSaveFilename(path)
+        proj_file = self.getSaveFilename(self.settings.path)
         if proj_file != "":
             self.setupProject(proj_file)
 
@@ -532,14 +579,14 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             current_path = os.path.splitext(filename)[0]
             if not os.path.exists(current_path):
                 os.makedirs(current_path)
-            self.settings.setValue('path', os.path.dirname(current_path))
+            self.settings.path = os.path.dirname(current_path)
+            self.settings.save()
             self.rec_manager = core.Manager(current_path)
             self.rec = core.Recorder(self.rec_manager, parent=self)
             self.rec.timer.timeout.connect(self.updateTime)
             self.rec.levelUpdated.connect(self.updateLevel)
-            if 'formats' in self.settings.allKeys():
-                f_list = self.settings.value('formats', type=str)
-                self.rec.format_list = [audio.codec_dict[f] for f in f_list]
+            f_list = self.settings.formats
+            self.rec.format_list = [audio.codec_dict[f] for f in f_list]
             self.ButtonRec.setEnabled(True)
         else:
             self.rec_manager = core.Manager.load_from_file(filename)
@@ -570,8 +617,7 @@ class GodiRecWindow(QtWidgets.QMainWindow):
     def openSettings(self):
         """opens the settings dialog"""
         self.settings_dialog = SettingsDialog(self.settings, self)
-        self.settings_dialog.show()
-        # get settings and save if ok
+        # update word list if settings are accepted
         if self.settings_dialog.exec_():
             self.updateWordList()
 

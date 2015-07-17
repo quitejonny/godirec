@@ -63,7 +63,7 @@ class Uploader(QObject):
             return None
 
     def start(self):
-        upload_data = self._settings.value('upload', type='QVariantMap')
+        upload_data = self._settings.upload
         host = upload_data["Host"]
         user = upload_data["User"]
         key_file = upload_data["Keyfile"]

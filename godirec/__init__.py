@@ -24,7 +24,6 @@ if not hasattr(sys, "frozen"):
 import json
 # for convenience all error class can be accessed from godirec module directly
 from godirec.errors import *
-#import godirec.gui
 
 
 __version__ = '0.4'
