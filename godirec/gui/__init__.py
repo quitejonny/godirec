@@ -15,68 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 import multiprocessing
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QLibraryInfo
-from PyQt5.QtWidgets import QMessageBox
 import sys
-import os
-import traceback
-import argparse
-import logging
 import godirec
 from godirec import audio
-from godirec.gui import main, upload
-
-
-def handle_exception(exc_type, exc_value, exc_traceback):
-    """handle all exceptions
-
-    exceptions will be caught by this function. The error will be shown
-    in a message box to the user and logged to the configured file.
-    """
-    # KeyboardInterrupt is a special case.
-    # We don't raise the error dialog when it occurs.
-    if issubclass(exc_type, KeyboardInterrupt):
-        if QtGui.qApp:
-            QtGui.qApp.quit()
-        return
-    filename, line, _, _ = traceback.extract_tb(exc_traceback).pop()
-    filename = os.path.basename(filename)
-    error = "{}: {}".format(exc_type.__name__, exc_value)
-    QMessageBox.critical(
-        None, "Error",
-        ("<html>A critical error has occured.<br/> "
-            "<b>{:s}</b><br/><br/>"
-            "It occurred at <b>line {:d}</b> of file <b>{:s}</b>.<br/>"
-            "For more information see error log file"
-            "</html>").format(error, line, filename)
-    )
-    logging.error(
-        "".join(
-            traceback.format_exception(exc_type, exc_value, exc_traceback)
-        )
-    )
-    sys.exit(1)
-
-
-def handle_cli_args():
-    args_dict = {}
-    description = ("GodiRec is a Program for recording church services."
-                   " It is optimized for recording every part in one single"
-                   " file. You can add Tags and choose many export types.")
-    parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('gdr_file', help='Path to gdr-file to open Project',
-                        nargs='?', default="")
-    parser.add_argument('--version', action="version",
-                        version="v"+godirec.__version__)
-    args = parser.parse_args()
-    gdr_file = args.gdr_file
-    if gdr_file != "":
-        extension = os.path.splitext(gdr_file)[1]
-        if os.path.exists(gdr_file) and extension == ".gdr":
-            args_dict["gdr_file"] = gdr_file
-    return args_dict
+from godirec.gui import main
+from godirec.gui.helper import handle_exception, handle_cli_args
 
 
 def run():

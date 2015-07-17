@@ -32,7 +32,7 @@ import logging
 from mutagen import id3
 import json
 import godirec
-from godirec import audio
+from . import audio
 
 
 class Tags(object):
@@ -97,7 +97,7 @@ class Manager(object):
     """
 
     def __init__(self, folder, project_name=None):
-        """initializes manager 
+        """initializes manager
 
         two arguments may be passed:
         folder: if not allready created, the manager will create the
@@ -280,7 +280,7 @@ class Track(object):
 
     def save(self, filetypes=[], folder=None):
         """will save the track with specified filetype.
-        
+
         If no filetype is given, the function will write the metadata
         in the already exported files
         """
@@ -405,7 +405,7 @@ class Recorder(QObject):
     """A recorder class for recording audio."""
 
     levelUpdated = pyqtSignal(list)
-    
+
     RECORDING = "RECORDING"
     STOPPED = "STOPPED"
     PAUSING = "PAUSING"
@@ -434,7 +434,7 @@ class Recorder(QObject):
                                     input=True,
                                     stream_callback=self._get_callback())
         self._stream.start_stream()
-        
+
     @property
     def state(self):
         return self._state
