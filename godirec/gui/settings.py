@@ -19,9 +19,11 @@
 import godirec
 import logging
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 import copy
 from godirec.gui.helper import createIcon
-from godirec import core, audio
+from godirec import core, audio, uploader
+from paramiko import ssh_exception
 
 
 class Store(object):
@@ -149,7 +151,35 @@ class SettingsDialog(QtWidgets.QDialog):
         self.pushButtonDirKey.setIcon(createIcon('data/ui/folder-yellow.png'))
         self.comboBoxFiletype.currentIndexChanged.connect(
                                                    self.updateUploadFiletype)
+        self.pushButtonTest.clicked.connect(self.testConnection)
         self.tabChanged(0)
+
+    def testConnection(self):
+        upload_data = self.settings.upload
+        host = upload_data["Host"]
+        user = upload_data["User"]
+        key_file = upload_data["Keyfile"]
+        host_dir = upload_data["UploadDir"]
+        host_dir = None if host_dir == "" else host_dir
+        msg = self.tr("A connection could be established")
+        title = self.tr("Success")
+        show_msg = lambda : QMessageBox.information(self, title, msg)
+        sftp = uploader.SftpThread(host, user, key_file, parent=self)
+        sftp.succeeded.connect(show_msg)
+        sftp.errorExcepted.connect(self.showErrorMessage)
+        sftp.test_connection(host_dir)
+
+    def showErrorMessage(self, error):
+        if isinstance(error, (uploader.UploadError,
+                      ssh_exception.SSHException)):
+            msg = str(error)
+        elif isinstance(error, ssh_exception.AuthenticationException):
+            msg = self.tr("Authentification failed.")
+        elif isinstance(error, FileNotFoundError):
+            msg = self.tr("Keyfile not found.")
+        else:
+            raise error
+        QMessageBox.information(self, self.tr("Error"), msg)
 
     def tabChanged(self, index):
         getattr(self, "load"+self.TABS[index])()

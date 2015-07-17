@@ -20,6 +20,7 @@ class SftpThread(QThread):
 
     uploadUpdated = pyqtSignal(int, int)
     errorExcepted = pyqtSignal(Exception)
+    succeeded = pyqtSignal()
     timerStopped = pyqtSignal()
     timerStarted = pyqtSignal(float)
 
@@ -48,6 +49,12 @@ class SftpThread(QThread):
         self._host_folder = host_folder
         self._host_path = os.path.join(host_folder, track_file.basename)
         self._track_file = track_file
+        self.run = self._run_upload
+        self.start()
+
+    def test_connection(self, host_dir=None):
+        self._host_folder = host_dir
+        self.run = self._run_test
         self.start()
 
     def _put(self, src_file, host_path):
@@ -67,7 +74,7 @@ class SftpThread(QThread):
         err_msg = self.tr("Connection could not be established")
         self.errorExcepted.emit(UploadConnectionError(err_msg))
 
-    def run(self):
+    def _run_upload(self):
         try:
             with self._track_file.filename() as src_file:
                 self._put(src_file, self._host_path)
@@ -77,8 +84,23 @@ class SftpThread(QThread):
             # short time for other msg_box to fully build
             time.sleep(0.05)
             self.errorExcepted.emit(e)
+        self.succeeded.emit()
+
+    def _run_test(self):
+        try:
+            self.timerStarted.emit(self.timeout)
+            with pysftp.Connection(**self._conn_params) as sftp:
+                self.timerStopped.emit()
+                use_folder = self._host_folder is not None
+                if use_folder and not sftp.exists(self._host_folder):
+                    err_msg = self.tr("Folder does not exist on host!")
+                    raise UploadFolderError(err_msg)
+        except (UploadError, FileNotFoundError,
+                ssh_exception.SSHException) as e:
+            self.timerStopped.emit()
+            self.errorExcepted.emit(e)
             return
-        self.finished.emit()
+        self.succeeded.emit()
 
 
 class TrackFile(QObject):
