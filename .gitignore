@@ -3,6 +3,8 @@
 .idea
 *.egg-info
 *-Godi
+godirec/conf.json
+test
 
 *.pyc
 

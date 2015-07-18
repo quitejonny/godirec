@@ -32,7 +32,7 @@ import logging
 from mutagen import id3
 import json
 import godirec
-from godirec import audio
+from . import audio
 
 
 class Tags(object):
@@ -97,7 +97,7 @@ class Manager(object):
     """
 
     def __init__(self, folder, project_name=None):
-        """initializes manager 
+        """initializes manager
 
         two arguments may be passed:
         folder: if not allready created, the manager will create the
@@ -116,6 +116,9 @@ class Manager(object):
         self._track_count = 1
         self._callback = godirec.Callback()
         self._wav_folder = ""
+
+    def find_tracks(self, searchword):
+        return [t for t in self.tracklist if t.is_match(searchword)]
 
     @staticmethod
     def load_from_file(filename):
@@ -253,8 +256,15 @@ class Track(object):
         return track
 
     @property
+    def files(self):
+        return self._files
+
+    @property
     def removed_files(self):
         return self._removed_files
+
+    def is_match(self, searchword):
+        return searchword in self.tags.title
 
     def dump(self, start=os.curdir):
         """dump track data in a python dict and return it"""
@@ -270,7 +280,7 @@ class Track(object):
 
     def save(self, filetypes=[], folder=None):
         """will save the track with specified filetype.
-        
+
         If no filetype is given, the function will write the metadata
         in the already exported files
         """
@@ -350,6 +360,35 @@ class Track(object):
     def project_name(self):
         return self._project_name
 
+    @staticmethod
+    def save_tags_for_file(filename, tags, filetype=""):
+        if filetype == "":
+            filetype = os.path.splitext(filename)[1][1:]
+        if filetype == "mp3":
+            mp3_tags = mutagen.id3.ID3()
+            mp3_tags['TIT2'] = id3.TIT2(encoding=3, text=tags['title'])
+            mp3_tags['TPE1'] = id3.TPE1(encoding=3, text=tags['artist'])
+            mp3_tags['TALB'] = id3.TALB(encoding=3, text=tags['album'])
+            mp3_tags['TDRC'] = id3.TDRC(encoding=3, text=tags['date'])
+            mp3_tags['TCON'] = id3.TCON(encoding=3, text=tags['genre'])
+            mp3_tags['COMM'] = id3.COMM(encoding=3, lang='eng', desc='desc',
+                                    text=tags['comment'])
+            mp3_tags['TRCK'] = id3.TRCK(encoding=3,
+                                    text=tags['tracknumber'])
+            mp3_tags.update_to_v23()
+            mp3_tags.save(filename, v2_version=3)
+        elif filetype == "wav":
+            pass
+        else:
+            # save tags in every track file
+            audio = mutagen.File(filename, easy=True)
+            for tag in tags.keys():
+                try:
+                    audio[tag] = tags[tag]
+                except KeyError:
+                    pass
+            audio.save()
+
     def save_tags(self):
         if self._has_file_changed or self._old_title != self.tags.title:
             if self.tags.title:
@@ -359,37 +398,14 @@ class Track(object):
                 self.basename = self._origin_basename
             self._old_title = self.tags.title
         for f in self._files:
-            if f.endswith('.mp3'):
-                tags = mutagen.id3.ID3()
-                tags['TIT2'] = id3.TIT2(encoding=3, text=self.tags['title'])
-                tags['TPE1'] = id3.TPE1(encoding=3, text=self.tags['artist'])
-                tags['TALB'] = id3.TALB(encoding=3, text=self.tags['album'])
-                tags['TDRC'] = id3.TDRC(encoding=3, text=self.tags['date'])
-                tags['TCON'] = id3.TCON(encoding=3, text=self.tags['genre'])
-                tags['COMM'] = id3.COMM(encoding=3, lang='eng', desc='desc',
-                                        text=self.tags['comment'])
-                tags['TRCK'] = id3.TRCK(encoding=3,
-                                        text=self.tags['tracknumber'])
-                tags.update_to_v23()
-                tags.save(f, v2_version=3)
-            elif f.endswith('.wav'):
-                pass
-            else:
-                # save tags in every track file
-                audio = mutagen.File(f, easy=True)
-                for tag in self.tags.keys():
-                    try:
-                        audio[tag] = self.tags[tag]
-                    except KeyError:
-                        pass
-                audio.save()
+            self.save_tags_for_file(f, self.tags)
 
 
 class Recorder(QObject):
     """A recorder class for recording audio."""
 
     levelUpdated = pyqtSignal(list)
-    
+
     RECORDING = "RECORDING"
     STOPPED = "STOPPED"
     PAUSING = "PAUSING"
@@ -418,7 +434,7 @@ class Recorder(QObject):
                                     input=True,
                                     stream_callback=self._get_callback())
         self._stream.start_stream()
-        
+
     @property
     def state(self):
         return self._state
