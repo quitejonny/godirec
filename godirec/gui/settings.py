@@ -18,6 +18,7 @@
 
 import godirec
 import logging
+import os
 from PyQt5 import QtCore, QtGui, uic, QtWidgets
 from PyQt5.QtWidgets import QMessageBox
 import copy
@@ -152,7 +153,18 @@ class SettingsDialog(QtWidgets.QDialog):
         self.comboBoxFiletype.currentIndexChanged.connect(
                                                    self.updateUploadFiletype)
         self.pushButtonTest.clicked.connect(self.testConnection)
+        self.pushButtonDirKey.clicked.connect(self.selectKey)
         self.tabChanged(0)
+
+    def selectKey(self):
+        title = self.tr("Choose Keyfile")
+        directory = os.path.dirname(self.settings.upload["Keyfile"])
+        keyfile = QtWidgets.QFileDialog.getOpenFileName(self, title, directory)
+        keyfile = keyfile[0]
+        if keyfile:
+            self.lineEditKeyfile.setText(keyfile)
+            self.settings.upload["Keyfile"] = keyfile
+            self.settings.log_dir = keyfile
 
     def testConnection(self):
         upload_data = self.settings.upload
