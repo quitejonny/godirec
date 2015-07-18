@@ -17,6 +17,16 @@ import logging
 
 
 class SftpThread(QThread):
+    """Run SFTP connection in its own Qt Thread
+
+    class may be used for sftp operation which last longer and must not block
+    the main application
+
+    :param str host: The hostname or ip of the remote machine
+    :param str user: Username to log into remote machine
+    :param str key_file: Path to keyfile for login on remote machine
+    :param QObject parent: Qt Object which owns the SftpThread instance
+    """
 
     uploadUpdated = pyqtSignal(int, int)
     errorExcepted = pyqtSignal(Exception)
@@ -46,6 +56,7 @@ class SftpThread(QThread):
         self._timerId = self.startTimer(timeout*1000)
 
     def upload(self, track_file, host_folder):
+        """upload file to directory on host"""
         self._host_folder = host_folder
         self._host_path = os.path.join(host_folder, track_file.basename)
         self._track_file = track_file
@@ -53,6 +64,11 @@ class SftpThread(QThread):
         self.start()
 
     def test_connection(self, host_dir=None):
+        """test if connection to host is esablished
+
+        you have to connect to "succeeded"  and "errorExcepted" signal to get
+        feedback from this function
+        """
         self._host_folder = host_dir
         self.run = self._run_test
         self.start()
@@ -104,6 +120,13 @@ class SftpThread(QThread):
 
 
 class TrackFile(QObject):
+    """Provide interface for providing access to Track object for upload
+
+    :param Track track: track which will should be uploaded
+    :param str filetype: filetype to identify uploaded file from track
+    :param str|None album: album name which replaces album tag in track
+    :param QObject parent: Qt Object which owns the SftpThread instance
+    """
 
     uploadUpdated = pyqtSignal(int, int)
 
@@ -125,6 +148,7 @@ class TrackFile(QObject):
 
     @property
     def album(self):
+        """album tag which is used on uploaded file"""
         if self._album is None:
             return self._tags.album
         return self._album
@@ -135,20 +159,31 @@ class TrackFile(QObject):
 
     @property
     def is_ready(self):
+        """checkes if file is ready for upload"""
         return self._tags.comment != ""
 
     @property
     def creation_date(self):
+        """date when the track file was created"""
         date = datetime.fromtimestamp(os.path.getctime(self._file))
         return date.strftime("%Y-%m-%d")
 
     @property
     def basename(self):
+        """filename of track file which should be used on destination"""
         value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', '_', self._tags.title)
         return "{} {}.{}".format(self.creation_date, value, self._filetype)
 
     @contextmanager
     def filename(self, album=None):
+        """context manager with filename of the temporary file to upload
+
+        a temporary file is needed to change the properties of the track file.
+        The file will be deleted when leaving the context manager
+        CAUTION: removing may not work on a Windows system
+
+        :param str album: name which replaces the album tag on uploaded file
+        """
         if not self.is_ready:
             raise UploadCommentError(self.tr("Track has no comment!"))
         # create temporary file
