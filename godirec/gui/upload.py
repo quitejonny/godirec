@@ -68,7 +68,7 @@ class Uploader(QObject):
         user = upload_data["User"]
         key_file = upload_data["Keyfile"]
         host_dir = upload_data["UploadDir"]
-        track_type = upload_data["Filetype"].split("-")[0]
+        track_type = upload_data["Filetype"]
         search = upload_data["Search"]
         album_titel = upload_data["AlbumTitle"]
         if(album_titel == ''):

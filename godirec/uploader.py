@@ -116,7 +116,8 @@ class TrackFile(QObject):
 
     def _get_file(self, track):
         for filename in track.files:
-            if filename.endswith(self._filetype):
+            folder = os.path.basename(os.path.dirname(filename))
+            if folder.startswith(self._filetype):
                 return filename
         else:
             err_msg = self.tr('filetype "{}" not in track')
