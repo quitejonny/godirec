@@ -28,6 +28,15 @@ from paramiko import ssh_exception
 
 
 class Store(object):
+    """Provides API for storing settings
+
+    Abstraction layer, to use settings like a dict or with . notation.
+    Data would be saved temporary and stored in settings after exiting the
+    Dialog over the OK Button.
+
+    :param QtSettings settings: QtSettings object
+    :param QtWindow dialog: QtWindow object
+    """
 
     def __init__(self, settings, dialog):
         self._slots = ("tags", "formats", "log_dir", "upload", "path")
@@ -58,6 +67,11 @@ class Store(object):
             self._tmp[slot] = copy.deepcopy(getattr(self, "_"+slot))
 
     def load(self):
+        """Loads data from Settings
+
+        Use default data for settings and overwrites them with existing
+        settings. The data will be stored in a temporary Structure.
+        """
         self._tags = dict()
         exclude = set(["date", "tracknumber"])
         for tag in set(core.Tags().keys()).difference(exclude):
@@ -92,13 +106,19 @@ class Store(object):
             getattr(self, "_"+attr)[key] = value
 
     def commit(self):
+        """Save changes from temporary object to settings object."""
         for slot in self._slots:
             setattr(self, "_"+slot, copy.deepcopy(self._tmp[slot]))
 
     def reset(self):
+        """Discard changes from temporary object."""
         self._fill_tmp()
 
     def save(self):
+        """Save changes from temporary object to disk.
+
+        To discard changes from temp use: :func:'reset'
+        """
         self.commit()
         for value in ("formats", "tags", "upload"):
             self._qtsettings.setValue(value, self[value])
@@ -117,7 +137,11 @@ class Store(object):
 
 
 class SettingsDialog(QtWidgets.QDialog):
+    """Show data on GUI and provides all functions for GUI.
 
+    :param QtSettings settings: QtSettings object
+    :param QtWindow parent: QtQbject which owns the instance of SettingsDialog
+    """
     TABS = ["ExportSettings", "Autocompletion", "LogFile", "Upload"]
 
     def __init__(self, settings, parent):
@@ -157,6 +181,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.tabChanged(0)
 
     def selectKey(self):
+        """Open Dialog to select Key file."""
         title = self.tr("Choose Keyfile")
         directory = os.path.dirname(self.settings.upload["Keyfile"])
         keyfile = QtWidgets.QFileDialog.getOpenFileName(self, title, directory)
@@ -166,6 +191,7 @@ class SettingsDialog(QtWidgets.QDialog):
             self.settings.upload["Keyfile"] = keyfile
 
     def testConnection(self):
+        """Test sftp connection with data from GUI. Open dialog with result"""
         upload_data = self.settings.upload
         host = upload_data["Host"]
         user = upload_data["User"]
@@ -181,6 +207,13 @@ class SettingsDialog(QtWidgets.QDialog):
         sftp.test_connection(host_dir)
 
     def showErrorMessage(self, error):
+        """Reports errors in uploading process.
+
+        Error will shown for:
+        * UploadError
+        * AuthenticationException
+        * FileNotFoundError: Keyfile
+        """
         if isinstance(error, (uploader.UploadError,
                       ssh_exception.SSHException)):
             msg = str(error)
@@ -193,6 +226,7 @@ class SettingsDialog(QtWidgets.QDialog):
         QMessageBox.information(self, self.tr("Error"), msg)
 
     def tabChanged(self, index):
+        """When Tab changed load function for this tab will be executed"""
         getattr(self, "load"+self.TABS[index])()
 
     def loadExportSettings(self):
@@ -205,6 +239,10 @@ class SettingsDialog(QtWidgets.QDialog):
         self.labelPath.setText(godirec.get_log_dir())
 
     def loadUpload(self):
+        """Loads filetypes to be consistent with the settings
+
+        Shuld be execuded when tab changed to upload tab.
+        """
         filetype = self.settings.upload["Filetype"]
         for entry, value in self.settings.upload.items():
             if(entry != "Filetype"):
@@ -219,6 +257,13 @@ class SettingsDialog(QtWidgets.QDialog):
         self.comboBoxFiletype.setCurrentIndex(index)
 
     def comboBoxChanged(self, key):
+        """Updates ListView with autocompletion items for Key
+
+        Gets key from changed comboBox and updates ListView with according
+        Items
+
+        :param str key: Key value for tags in Settings.tags
+        """
         self.model = QtGui.QStandardItemModel(self.listView)
         values = self.settings.tags[key]
         values.sort()
@@ -230,10 +275,12 @@ class SettingsDialog(QtWidgets.QDialog):
         self.pushButtonDelete.setEnabled(bool(values))
 
     def updateUploadFiletype(self, index):
+        """Stores selected filetype in temp settings"""
         value = self.comboBoxFiletype.itemText(index)
         self.settings.upload["Filetype"] = value
 
     def updateUpload(self):
+        """Stroes data from Upload tab in temp settings"""
         for entry in self.settings.upload:
             if entry != "Filetype":
                 value = getattr(self, 'lineEdit'+entry).text()
@@ -248,6 +295,7 @@ class SettingsDialog(QtWidgets.QDialog):
             self.settings.log_dir = temp_path
 
     def addTag(self):
+        """Add Tag to autocompletion List by key"""
         value = str(self.lineEditAdd.text())
         if value:
             key = str(self.comboBox.currentText())
@@ -258,6 +306,7 @@ class SettingsDialog(QtWidgets.QDialog):
             logging.info("Add Tag {} to {}".format(value, key))
 
     def deleteTag(self):
+        """Removes Tag from autocompletion list by key"""
         offset = 0
         model = self.listView.model()
         key = str(self.comboBox.currentText())
@@ -272,6 +321,8 @@ class SettingsDialog(QtWidgets.QDialog):
         self.comboBoxChanged(key)
 
     def updateCheckBoxes(self):
+        """Sets checkBoxes for Filetype checked, if they in
+        supported_filetypes"""
         for filetype in self.supported_filetypes:
             checkbox = getattr(self, 'CheckBox'+filetype.title())
             if filetype in self.settings.formats:
@@ -280,6 +331,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 checkbox.setCheckState(QtCore.Qt.Unchecked)
 
     def checkBoxesChanged(self):
+        """Stores export types in temp settings"""
         self.formats = list()
         for filetype in self.supported_filetypes:
             checkbox = getattr(self, 'CheckBox'+filetype.title())
