@@ -164,7 +164,6 @@ class SettingsDialog(QtWidgets.QDialog):
         if keyfile:
             self.lineEditKeyfile.setText(keyfile)
             self.settings.upload["Keyfile"] = keyfile
-            self.settings.log_dir = keyfile
 
     def testConnection(self):
         upload_data = self.settings.upload

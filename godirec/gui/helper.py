@@ -68,7 +68,6 @@ def handle_exception(exc_type, exc_value, exc_traceback):
             traceback.format_exception(exc_type, exc_value, exc_traceback)
         )
     )
-    sys.exit(1)
 
 
 def handle_cli_args():
