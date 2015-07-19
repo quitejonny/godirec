@@ -73,6 +73,46 @@ class SftpThread(QThread):
         self.run = self._run_test
         self.start()
 
+    def has_file_on_host(self, sftp, host_path):
+        """checks if the file exists on host
+
+        returns True if the filename exists on host, or the modify date and
+        filesize are (almost) the same
+
+        :param pysftp.Connection sftp: open connection object from pysftp
+        :param str host_path: path to compare file with source file
+        """
+        folder = os.path.dirname(host_path)
+        if sftp.exists(host_path):
+            return True
+        src_attr = {
+            "size": self._track_file.file_size,
+            "cdate": self._track_file.creation_date
+        }
+        attrs = sftp.listdir_attr(folder)
+        for attr in attrs:
+            date = datetime.fromtimestamp(attr.st_mtime)
+            host_attr = {
+                "size": attr.st_size,
+                "cdate": date.strftime("%Y-%m-%d")
+            }
+            if self.is_identical_file(src_attr, host_attr):
+                return True
+        return False
+
+    def is_identical_file(self, src_file, host_file):
+        """checks if two files are identical
+
+        if the sizes only differ less than 300 bytes and the modify date is the
+        same, we assume that the files are the same
+
+        :param dict src_file: has to include the keys "size" and "cdate"
+        :param dict host_file: has to include the keys "size" and "cdate"
+        """
+        has_same_size = abs(src_file["size"] - host_file["size"]) < 300
+        has_same_date = src_file["cdate"] == host_file["cdate"]
+        return has_same_size and has_same_date
+
     def _put(self, src_file, host_path):
         self.timerStarted.emit(self.timeout)
         with pysftp.Connection(**self._conn_params) as sftp:
@@ -80,7 +120,7 @@ class SftpThread(QThread):
             if not sftp.exists(self._host_folder):
                 err_msg = self.tr("Folder does not exist on host!")
                 raise UploadFolderError(err_msg)
-            if sftp.exists(self._host_path):
+            if self.has_file_on_host(sftp, host_path):
                 raise UploadFileExistsError(self.tr("File exists on host!"))
             sftp.put(src_file, host_path, callback=self.uploadUpdated.emit)
 
@@ -163,6 +203,11 @@ class TrackFile(QObject):
         return self._tags.comment != ""
 
     @property
+    def file_size(self):
+        """size of the track file in bytes"""
+        return os.path.getsize(self._file)
+
+    @property
     def creation_date(self):
         """date when the track file was created"""
         date = datetime.fromtimestamp(os.path.getctime(self._file))
@@ -172,7 +217,8 @@ class TrackFile(QObject):
     def basename(self):
         """filename of track file which should be used on destination"""
         value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', '_', self._tags.title)
-        return "{} {}.{}".format(self.creation_date, value, self._filetype)
+        filetype = self._filetype.split("-")[0]
+        return "{} {}.{}".format(self.creation_date, value, filetype)
 
     @contextmanager
     def filename(self, album=None):
@@ -193,6 +239,8 @@ class TrackFile(QObject):
         album = album if album is not None else self.album
         if album is not None:
             tags.album = album
+            # remove track number
+            tags.tracknumber = ""
             core.Track.save_tags_for_file(tmp_file, tags, self._filetype)
         yield tmp_file
         # delete temporary file
