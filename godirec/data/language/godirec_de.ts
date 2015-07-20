@@ -59,22 +59,22 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="dialog.ui" line="14"/>
         <source>erzeuge Projekt</source>
-        <translation>Erzeuge Projekt</translation>
+        <translation type="obsolete">Erzeuge Projekt</translation>
     </message>
     <message>
         <location filename="dialog.ui" line="46"/>
         <source>Projekt Name:</source>
-        <translation>Projekt Name:</translation>
+        <translation type="obsolete">Projekt Name:</translation>
     </message>
     <message>
         <location filename="dialog.ui" line="66"/>
         <source>Erzeugen</source>
-        <translation>Erzeugen</translation>
+        <translation type="obsolete">Erzeugen</translation>
     </message>
     <message>
         <location filename="settings.ui" line="20"/>
         <source>Einstellungen</source>
-        <translation>Einstellungen</translation>
+        <translation type="obsolete">Einstellungen</translation>
     </message>
     <message>
         <location filename="settings.ui" line="48"/>
@@ -84,22 +84,132 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="settings.ui" line="56"/>
         <source>Standart ausgabe Formate:</source>
-        <translation>Standard Ausgabe Formate:</translation>
+        <translation type="obsolete">Standard Ausgabe Formate:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="90"/>
         <source>Entfernen</source>
-        <translation>Entfernen</translation>
+        <translation type="obsolete">Entfernen</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="100"/>
+        <location filename="settings.ui" line="103"/>
         <source>Log File</source>
         <translation>Log Datei</translation>
     </message>
     <message>
-        <location filename="settings.ui" line="112"/>
+        <location filename="settings.ui" line="115"/>
         <source>/</source>
         <translation>/</translation>
+    </message>
+    <message>
+        <location filename="dialog.ui" line="14"/>
+        <source>Create Project</source>
+        <translation>Projekt Anlegen</translation>
+    </message>
+    <message>
+        <location filename="dialog.ui" line="46"/>
+        <source>Project Name:</source>
+        <translation>Projekt Name:</translation>
+    </message>
+    <message>
+        <location filename="dialog.ui" line="66"/>
+        <source>Create</source>
+        <translation>Erzeugen</translation>
+    </message>
+    <message>
+        <location filename="listDialog.ui" line="14"/>
+        <source>Please Choose A Track</source>
+        <translation>Bitte einen Titel auswählen</translation>
+    </message>
+    <message>
+        <location filename="progressDialog.ui" line="29"/>
+        <source>TextLabel</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="progressDialog.ui" line="14"/>
+        <source>Upload Progress</source>
+        <translation>Fortschritt Hochladen</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="20"/>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="56"/>
+        <source>Standard Output Formats:</source>
+        <translation>Standart Ausgabe Formate:</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="66"/>
+        <source>Autocompletion</source>
+        <translation>Autovervollständigung</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="83"/>
+        <source>Add</source>
+        <translation>Hinzufügen</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="93"/>
+        <source>Remove</source>
+        <translation>Entfernen</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="145"/>
+        <source>Choose export folder for Logfile</source>
+        <translation>Einen Ordner für die Logdatei auswählen</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="151"/>
+        <source>Upload</source>
+        <translation>Upload</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="157"/>
+        <source>If you leave it empty, tag wouldn&apos;t be changed</source>
+        <translation>Falls leer, wird der Albumname nicht angepasst</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="198"/>
+        <source>Host</source>
+        <translation>Server</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="208"/>
+        <source>Keyfile</source>
+        <translation>Keydatei</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="218"/>
+        <source>User</source>
+        <translation>Benutzer</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="225"/>
+        <source>Test Connection</source>
+        <translation>Verbindung Test</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="235"/>
+        <source>Upload Location</source>
+        <translation>Upload Adresse</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="245"/>
+        <source>Filetype</source>
+        <translation>Dateityp</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="252"/>
+        <source>New Album Titel</source>
+        <translation>Neuer Album Titel</translation>
+    </message>
+    <message>
+        <location filename="settings.ui" line="259"/>
+        <source>Search Word</source>
+        <translation>Suchwort</translation>
     </message>
 </context>
 <context>
@@ -107,12 +217,12 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="godi_rec.ui" line="15"/>
         <source>GodiRec - erzeuge neues Projekt</source>
-        <translation>Godirec - Erzeuge neues Projekt</translation>
+        <translation type="obsolete">Godirec - Erzeuge neues Projekt</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="188"/>
         <source>Titel:</source>
-        <translation>Titel:</translation>
+        <translation type="obsolete">Titel:</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="202"/>
@@ -132,7 +242,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="godi_rec.ui" line="258"/>
         <source>Jahr:</source>
-        <translation>Jahr:</translation>
+        <translation type="obsolete">Jahr:</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="299"/>
@@ -140,24 +250,24 @@ p, li { white-space: pre-wrap; }
         <translation>Datei</translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="329"/>
+        <location filename="godi_rec.ui" line="339"/>
         <source>Exit</source>
         <translation>Beenden</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="337"/>
         <source>Neues Projekt</source>
-        <translation>Neues Projekt</translation>
+        <translation type="obsolete">Neues Projekt</translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="363"/>
+        <location filename="godi_rec.ui" line="373"/>
         <source>Ctrl+O</source>
         <translation>Strg+O</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="352"/>
         <source>Einstellungen</source>
-        <translation>Einstellungen</translation>
+        <translation type="obsolete">Einstellungen</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="36"/>
@@ -182,7 +292,7 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="godi_rec.ui" line="216"/>
         <source>Kommentar:</source>
-        <translation>Kommentar:</translation>
+        <translation type="obsolete">Kommentar:</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="278"/>
@@ -192,20 +302,20 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="godi_rec.ui" line="307"/>
         <source>Hilfe</source>
-        <translation>Hilfe</translation>
+        <translation type="obsolete">Hilfe</translation>
     </message>
     <message>
         <location filename="godi_rec.ui" line="314"/>
         <source>Bearbeiten</source>
-        <translation>Bearbeiten</translation>
+        <translation type="obsolete">Bearbeiten</translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="368"/>
+        <location filename="godi_rec.ui" line="378"/>
         <source>About</source>
         <translation>Über</translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="373"/>
+        <location filename="godi_rec.ui" line="383"/>
         <source>Help</source>
         <translation>Hilfe</translation>
     </message>
@@ -225,79 +335,135 @@ p, li { white-space: pre-wrap; }
         <translation></translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="332"/>
+        <location filename="godi_rec.ui" line="342"/>
         <source>Ctrl+Q</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="340"/>
+        <location filename="godi_rec.ui" line="350"/>
         <source>Ctrl+N</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="godi_rec.ui" line="355"/>
+        <location filename="godi_rec.ui" line="365"/>
         <source>Ctrl+S</source>
+        <translation></translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="15"/>
+        <source>GodiRec - create a new project</source>
+        <translation>GodiRec - erzeuge neues Projekt</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="188"/>
+        <source>Title:</source>
+        <translation>Titel:</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="216"/>
+        <source>Comment:</source>
+        <translation>Kommentar:</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="258"/>
+        <source>Year:</source>
+        <translation>Jahr:</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="314"/>
+        <source>Edit</source>
+        <translation>Bearbeiten</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="323"/>
+        <source>Upload</source>
+        <translation>Upload</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="347"/>
+        <source>New Project</source>
+        <translation>Neues Projekt</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="362"/>
+        <source>Settings</source>
+        <translation>Einstellungen</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="370"/>
+        <source>Open Project</source>
+        <translation>Projekt öffnen</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="388"/>
+        <source>Sermon</source>
+        <translation>Predigt</translation>
+    </message>
+    <message>
+        <location filename="godi_rec.ui" line="391"/>
+        <source>Ctrl+U</source>
+        <translatorcomment>Nicht übersetzen!</translatorcomment>
         <translation></translation>
     </message>
 </context>
 <context>
     <name>GodiRecWindow</name>
     <message>
-        <location filename="gui.py" line="421"/>
+        <location filename="main.py" line="318"/>
         <source>Open Project</source>
         <translation>Projekt öffnen</translation>
     </message>
     <message>
-        <location filename="gui.py" line="431"/>
+        <location filename="main.py" line="328"/>
         <source>Godirec File (*.gdr)</source>
         <translation>Godirec Datei (*.gdr)</translation>
     </message>
     <message>
-        <location filename="gui.py" line="430"/>
+        <location filename="main.py" line="327"/>
         <source>Create new project:</source>
         <translation>Neues Projekt erzeugen:</translation>
     </message>
     <message>
-        <location filename="gui.py" line="473"/>
+        <location filename="main.py" line="373"/>
         <source>File(s) from the following folders could not be found:
 {}</source>
         <translation>Datei(en) aus folgenden Ordnern konnten nicht gefunden werden:
 {}</translation>
     </message>
     <message>
-        <location filename="gui.py" line="476"/>
+        <location filename="main.py" line="376"/>
         <source>Files Not Found</source>
         <translation>Dateien nicht gefunden</translation>
     </message>
     <message>
-        <location filename="gui.py" line="526"/>
+        <location filename="main.py" line="415"/>
         <source>Stream Closed</source>
         <translation>Stream Beendet</translation>
     </message>
     <message>
-        <location filename="gui.py" line="527"/>
+        <location filename="main.py" line="416"/>
         <source>To close the program,
 you have to close the stream first.</source>
         <translation>Um das Programm zu schließen,
 müssen Sie zuerst den Stream beenden.</translation>
     </message>
     <message>
-        <location filename="gui.py" line="532"/>
+        <location filename="main.py" line="421"/>
         <source>Please Wait</source>
         <translation>Bitte Warten</translation>
     </message>
     <message>
-        <location filename="gui.py" line="533"/>
+        <location filename="main.py" line="422"/>
         <source>To close the program, you have to close the stream first!</source>
         <translation>Um das Programm zu schließen, müssen Sie zuerst den Stream beenden!</translation>
     </message>
     <message>
-        <location filename="gui.py" line="549"/>
+        <location filename="main.py" line="438"/>
         <source>Create Project</source>
         <translation>Projekt Anlegen</translation>
     </message>
     <message>
-        <location filename="gui.py" line="550"/>
+        <location filename="main.py" line="439"/>
         <source>Do you want to create a new project?</source>
         <translation>Wollen Sie ein neues Projekt anlegen?</translation>
     </message>
@@ -329,18 +495,112 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Die Tracks können jeweils im unterem Teil des Fensters benannt werden. Um dies zu erlleichtern kann man Autovervollständigungslisten in den Einstellungen ausfüllen. Diese werden dann beim Eintragen angeboten.&lt;/p&gt;
 &lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;br /&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Weitere Hilfe finden sie unter http://quitejonny.github.io/godirec/&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
+    </message>
+</context>
+<context>
+    <name>ProgressDialog</name>
+    <message>
+        <location filename="upload.py" line="110"/>
+        <source>The sermon gets uploaded</source>
+        <translation>Die Predigt wird hochgeladen</translation>
     </message>
 </context>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="gui.py" line="144"/>
+        <location filename="settings.py" line="292"/>
         <source>Create Logfile In</source>
         <translation>Logdatei Erzeugen In</translation>
     </message>
+    <message>
+        <location filename="settings.py" line="186"/>
+        <source>Choose Keyfile</source>
+        <translation>Keydatei Auswählen</translation>
+    </message>
+    <message>
+        <location filename="settings.py" line="202"/>
+        <source>A connection could be established</source>
+        <translation>Es wurde eine Verbindung hergestellt</translation>
+    </message>
+    <message>
+        <location filename="settings.py" line="203"/>
+        <source>Success</source>
+        <translation>Erfolg</translation>
+    </message>
+    <message>
+        <location filename="settings.py" line="222"/>
+        <source>Authentification failed.</source>
+        <translation>Authentifizierung fehlgeschlagen.</translation>
+    </message>
+    <message>
+        <location filename="settings.py" line="224"/>
+        <source>Keyfile not found.</source>
+        <translation>Keydatei nicht gefunden.</translation>
+    </message>
+    <message>
+        <location filename="settings.py" line="227"/>
+        <source>Error</source>
+        <translation>Fehler</translation>
+    </message>
 </context>
 <context>
-    <name>window</name>
+    <name>SftpThread</name>
+    <message>
+        <location filename="uploader.py" line="96"/>
+        <source>Folder does not exist on host!</source>
+        <translation>Der Ordner existiert auf dem Server nicht!</translation>
+    </message>
+    <message>
+        <location filename="uploader.py" line="68"/>
+        <source>File exists on host!</source>
+        <translation>Datei schon auf dem Server vorhanden!</translation>
+    </message>
+    <message>
+        <location filename="uploader.py" line="74"/>
+        <source>Connection could not be established</source>
+        <translation>Verbindung konnte nicht hergestellt werden</translation>
+    </message>
+</context>
+<context>
+    <name>TrackFile</name>
+    <message>
+        <location filename="uploader.py" line="123"/>
+        <source>filetype &quot;{}&quot; not in track</source>
+        <translation>Dateityp &quot;{}&quot; nicht im Title vorhanden</translation>
+    </message>
+    <message>
+        <location filename="uploader.py" line="154"/>
+        <source>Track has no comment!</source>
+        <translation>Der Titel besitzt keinen Kommentar!</translation>
+    </message>
+</context>
+<context>
+    <name>Uploader</name>
+    <message>
+        <location filename="upload.py" line="49"/>
+        <source>Authentification failed.</source>
+        <translation>Authentifizierung fehlgeschlagen.</translation>
+    </message>
+    <message>
+        <location filename="upload.py" line="53"/>
+        <source>Keyfile not found.</source>
+        <translation>Keydatei nicht gefunden.</translation>
+    </message>
+    <message>
+        <location filename="upload.py" line="56"/>
+        <source>Error</source>
+        <translation>Fehler</translation>
+    </message>
+    <message>
+        <location filename="upload.py" line="78"/>
+        <source>More than one {} was found.</source>
+        <translation>Mehr als eine {} gefunden.</translation>
+    </message>
+    <message>
+        <location filename="upload.py" line="82"/>
+        <source>No {} was found. Please choose the file.</source>
+        <translation>Keine {} gefunden. Bitte wählen Sie den Titel aus.</translation>
+    </message>
 </context>
 </TS>
