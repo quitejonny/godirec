@@ -186,12 +186,16 @@ class GodiRecWindow(QtWidgets.QMainWindow):
             getattr(self, 'LineEdit'+edit).setEnabled(isEnabled)
 
     def updateWordList(self):
-        edits = ("Title", "Artist", "Album", "Genre", "Date", "Comment")
-        edit_dict = {getattr(self, "Label"+e).text()[:-1]: e for e in edits}
-        for key, completion in self.settings.tags.items():
-            completer = QtWidgets.QCompleter(completion, self)
+        edits = ("Title", "Artist", "Album", "Genre", "Comment")
+        edit_dict = {
+            e: getattr(self, "Label"+e).text().strip(":") for e in edits
+        }
+        completion = self.settings.tags
+        for edit in edits:
+            key = edit_dict[edit]
+            completer = QtWidgets.QCompleter(self.settings.tags[key], self)
             completer.setCaseSensitivity(False)
-            getattr(self, 'LineEdit'+edit_dict[key]).setCompleter(completer)
+            getattr(self, 'LineEdit'+edit).setCompleter(completer)
 
     def setIcons(self):
         """This function is used as workaround for not loading icons in
