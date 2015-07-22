@@ -408,61 +408,61 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>GodiRecWindow</name>
     <message>
-        <location filename="main.py" line="318"/>
+        <location filename="main.py" line="322"/>
         <source>Open Project</source>
         <translation>Open Project</translation>
     </message>
     <message>
-        <location filename="main.py" line="328"/>
+        <location filename="main.py" line="332"/>
         <source>Godirec File (*.gdr)</source>
         <translation>Godirec File (*.gdr)</translation>
     </message>
     <message>
-        <location filename="main.py" line="327"/>
+        <location filename="main.py" line="331"/>
         <source>Create new project:</source>
         <translation>Ceate new project:</translation>
     </message>
     <message>
-        <location filename="main.py" line="373"/>
+        <location filename="main.py" line="377"/>
         <source>File(s) from the following folders could not be found:
 {}</source>
         <translation>File(s) from the following folders could not be found:
 {}</translation>
     </message>
     <message>
-        <location filename="main.py" line="376"/>
+        <location filename="main.py" line="380"/>
         <source>Files Not Found</source>
         <translation>Files Not Found</translation>
     </message>
     <message>
-        <location filename="main.py" line="415"/>
+        <location filename="main.py" line="419"/>
         <source>Stream Closed</source>
         <translation>Stream Closed</translation>
     </message>
     <message>
-        <location filename="main.py" line="416"/>
+        <location filename="main.py" line="420"/>
         <source>To close the program,
 you have to close the stream first.</source>
         <translation>To close the program,
 you have to close the stream first.</translation>
     </message>
     <message>
-        <location filename="main.py" line="421"/>
+        <location filename="main.py" line="425"/>
         <source>Please Wait</source>
         <translation>Please Wait</translation>
     </message>
     <message>
-        <location filename="main.py" line="422"/>
+        <location filename="main.py" line="426"/>
         <source>To close the program, you have to close the stream first!</source>
         <translation>To close the program, you have to close the stream first!</translation>
     </message>
     <message>
-        <location filename="main.py" line="438"/>
+        <location filename="main.py" line="442"/>
         <source>Create Project</source>
         <translation>Create Project</translation>
     </message>
     <message>
-        <location filename="main.py" line="439"/>
+        <location filename="main.py" line="443"/>
         <source>Do you want to create a new project?</source>
         <translation>Do you want to create a new project?</translation>
     </message>
@@ -500,7 +500,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>ProgressDialog</name>
     <message>
-        <location filename="upload.py" line="110"/>
+        <location filename="upload.py" line="112"/>
         <source>The sermon gets uploaded</source>
         <translation>The sermon gets uploaded</translation>
     </message>
@@ -546,17 +546,17 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SftpThread</name>
     <message>
-        <location filename="uploader.py" line="96"/>
+        <location filename="uploader.py" line="154"/>
         <source>Folder does not exist on host!</source>
         <translation>Folder does not exist on host!</translation>
     </message>
     <message>
-        <location filename="uploader.py" line="68"/>
+        <location filename="uploader.py" line="126"/>
         <source>File exists on host!</source>
         <translation>File exists on host!</translation>
     </message>
     <message>
-        <location filename="uploader.py" line="74"/>
+        <location filename="uploader.py" line="132"/>
         <source>Connection could not be established</source>
         <translation>Connection could not be established</translation>
     </message>
@@ -564,12 +564,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>TrackFile</name>
     <message>
-        <location filename="uploader.py" line="123"/>
+        <location filename="uploader.py" line="188"/>
         <source>filetype &quot;{}&quot; not in track</source>
         <translation>filetype &quot;{}&quot; not in track</translation>
     </message>
     <message>
-        <location filename="uploader.py" line="154"/>
+        <location filename="uploader.py" line="237"/>
         <source>Track has no comment!</source>
         <translation>Track has no comment!</translation>
     </message>
@@ -587,19 +587,24 @@ p, li { white-space: pre-wrap; }
         <translation>Keyfile not found.</translation>
     </message>
     <message>
-        <location filename="upload.py" line="56"/>
+        <location filename="upload.py" line="58"/>
         <source>Error</source>
         <translation>Error</translation>
     </message>
     <message>
-        <location filename="upload.py" line="78"/>
+        <location filename="upload.py" line="80"/>
         <source>More than one {} was found.</source>
         <translation>More than one {} was found.</translation>
     </message>
     <message>
-        <location filename="upload.py" line="82"/>
+        <location filename="upload.py" line="84"/>
         <source>No {} was found. Please choose the file.</source>
         <translation>No {} was found. Please choose the track.</translation>
+    </message>
+    <message>
+        <location filename="upload.py" line="55"/>
+        <source>Connection aborted.</source>
+        <translation>Connection aborted.</translation>
     </message>
 </context>
 </TS>

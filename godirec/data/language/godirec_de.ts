@@ -402,68 +402,67 @@ p, li { white-space: pre-wrap; }
     <message>
         <location filename="godi_rec.ui" line="391"/>
         <source>Ctrl+U</source>
-        <translatorcomment>Nicht übersetzen!</translatorcomment>
         <translation></translation>
     </message>
 </context>
 <context>
     <name>GodiRecWindow</name>
     <message>
-        <location filename="main.py" line="318"/>
+        <location filename="main.py" line="322"/>
         <source>Open Project</source>
         <translation>Projekt öffnen</translation>
     </message>
     <message>
-        <location filename="main.py" line="328"/>
+        <location filename="main.py" line="332"/>
         <source>Godirec File (*.gdr)</source>
         <translation>Godirec Datei (*.gdr)</translation>
     </message>
     <message>
-        <location filename="main.py" line="327"/>
+        <location filename="main.py" line="331"/>
         <source>Create new project:</source>
         <translation>Neues Projekt erzeugen:</translation>
     </message>
     <message>
-        <location filename="main.py" line="373"/>
+        <location filename="main.py" line="377"/>
         <source>File(s) from the following folders could not be found:
 {}</source>
         <translation>Datei(en) aus folgenden Ordnern konnten nicht gefunden werden:
 {}</translation>
     </message>
     <message>
-        <location filename="main.py" line="376"/>
+        <location filename="main.py" line="380"/>
         <source>Files Not Found</source>
         <translation>Dateien nicht gefunden</translation>
     </message>
     <message>
-        <location filename="main.py" line="415"/>
+        <location filename="main.py" line="419"/>
         <source>Stream Closed</source>
         <translation>Stream Beendet</translation>
     </message>
     <message>
-        <location filename="main.py" line="416"/>
+        <location filename="main.py" line="420"/>
         <source>To close the program,
 you have to close the stream first.</source>
         <translation>Um das Programm zu schließen,
 müssen Sie zuerst den Stream beenden.</translation>
     </message>
     <message>
-        <location filename="main.py" line="421"/>
+        <location filename="main.py" line="425"/>
         <source>Please Wait</source>
         <translation>Bitte Warten</translation>
     </message>
     <message>
-        <location filename="main.py" line="422"/>
+        <location filename="main.py" line="426"/>
         <source>To close the program, you have to close the stream first!</source>
         <translation>Um das Programm zu schließen, müssen Sie zuerst den Stream beenden!</translation>
     </message>
     <message>
-        <location filename="main.py" line="438"/>
+        <location filename="main.py" line="442"/>
         <source>Create Project</source>
         <translation>Projekt Anlegen</translation>
     </message>
     <message>
-        <location filename="main.py" line="439"/>
+        <location filename="main.py" line="443"/>
         <source>Do you want to create a new project?</source>
         <translation>Wollen Sie ein neues Projekt anlegen?</translation>
     </message>
@@ -501,7 +500,7 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>ProgressDialog</name>
     <message>
-        <location filename="upload.py" line="110"/>
+        <location filename="upload.py" line="112"/>
         <source>The sermon gets uploaded</source>
         <translation>Die Predigt wird hochgeladen</translation>
     </message>
@@ -547,17 +546,17 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SftpThread</name>
     <message>
-        <location filename="uploader.py" line="96"/>
+        <location filename="uploader.py" line="154"/>
         <source>Folder does not exist on host!</source>
         <translation>Der Ordner existiert auf dem Server nicht!</translation>
     </message>
     <message>
-        <location filename="uploader.py" line="68"/>
+        <location filename="uploader.py" line="126"/>
         <source>File exists on host!</source>
         <translation>Datei schon auf dem Server vorhanden!</translation>
     </message>
     <message>
-        <location filename="uploader.py" line="74"/>
+        <location filename="uploader.py" line="132"/>
         <source>Connection could not be established</source>
         <translation>Verbindung konnte nicht hergestellt werden</translation>
     </message>
@@ -565,12 +564,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>TrackFile</name>
     <message>
-        <location filename="uploader.py" line="123"/>
+        <location filename="uploader.py" line="188"/>
         <source>filetype &quot;{}&quot; not in track</source>
         <translation>Dateityp &quot;{}&quot; nicht im Title vorhanden</translation>
     </message>
     <message>
-        <location filename="uploader.py" line="154"/>
+        <location filename="uploader.py" line="237"/>
         <source>Track has no comment!</source>
         <translation>Der Titel besitzt keinen Kommentar!</translation>
     </message>
@@ -588,19 +587,24 @@ p, li { white-space: pre-wrap; }
         <translation>Keydatei nicht gefunden.</translation>
     </message>
     <message>
-        <location filename="upload.py" line="56"/>
+        <location filename="upload.py" line="58"/>
         <source>Error</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="upload.py" line="78"/>
+        <location filename="upload.py" line="80"/>
         <source>More than one {} was found.</source>
         <translation>Mehr als eine {} gefunden.</translation>
     </message>
     <message>
-        <location filename="upload.py" line="82"/>
+        <location filename="upload.py" line="84"/>
         <source>No {} was found. Please choose the file.</source>
         <translation>Keine {} gefunden. Bitte wählen Sie den Titel aus.</translation>
+    </message>
+    <message>
+        <location filename="upload.py" line="55"/>
+        <source>Connection aborted.</source>
+        <translation>Verbindung abgebrochen.</translation>
     </message>
 </context>
 </TS>
