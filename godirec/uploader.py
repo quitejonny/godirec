@@ -134,7 +134,7 @@ class SftpThread(QThread):
         try:
             with self._track_file.filename() as src_file:
                 self._put(src_file, self._host_path)
-        except (UploadError, FileNotFoundError,
+        except (UploadError, FileNotFoundError, EOFError,
                 ssh_exception.SSHException) as e:
             self.timerStopped.emit()
             # short time for other msg_box to fully build
@@ -151,7 +151,7 @@ class SftpThread(QThread):
                 if use_folder and not sftp.exists(self._host_folder):
                     err_msg = self.tr("Folder does not exist on host!")
                     raise UploadFolderError(err_msg)
-        except (UploadError, FileNotFoundError,
+        except (UploadError, FileNotFoundError, EOFError,
                 ssh_exception.SSHException) as e:
             self.timerStopped.emit()
             self.errorExcepted.emit(e)
