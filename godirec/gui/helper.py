@@ -71,6 +71,12 @@ def handle_exception(exc_type, exc_value, exc_traceback):
 
 
 def handle_cli_args():
+    """handle arguments from command line
+
+    Function provides a simple command line interface. It shows a short
+    description when using the help argument as well as starting the program
+    the right arguments which depend on the cli options
+    """
     args_dict = {}
     description = ("GodiRec is a Program for recording church services."
                    " It is optimized for recording every part in one single"

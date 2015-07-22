@@ -51,6 +51,8 @@ class Uploader(QObject):
             msg = str(error)
         elif isinstance(error, FileNotFoundError):
             msg = self.tr("Keyfile not found.")
+        elif isinstance(error, EOFError):
+            msg = self.tr("Connection aborted.")
         else:
             raise error
         QMessageBox.critical(self.parent(), self.tr("Error"), msg)
