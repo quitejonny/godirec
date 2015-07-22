@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Upload Progress</string>
   </property>
   <property name="modal">
    <bool>false</bool>
