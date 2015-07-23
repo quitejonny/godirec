@@ -61,6 +61,7 @@ class SftpThread(QThread):
         self._host_path = os.path.join(host_folder, track_file.basename)
         self._track_file = track_file
         self.run = self._run_upload
+        print("user:{}|".format(self._conn_params["username"]))
         self.start()
 
     def test_connection(self, host_dir=None):
@@ -219,7 +220,7 @@ class TrackFile(QObject):
     @property
     def basename(self):
         """filename of track file which should be used on destination"""
-        value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', '_', self._tags.title)
+        value = core.Track.replace_special_characters(self._tags.title)
         filetype = self._filetype.split("-")[0]
         return "{} {}.{}".format(self.creation_date, value, filetype)
 

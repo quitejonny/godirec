@@ -341,7 +341,7 @@ class Track(object):
         new_files = list()
         for f in self._files:
             pattern = "{}(?=\.\w+$)".format(self._basename)
-            value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', '_', value)
+            value = self.replace_special_characters(value)
             f_new = re.sub(pattern, value, f)
             try:
                 os.rename(f, f_new)
@@ -351,6 +351,19 @@ class Track(object):
         self._files = new_files
         self._basename = value
         self._has_file_changed = False
+
+    @staticmethod
+    def replace_special_characters(value, new="_"):
+        """ replaces special characters in a string with the given one
+
+        :param str value: string in which characters will be replaced
+        :param str new: single character which replaces the old ones
+        """
+        # backslashs have to be replace first in string because they have a
+        # special meaning in regex
+        value = value.replace("\\", new)
+        value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}]', new, value)
+        return value
 
     @property
     def origin_file(self):
