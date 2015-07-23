@@ -3,6 +3,7 @@ import json
 import os
 from datetime import datetime
 import re
+import getpass
 import godirec
 import mutagen
 import copy
@@ -37,7 +38,7 @@ class SftpThread(QThread):
     def __init__(self, host, user, key_file, parent=None):
         QThread.__init__(self, parent=parent)
         self._conn_params = {
-            "username": user,
+            "username": user if user else getpass.getuser(),
             "host": host,
             "private_key": key_file
         }
