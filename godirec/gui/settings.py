@@ -195,6 +195,7 @@ class SettingsDialog(QtWidgets.QDialog):
         upload_data = self.settings.upload
         host = upload_data["Host"]
         user = upload_data["User"]
+        user = " " if user == "" else user
         key_file = upload_data["Keyfile"]
         host_dir = upload_data["UploadDir"]
         host_dir = None if host_dir == "" else host_dir
