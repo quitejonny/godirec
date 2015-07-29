@@ -62,7 +62,6 @@ class SftpThread(QThread):
         self._host_path = os.path.join(host_folder, track_file.basename)
         self._track_file = track_file
         self.run = self._run_upload
-        print("user:{}|".format(self._conn_params["username"]))
         self.start()
 
     def test_connection(self, host_dir=None):
@@ -93,14 +92,24 @@ class SftpThread(QThread):
         }
         attrs = sftp.listdir_attr(folder)
         for attr in attrs:
-            date = datetime.fromtimestamp(attr.st_mtime)
             host_attr = {
                 "size": attr.st_size,
-                "cdate": date.strftime("%Y-%m-%d")
+                "cdate": self._extract_creation_date(attr)
             }
             if self.is_identical_file(src_attr, host_attr):
                 return True
         return False
+
+    def _extract_creation_date(self, attr):
+        # try to get date from the filename. If it doesn't succeed, use the
+        # timestamp instead
+        date_fmt = "%Y-%m-%d"
+        try:
+            date_str = attr.filename[:10]
+            date = datetime.strptime(date_str, date_fmt).strftime(date_fmt)
+        except ValueError:
+            date = datetime.fromtimestamp(attr.st_mtime).strftime(date_fmt)
+        return date
 
     def is_identical_file(self, src_file, host_file):
         """checks if two files are identical
@@ -178,6 +187,7 @@ class TrackFile(QObject):
     def __init__(self, track, filetype, album=None, parent=None):
         QObject.__init__(self, parent=parent)
         self._tags = track.tags
+        self._creation_date = track.creation_date
         self._filetype = filetype
         self._file = self._get_file(track)
         self.album = album
@@ -215,8 +225,7 @@ class TrackFile(QObject):
     @property
     def creation_date(self):
         """date when the track file was created"""
-        date = datetime.fromtimestamp(os.path.getctime(self._file))
-        return date.strftime("%Y-%m-%d")
+        return self._creation_date
 
     @property
     def basename(self):

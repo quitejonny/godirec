@@ -31,6 +31,7 @@ import mutagen
 import logging
 from mutagen import id3
 import json
+from datetime import datetime
 import godirec
 from . import audio
 
@@ -233,6 +234,7 @@ class Track(object):
         self._folder = folder
         self._old_title = tags.title
         self._has_file_changed = False
+        self._creation_date = datetime.today().strftime("%Y-%m-%d")
         self.tags = tags
         self._files = list()
         self._futures = Futures()
@@ -245,7 +247,7 @@ class Track(object):
         abs_path = lambda p: os.path.join(start_dir, p)
         track = Track("", "", tags=Tags(**track_dict.pop("tags")))
         attrs = ["basename", "origin_basename", "project_name", "folder",
-                 "old_title", "has_file_changed", "files"]
+                 "old_title", "has_file_changed", "files", "creation_date"]
         for attr in attrs:
             setattr(track, "_" + attr, track_dict[attr])
         track._files = [abs_path(f) for f in track._files]
@@ -260,6 +262,10 @@ class Track(object):
         return self._files
 
     @property
+    def creation_date(self):
+        return self._creation_date
+
+    @property
     def removed_files(self):
         return self._removed_files
 
@@ -270,7 +276,7 @@ class Track(object):
         """dump track data in a python dict and return it"""
         track_dict = {"tags": self.tags.dump()}
         attrs = ["basename", "origin_basename", "project_name", "folder",
-                 "old_title", "has_file_changed", "files"]
+                 "old_title", "has_file_changed", "files", "creation_date"]
         for attr in attrs:
             track_dict[attr] = getattr(self, "_" + attr)
         rel_path = lambda p: os.path.relpath(p, start=start)
