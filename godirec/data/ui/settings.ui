@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>431</width>
-    <height>369</height>
+    <height>402</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -151,6 +151,9 @@
          <string>Upload</string>
         </attribute>
         <layout class="QGridLayout" name="gridLayout">
+         <item row="6" column="2">
+          <widget class="QLineEdit" name="lineEditSearch"/>
+         </item>
          <item row="5" column="2">
           <widget class="QLineEdit" name="lineEditAlbumTitle">
            <property name="placeholderText">
@@ -161,7 +164,7 @@
            </property>
           </widget>
          </item>
-         <item row="9" column="2">
+         <item row="10" column="2">
           <spacer name="verticalSpacer">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -202,16 +205,6 @@
          <item row="0" column="2">
           <widget class="QLineEdit" name="lineEditHost"/>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Keyfile</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="2">
-          <widget class="QLineEdit" name="lineEditUser"/>
-         </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
@@ -219,7 +212,17 @@
            </property>
           </widget>
          </item>
-         <item row="8" column="2">
+         <item row="1" column="2">
+          <widget class="QLineEdit" name="lineEditUser"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Keyfile</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="2">
           <widget class="QPushButton" name="pushButtonTest">
            <property name="text">
             <string>Test Connection</string>
@@ -236,20 +239,20 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="2">
+         <item row="8" column="2">
           <widget class="QComboBox" name="comboBoxFiletype"/>
-         </item>
-         <item row="7" column="0">
-          <widget class="QLabel" name="label_7">
-           <property name="text">
-            <string>Filetype</string>
-           </property>
-          </widget>
          </item>
          <item row="5" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>New Album Titel</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Filetype</string>
            </property>
           </widget>
          </item>
@@ -260,8 +263,22 @@
            </property>
           </widget>
          </item>
-         <item row="6" column="2">
-          <widget class="QLineEdit" name="lineEditSearch"/>
+         <item row="3" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Port</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="2">
+          <widget class="QSpinBox" name="spinBoxPort">
+           <property name="maximum">
+            <number>99999</number>
+           </property>
+           <property name="value">
+            <number>22</number>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
@@ -286,17 +303,19 @@
   <tabstop>lineEditUser</tabstop>
   <tabstop>lineEditKeyfile</tabstop>
   <tabstop>pushButtonDirKey</tabstop>
+  <tabstop>spinBoxPort</tabstop>
   <tabstop>lineEditUploadDir</tabstop>
   <tabstop>lineEditAlbumTitle</tabstop>
+  <tabstop>lineEditSearch</tabstop>
   <tabstop>comboBoxFiletype</tabstop>
   <tabstop>pushButtonTest</tabstop>
-  <tabstop>listView</tabstop>
-  <tabstop>pushButtonAdd</tabstop>
-  <tabstop>pushButtonDir</tabstop>
   <tabstop>pushButtonDelete</tabstop>
-  <tabstop>comboBox</tabstop>
   <tabstop>tabWidget</tabstop>
+  <tabstop>comboBox</tabstop>
+  <tabstop>pushButtonDir</tabstop>
   <tabstop>lineEditAdd</tabstop>
+  <tabstop>pushButtonAdd</tabstop>
+  <tabstop>listView</tabstop>
  </tabstops>
  <resources/>
  <connections>

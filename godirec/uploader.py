@@ -35,11 +35,12 @@ class SftpThread(QThread):
     timerStopped = pyqtSignal()
     timerStarted = pyqtSignal(float)
 
-    def __init__(self, host, user, key_file, parent=None):
+    def __init__(self, host, user, key_file, port=22, parent=None):
         QThread.__init__(self, parent=parent)
         self._conn_params = {
             "username": user if user else getpass.getuser(),
             "host": host,
+            "port": port,
             "private_key": key_file
         }
         self.timeout = 1.0

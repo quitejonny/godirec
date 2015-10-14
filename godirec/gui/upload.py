@@ -69,6 +69,7 @@ class Uploader(QObject):
         host = upload_data["Host"]
         user = upload_data["User"]
         key_file = upload_data["Keyfile"]
+        port = int(upload_data["Port"])
         host_dir = upload_data["UploadDir"]
         track_type = upload_data["Filetype"]
         search = upload_data["Search"]
@@ -93,7 +94,7 @@ class Uploader(QObject):
             trackFile = uploader.TrackFile(track, track_type, album_titel,
                                            parent)
             self.progressDialog = ProgressDialog(parent=parent)
-            sftp = uploader.SftpThread(host, user, key_file, parent=parent)
+            sftp = uploader.SftpThread(host, user, key_file, port, parent)
             sftp.uploadUpdated.connect(self.progressDialog.update)
             sftp.errorExcepted.connect(self.showErrorMessage)
             self.progressDialog.show()

@@ -83,6 +83,7 @@ class Store(object):
             "Host" : "",
             "Keyfile" : "",
             "User" : "",
+            "Port": "22",
             "UploadDir" : "",
             "AlbumTitle" : "",
             "Filetype" : "",
@@ -176,6 +177,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.pushButtonDirKey.setIcon(createIcon('data/ui/folder-yellow.png'))
         self.comboBoxFiletype.currentIndexChanged.connect(
                                                    self.updateUploadFiletype)
+        self.spinBoxPort.valueChanged.connect(self.updateUploadPort)
         self.pushButtonTest.clicked.connect(self.testConnection)
         self.pushButtonDirKey.clicked.connect(self.selectKey)
         self.tabChanged(0)
@@ -197,11 +199,12 @@ class SettingsDialog(QtWidgets.QDialog):
         user = upload_data["User"]
         key_file = upload_data["Keyfile"]
         host_dir = upload_data["UploadDir"]
+        port = int(upload_data["Port"])
         host_dir = None if host_dir == "" else host_dir
         msg = self.tr("A connection could be established")
         title = self.tr("Success")
         show_msg = lambda : QMessageBox.information(self, title, msg)
-        sftp = uploader.SftpThread(host, user, key_file, parent=self)
+        sftp = uploader.SftpThread(host, user, key_file, port, parent=self)
         sftp.succeeded.connect(show_msg)
         sftp.errorExcepted.connect(self.showErrorMessage)
         sftp.test_connection(host_dir)
@@ -244,8 +247,10 @@ class SettingsDialog(QtWidgets.QDialog):
         Shuld be execuded when tab changed to upload tab.
         """
         filetype = self.settings.upload["Filetype"]
+        port = int(self.settings.upload["Port"])
+        self.spinBoxPort.setValue(port)
         for entry, value in self.settings.upload.items():
-            if(entry != "Filetype"):
+            if(entry not in ("Filetype", "Port")):
                 lineEdit = getattr(self, 'lineEdit'+entry)
                 lineEdit.setText(value)
                 lineEdit.textChanged.connect(self.updateUpload)
@@ -273,6 +278,10 @@ class SettingsDialog(QtWidgets.QDialog):
             self.model.appendRow(item)
         self.listView.setModel(self.model)
         self.pushButtonDelete.setEnabled(bool(values))
+
+    def updateUploadPort(self, value):
+        """Stores port in temp settings"""
+        self.settings.upload["Port"] = value
 
     def updateUploadFiletype(self, index):
         """Stores selected filetype in temp settings"""
