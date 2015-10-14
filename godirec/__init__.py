@@ -26,7 +26,7 @@ import json
 from godirec.errors import *
 
 
-__version__ = '0.6'
+__version__ = '0.6.2'
 
 
 class Callback(object):
