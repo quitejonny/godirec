@@ -43,7 +43,7 @@ class SftpThread(QThread):
             "port": port,
             "private_key": key_file
         }
-        self.timeout = 1.0
+        self.timeout = 5.0
         self.timerStopped.connect(self._stopTimer)
         self.timerStarted.connect(self._startTimer)
         self._timerId = None
