@@ -1,1 +1,4 @@
-console.log('This would be the main JS file.');
+$(function(){
+	$("#inc_header").load("header.html");
+	$("#inc_sidebar").load("sidebar.html");
+});
