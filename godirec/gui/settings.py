@@ -291,7 +291,7 @@ class SettingsDialog(QtWidgets.QDialog):
     def updateUpload(self):
         """Stroes data from Upload tab in temp settings"""
         for entry in self.settings.upload:
-            if entry != "Filetype":
+            if (entry not in ("Filetype", "Port")):
                 value = getattr(self, 'lineEdit'+entry).text()
                 self.settings.upload[entry] = value
 
