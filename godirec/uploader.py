@@ -60,7 +60,9 @@ class SftpThread(QThread):
     def upload(self, track_file, host_folder):
         """upload file to directory on host"""
         self._host_folder = host_folder
-        self._host_path = os.path.join(host_folder, track_file.basename)
+        # use "/" instead of os.path.join, so the path is right on a linux
+        # server system even if you run godirec on a windows machine.
+        self._host_path = "/".join([host_folder, track_file.basename])
         self._track_file = track_file
         self.run = self._run_upload
         self.start()
