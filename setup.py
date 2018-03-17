@@ -146,9 +146,14 @@ setup(
     entry_points={
         'gui_scripts': ['godirec=godirec.gui:run'],
     },
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
     install_requires=[
         'setuptools',
         'mutagen',
+        'PyAudio',
+        'PyQt5',
+        'pysftp'
     ],
     cmdclass={
         'build_windows_installer': WindowsInstaller,
