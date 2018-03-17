@@ -197,7 +197,7 @@ class WaveConverter(object, metaclass=_MetaWaveConverter):
             return round(time / duration * 100.0, 1)
         else:
             return None
- 
+
     @property
     def converter(self):
         """converter path of external used converter"""
