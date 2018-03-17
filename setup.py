@@ -71,6 +71,7 @@ if has_py2exe_module:
     ffmpeg_sub = subprocess.Popen(["where", "ffmpeg"], stdout=subprocess.PIPE)
     ffmpeg_path, _ = ffmpeg_sub.communicate()
     ffmpeg_path = ffmpeg_path.decode("utf-8").strip("\r\n")
+    ffmpeg_path = os.path.relpath(ffmpeg_path)
     extra_setup['data_files'].extend([
         ('', [ffmpeg_path])
     ])

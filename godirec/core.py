@@ -368,7 +368,7 @@ class Track(object):
         # backslashs have to be replace first in string because they have a
         # special meaning in regex
         value = value.replace("\\", new)
-        value = re.sub('[!@#$§"\*|~%&/=°^´`+<>(){}:\[\]\';]', new, value)
+        value = re.sub(r'[^a-zA-Z0-9_\- ]', new, value)
         return value
 
     @property
