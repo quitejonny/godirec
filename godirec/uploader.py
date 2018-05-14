@@ -37,11 +37,14 @@ class SftpThread(QThread):
 
     def __init__(self, host, user, key_file, port=22, parent=None):
         QThread.__init__(self, parent=parent)
+        cnopts = pysftp.CnOpts()
+        cnopts.hostkeys = None
         self._conn_params = {
             "username": user if user else getpass.getuser(),
             "host": host,
             "port": port,
-            "private_key": key_file
+            "private_key": key_file,
+            "cnopts": cnopts
         }
         self.timeout = 5.0
         self.timerStopped.connect(self._stopTimer)
