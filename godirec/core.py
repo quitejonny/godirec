@@ -302,7 +302,8 @@ class Track(object):
         try:
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
             for filetype in filetypes:
-                filename = "{}.{}".format(self.basename, filetype.codec)
+                sanitised_basename = self.replace_special_characters(self.basename)
+                filename = "{}.{}".format(sanitised_basename, filetype.codec)
                 seperator = "-" if self.project_name else ""
                 type_folder = "".join(
                         (str(filetype), seperator, self.project_name)
